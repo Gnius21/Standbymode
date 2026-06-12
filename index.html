@@ -317,15 +317,15 @@
   .f-weather .fw-sep { opacity: 0.45; }
   .f-weather .fw-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: clamp(5px, 1.2cqw, 14px);
+    grid-template-columns: repeat(6, 1fr);
+    gap: clamp(5px, 1cqw, 12px);
     width: 100%;
     flex-shrink: 0;
   }
   .f-weather .fw-tile {
     background: rgba(255,255,255,0.055);
     border-radius: clamp(7px, 1.2cqw, 16px);
-    padding: clamp(7px, 2cqh, 18px) clamp(8px, 1.8cqw, 20px);
+    padding: clamp(6px, 1.8cqh, 16px) clamp(7px, 1.4cqw, 18px);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -334,7 +334,7 @@
   }
   .f-weather .fw-tval {
     font-weight: 700;
-    font-size: clamp(14px, 6cqh, 52px);
+    font-size: clamp(12px, 5cqh, 44px);
     color: #fff;
     line-height: 1;
     font-variant-numeric: tabular-nums;
@@ -343,14 +343,59 @@
     text-overflow: ellipsis;
   }
   .f-weather .fw-tval.hi { color: var(--accent); }
+  .f-weather .fw-tval.warm { color: #ffb45e; }
+  .f-weather .fw-tval.blue { color: #5ea8ff; }
+  .f-weather .fw-tsub {
+    color: var(--muted);
+    font-size: clamp(9px, 2.4cqh, 20px);
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .f-weather .fw-bar {
+    height: clamp(3px, 0.7cqh, 6px);
+    background: rgba(255,255,255,0.1);
+    border-radius: 99px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .f-weather .fw-bfill {
+    height: 100%;
+    border-radius: 99px;
+    width: 0%;
+    transition: width 0.7s ease;
+    background: var(--accent);
+  }
+  .f-weather .fw-octa {
+    display: flex;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+  .f-weather .fw-oseg {
+    flex: 1;
+    height: clamp(3px, 0.8cqh, 7px);
+    border-radius: 2px;
+    background: rgba(255,255,255,0.12);
+    transition: background 0.5s;
+  }
+  .f-weather .fw-oseg.filled { background: #aaa; }
+  .f-weather .fw-arrow {
+    display: inline-block;
+    transition: transform 0.6s ease;
+    color: var(--accent);
+  }
   .f-weather .fw-tlbl {
     color: var(--muted);
-    font-size: clamp(10px, 2.5cqh, 22px);
+    font-size: clamp(9px, 2.3cqh, 20px);
     font-weight: 500;
     line-height: 1;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .f-weather .fw-smalltime {
     position: absolute;
@@ -464,27 +509,56 @@
         <div class="fw-grid">
           <div class="fw-tile">
             <span class="fw-tval j-wind">--</span>
+            <span class="fw-tsub j-windbft">&nbsp;</span>
+            <div class="fw-bar"><div class="fw-bfill j-bwind"></div></div>
             <span class="fw-tlbl">&#x1F4A8; Wind</span>
           </div>
           <div class="fw-tile">
-            <span class="fw-tval j-gust">--</span>
+            <span class="fw-tval warm j-gust">--</span>
+            <span class="fw-tsub j-gustsub">&nbsp;</span>
+            <div class="fw-bar"><div class="fw-bfill j-bgust" style="background:#ffb45e"></div></div>
             <span class="fw-tlbl">&#x26A1; Gust</span>
           </div>
           <div class="fw-tile">
-            <span class="fw-tval j-winddir">--</span>
+            <span class="fw-tval"><span class="fw-arrow j-warrow">&#x2193;</span> <span class="j-winddir">--</span></span>
+            <span class="fw-tsub j-winddeg">&nbsp;</span>
             <span class="fw-tlbl">&#x1F9ED; Direction</span>
           </div>
           <div class="fw-tile">
-            <span class="fw-tval j-rh">--%</span>
+            <span class="fw-tval blue j-rh">--%</span>
+            <div class="fw-bar"><div class="fw-bfill j-brh" style="background:#5ea8ff"></div></div>
             <span class="fw-tlbl">&#x1F4A7; Humidity</span>
           </div>
           <div class="fw-tile">
+            <span class="fw-tval j-dew">--&deg;</span>
+            <span class="fw-tsub j-feels">&nbsp;</span>
+            <span class="fw-tlbl">&#x1F4A6; Dewpoint</span>
+          </div>
+          <div class="fw-tile">
+            <span class="fw-tval j-slp">--</span>
+            <span class="fw-tsub j-slpstate">&nbsp;</span>
+            <span class="fw-tlbl">&#x1F321;&#xFE0F; Pressure</span>
+          </div>
+          <div class="fw-tile">
+            <span class="fw-tval j-vis">--</span>
+            <span class="fw-tsub j-visqual">&nbsp;</span>
+            <span class="fw-tlbl">&#x1F441;&#xFE0F; Visibility</span>
+          </div>
+          <div class="fw-tile">
             <span class="fw-tval j-cloud">--</span>
+            <div class="fw-octa j-octa"></div>
             <span class="fw-tlbl">&#x2601;&#xFE0F; Cloud</span>
           </div>
           <div class="fw-tile">
-            <span class="fw-tval j-precip hi">--</span>
+            <span class="fw-tval blue j-precip">--</span>
+            <div class="fw-bar"><div class="fw-bfill j-bprecip" style="background:#5ea8ff"></div></div>
             <span class="fw-tlbl">&#x1F327; Rain/10m</span>
+          </div>
+          <div class="fw-tile">
+            <span class="fw-tval warm j-rad">--</span>
+            <span class="fw-tsub j-radsub">&nbsp;</span>
+            <div class="fw-bar"><div class="fw-bfill j-brad" style="background:#ffb45e"></div></div>
+            <span class="fw-tlbl">&#x2600;&#xFE0F; Radiation</span>
           </div>
           <div class="fw-tile">
             <span class="fw-tval j-sunrise">--:--</span>
@@ -517,7 +591,7 @@
   function tick(){
     const now = new Date();
     const h12 = (now.getHours() % 12) || 12;
-    setAll('j-hh', h12);
+    setAll('j-hh', String(h12).padStart(2,'0'));
     setAll('j-mm', String(now.getMinutes()).padStart(2,'0'));
     setAll('j-ampm', now.getHours() < 12 ? 'AM' : 'PM');
     setAll('j-dow', DAYS[now.getDay()]);
@@ -643,12 +717,17 @@
     var windMs=num(find('Windspeed')), gustMs=num(find('Gusts')), wd=find('Winddirection');
     return {
       temp_c:     num(find('Temperature (')),
+      dew_c:      num(find('Dewpoint')),
       rh:         num(find('Relative humidity')),
+      wind_ms:    windMs,
       wind_kt:    windMs!=null?Math.round(windMs*1.94384):null,
       gust_kt:    gustMs!=null?Math.round(gustMs*1.94384):null,
       wind_dir:   wd&&wd.extra?parseFloat(wd.extra):null,
       cloud_octa: num(find('Cloud cover')),
+      radiation:  num(find('Radiation')),
       precip_10m: num(find('Precipitation')),
+      vis_m:      num(find('Visibility')),
+      slp:        num(find('Pressure')),
       time:       parsed.time||null
     };
   }
@@ -666,6 +745,52 @@
     if(octa==null) return '--';
     var label=['Clear','Almost clear','Few','Scattered','Broken','Mostly cloudy','Mostly cloudy','Overcast','Overcast'];
     return octa+'/8 · '+(label[Math.round(octa)]||'--');
+  }
+  function bft(ms){
+    if(ms==null) return '';
+    var scale=[0,.3,1.6,3.4,5.5,8,10.8,13.9,17.2,20.8,24.5,28.5,32.7];
+    var names=['Calm','Light air','Light breeze','Gentle breeze','Moderate breeze','Fresh breeze','Strong breeze','Near gale','Gale','Strong gale','Storm','Violent storm','Hurricane'];
+    var b=0;
+    for(var i=0;i<scale.length;i++) if(ms>=scale[i]) b=i;
+    return 'Bft '+b+' · '+names[b];
+  }
+  function heatIndex(t, rh){
+    if(t==null||rh==null||t<27) return null;
+    var hi=-8.785+1.611*t+2.339*rh-.146*t*rh-.012*t*t-.016*rh*rh+.002*t*t*rh+.0007*t*rh*rh-0.000003*t*t*rh*rh;
+    return Math.round(hi);
+  }
+  function visQual(m){
+    if(m==null) return '';
+    if(m>=10000) return 'Excellent'; if(m>=5000) return 'Good';
+    if(m>=1000) return 'Moderate'; return 'Poor';
+  }
+  function slpState(hpa){
+    if(hpa==null) return '';
+    if(hpa>=1020) return 'High';
+    if(hpa>=1013) return 'Normal';
+    if(hpa>=1000) return 'Low';
+    return 'Very low';
+  }
+  function setBarAll(cls, pct){
+    document.querySelectorAll('.'+cls).forEach(function(el){
+      el.style.width=Math.min(100,Math.max(0,pct))+'%';
+    });
+  }
+  // Build 8 octa segments inside each .j-octa container
+  document.querySelectorAll('.j-octa').forEach(function(wrap){
+    for(var i=0;i<8;i++){
+      var s=document.createElement('div');
+      s.className='fw-oseg';
+      wrap.appendChild(s);
+    }
+  });
+  function setOcta(octa){
+    document.querySelectorAll('.j-octa').forEach(function(wrap){
+      var filled=octa!=null?Math.round(octa):0;
+      wrap.querySelectorAll('.fw-oseg').forEach(function(s,i){
+        s.classList.toggle('filled', i<filled);
+      });
+    });
   }
 
   // Derive icon/text from cloud cover + precipitation (for KNMI data)
@@ -700,15 +825,38 @@
       const raw=await fetchKnmiPage();
       const data=knmiToNormalized(parseKnmiBonaire(raw));
       if(data&&data.temp_c!=null){
+        var windKmh=data.wind_kt!=null?Math.round(data.wind_kt*1.852):null;
+        var gustKmh=data.gust_kt!=null?Math.round(data.gust_kt*1.852):null;
+        var hi=heatIndex(data.temp_c, data.rh);
         setAll('j-temp', Math.round(data.temp_c)+'°');
         setAll('j-wico', cloudIcon(data.cloud_octa, data.precip_10m));
         setAll('j-wtext', cloudText(data.cloud_octa, data.precip_10m));
-        setAll('j-wind', data.wind_kt!=null ? Math.round(data.wind_kt*1.852)+' km/h' : '--');
-        setAll('j-gust', data.gust_kt!=null ? Math.round(data.gust_kt*1.852)+' km/h' : '--');
-        setAll('j-winddir', data.wind_dir!=null ? degToCompass(data.wind_dir)+' '+Math.round(data.wind_dir)+'°' : '--');
+        setAll('j-wind', windKmh!=null ? windKmh+' km/h' : '--');
+        setAll('j-windbft', bft(data.wind_ms));
+        setBarAll('j-bwind', windKmh!=null ? windKmh/120*100 : 0);
+        setAll('j-gust', gustKmh!=null ? gustKmh+' km/h' : '--');
+        setAll('j-gustsub', gustKmh!=null&&windKmh!=null ? '+'+(gustKmh-windKmh)+' km/h' : '');
+        setBarAll('j-bgust', gustKmh!=null ? gustKmh/120*100 : 0);
+        setAll('j-winddir', data.wind_dir!=null ? degToCompass(data.wind_dir) : '--');
+        setAll('j-winddeg', data.wind_dir!=null ? Math.round(data.wind_dir)+'° from N' : '');
+        document.querySelectorAll('.j-warrow').forEach(function(el){
+          el.style.transform='rotate('+(data.wind_dir||0)+'deg)';
+        });
         setAll('j-rh', data.rh!=null ? Math.round(data.rh)+'%' : '--%');
-        setAll('j-cloud', data.cloud_octa!=null ? fmtCloud(data.cloud_octa) : '--');
+        setBarAll('j-brh', data.rh!=null ? data.rh : 0);
+        setAll('j-dew', data.dew_c!=null ? data.dew_c.toFixed(1)+'°' : '--°');
+        setAll('j-feels', hi!=null ? 'Feels '+hi+'°C' : '');
+        setAll('j-slp', data.slp!=null ? Math.round(data.slp)+' hPa' : '--');
+        setAll('j-slpstate', slpState(data.slp));
+        setAll('j-vis', fmtVis(data.vis_m));
+        setAll('j-visqual', visQual(data.vis_m));
+        setAll('j-cloud', data.cloud_octa!=null ? data.cloud_octa+'/8' : '--');
+        setOcta(data.cloud_octa);
         setAll('j-precip', data.precip_10m!=null ? data.precip_10m.toFixed(1)+' mm' : '--');
+        setBarAll('j-bprecip', data.precip_10m!=null ? data.precip_10m/5*100 : 0);
+        setAll('j-rad', data.radiation!=null ? Math.round(data.radiation)+' W/m²' : '--');
+        setAll('j-radsub', data.radiation!=null ? (data.radiation>800?'Intense':data.radiation>400?'Moderate':data.radiation>50?'Low':'Minimal') : '');
+        setBarAll('j-brad', data.radiation!=null ? data.radiation/1200*100 : 0);
         setAll('j-obstime', data.time || '');
         setAll('j-place', 'Bonaire · KNMI');
         knmiOk=true;
