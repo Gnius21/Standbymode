@@ -283,7 +283,15 @@
   }
 
   /* ---------- Face 4: Weather Dashboard ---------- */
-  .f-weather { --accent: #5ee6c8; flex-direction: column; justify-content: center; gap: clamp(10px, 2.5cqh, 28px); }
+  .f-weather {
+    --accent: #5ee6c8;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(10px, 2.5cqh, 28px);
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 0%, rgba(94,230,200,0.07), transparent 70%),
+      radial-gradient(ellipse 55% 45% at 85% 100%, rgba(94,168,255,0.05), transparent 70%);
+  }
   .f-weather .fw-hero {
     display: flex;
     align-items: center;
@@ -291,15 +299,22 @@
     gap: clamp(10px, 3cqw, 44px);
     flex-shrink: 0;
   }
-  .f-weather .fw-bigico { font-size: clamp(52px, 22cqh, 200px); line-height: 1; }
+  .f-weather .fw-bigico {
+    font-size: clamp(52px, 22cqh, 200px);
+    line-height: 1;
+    filter: drop-shadow(0 0 clamp(10px, 3cqh, 30px) rgba(94,230,200,0.35));
+  }
   .f-weather .fw-heroright { display: flex; flex-direction: column; min-width: 0; }
   .f-weather .fw-bigtemp {
     font-weight: 700;
-    color: #fff;
     font-size: clamp(52px, 26cqh, 240px);
     line-height: 0.88;
     letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
+    background: linear-gradient(180deg, #ffffff 30%, #b8d8d0 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
   .f-weather .fw-cond {
     color: var(--accent);
@@ -328,14 +343,16 @@
     flex-shrink: 0;
   }
   .f-weather .fw-tile {
-    background: rgba(255,255,255,0.055);
-    border-radius: clamp(7px, 1.2cqw, 16px);
+    background: linear-gradient(160deg, rgba(255,255,255,0.085), rgba(255,255,255,0.03));
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: clamp(8px, 1.4cqw, 18px);
     padding: clamp(6px, 1.8cqh, 16px) clamp(7px, 1.4cqw, 18px);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     gap: clamp(3px, 0.8cqh, 8px);
     overflow: hidden;
+    box-shadow: 0 clamp(2px, 0.5cqh, 6px) clamp(8px, 2cqh, 20px) rgba(0,0,0,0.35);
   }
   .f-weather .fw-tval {
     font-weight: 700;
@@ -371,8 +388,11 @@
     border-radius: 99px;
     width: 0%;
     transition: width 0.7s ease;
-    background: var(--accent);
+    background: linear-gradient(90deg, #3aa68d, var(--accent));
+    box-shadow: 0 0 6px rgba(94,230,200,0.5);
   }
+  .f-weather .fw-bfill.warm { background: linear-gradient(90deg, #c77f33, #ffb45e); box-shadow: 0 0 6px rgba(255,180,94,0.5); }
+  .f-weather .fw-bfill.blue { background: linear-gradient(90deg, #3470b8, #5ea8ff); box-shadow: 0 0 6px rgba(94,168,255,0.5); }
   .f-weather .fw-octa {
     display: flex;
     gap: 3px;
@@ -465,7 +485,7 @@
           <div class="temp"><span class="ico j-wico">&#x26C5;</span><span class="j-temp">--&deg;</span></div>
           <div class="place j-place">Locating&hellip;</div>
           <div class="extra">
-            <span class="extra-item"><span class="extra-ico">&#x1F4A8;</span><span class="j-wind">-- km/h</span></span>
+            <span class="extra-item"><span class="extra-ico">&#x1F4A8;</span><span class="j-wind">-- kt</span></span>
             <span class="extra-item"><span class="extra-ico">&#x1F305;</span><span class="j-sunrise">--:--</span></span>
             <span class="extra-item"><span class="extra-ico">&#x1F307;</span><span class="j-sunset">--:--</span></span>
           </div>
@@ -521,7 +541,7 @@
           <div class="fw-tile">
             <span class="fw-tval warm j-gust">--</span>
             <span class="fw-tsub j-gustsub">&nbsp;</span>
-            <div class="fw-bar"><div class="fw-bfill j-bgust" style="background:#ffb45e"></div></div>
+            <div class="fw-bar"><div class="fw-bfill warm j-bgust"></div></div>
             <span class="fw-tlbl">&#x26A1; Gust</span>
           </div>
           <div class="fw-tile">
@@ -531,7 +551,7 @@
           </div>
           <div class="fw-tile">
             <span class="fw-tval blue j-rh">--%</span>
-            <div class="fw-bar"><div class="fw-bfill j-brh" style="background:#5ea8ff"></div></div>
+            <div class="fw-bar"><div class="fw-bfill blue j-brh"></div></div>
             <span class="fw-tlbl">&#x1F4A7; Humidity</span>
           </div>
           <div class="fw-tile">
@@ -556,13 +576,13 @@
           </div>
           <div class="fw-tile">
             <span class="fw-tval blue j-precip">--</span>
-            <div class="fw-bar"><div class="fw-bfill j-bprecip" style="background:#5ea8ff"></div></div>
+            <div class="fw-bar"><div class="fw-bfill blue j-bprecip"></div></div>
             <span class="fw-tlbl">&#x1F327; Rain/10m</span>
           </div>
           <div class="fw-tile">
             <span class="fw-tval warm j-rad">--</span>
             <span class="fw-tsub j-radsub">&nbsp;</span>
-            <div class="fw-bar"><div class="fw-bfill j-brad" style="background:#ffb45e"></div></div>
+            <div class="fw-bar"><div class="fw-bfill warm j-brad"></div></div>
             <span class="fw-tlbl">&#x2600;&#xFE0F; Radiation</span>
           </div>
           <div class="fw-tile">
@@ -830,18 +850,18 @@
       const raw=await fetchKnmiPage();
       const data=knmiToNormalized(parseKnmiBonaire(raw));
       if(data&&data.temp_c!=null){
-        var windKmh=data.wind_kt!=null?Math.round(data.wind_kt*1.852):null;
-        var gustKmh=data.gust_kt!=null?Math.round(data.gust_kt*1.852):null;
+        var windKt=data.wind_kt;
+        var gustKt=data.gust_kt;
         var hi=heatIndex(data.temp_c, data.rh);
         setAll('j-temp', Math.round(data.temp_c)+'°');
         setAll('j-wico', cloudIcon(data.cloud_octa, data.precip_10m));
         setAll('j-wtext', cloudText(data.cloud_octa, data.precip_10m));
-        setAll('j-wind', windKmh!=null ? windKmh+' km/h' : '--');
+        setAll('j-wind', windKt!=null ? windKt+' kt' : '--');
         setAll('j-windbft', bft(data.wind_ms));
-        setBarAll('j-bwind', windKmh!=null ? windKmh/120*100 : 0);
-        setAll('j-gust', gustKmh!=null ? gustKmh+' km/h' : '--');
-        setAll('j-gustsub', gustKmh!=null&&windKmh!=null ? '+'+(gustKmh-windKmh)+' km/h' : '');
-        setBarAll('j-bgust', gustKmh!=null ? gustKmh/120*100 : 0);
+        setBarAll('j-bwind', windKt!=null ? windKt/60*100 : 0);
+        setAll('j-gust', gustKt!=null ? gustKt+' kt' : '--');
+        setAll('j-gustsub', gustKt!=null&&windKt!=null ? '+'+(gustKt-windKt)+' kt' : '');
+        setBarAll('j-bgust', gustKt!=null ? gustKt/60*100 : 0);
         setAll('j-winddir', data.wind_dir!=null ? degToCompass(data.wind_dir) : '--');
         setAll('j-winddeg', data.wind_dir!=null ? Math.round(data.wind_dir)+'° from N' : '');
         document.querySelectorAll('.j-warrow').forEach(function(el){
@@ -876,11 +896,11 @@
         setAll('j-temp', Math.round(d.current.temperature_2m)+'°');
         setAll('j-wico', wmoIcon(d.current.weather_code));
         setAll('j-wtext', wmoText(d.current.weather_code));
-        setAll('j-wind', Math.round(d.current.wind_speed_10m)+' km/h');
+        setAll('j-wind', Math.round(d.current.wind_speed_10m/1.852)+' kt');
         setAll('j-place', 'Curaçao');
       }catch(e){
         setAll('j-temp', '--°');
-        setAll('j-wind', '-- km/h');
+        setAll('j-wind', '-- kt');
         setAll('j-place', 'Curaçao');
       }
     }
