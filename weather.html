@@ -23,7 +23,14 @@
     font-family:-apple-system,"SF Pro Display","Helvetica Neue",system-ui,sans-serif;
     -webkit-font-smoothing:antialiased;
   }
-  body { padding:clamp(14px,2vw,36px); max-width:1400px; margin:0 auto; }
+  body {
+    padding:clamp(14px,2vw,36px); max-width:1400px; margin:0 auto;
+    background:
+      radial-gradient(ellipse 70% 40% at 50% 0%, rgba(94,230,200,.06), transparent 70%),
+      radial-gradient(ellipse 50% 35% at 90% 100%, rgba(94,168,255,.05), transparent 70%),
+      #000;
+    background-attachment:fixed;
+  }
 
   /* ── Header ── */
   .hdr {
@@ -56,11 +63,16 @@
     padding:clamp(18px,3vw,40px);
     margin-bottom:clamp(10px,1.4vw,16px);
   }
-  .hero-ico { font-size:clamp(60px,9vw,110px); line-height:1; flex-shrink:0; }
+  .hero-ico {
+    font-size:clamp(60px,9vw,110px); line-height:1; flex-shrink:0;
+    filter:drop-shadow(0 0 24px rgba(94,230,200,.35));
+  }
   .hero-main { flex:1; min-width:0; }
   .hero-temp {
     font-size:clamp(56px,9vw,110px); font-weight:700;
     line-height:.88; letter-spacing:-.02em; font-variant-numeric:tabular-nums;
+    background:linear-gradient(180deg,#fff 30%,#b8d8d0 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
   }
   .hero-cond { color:var(--accent); font-size:clamp(17px,2.2vw,30px); font-weight:600; margin-top:.2em; }
   .hero-sub  { color:var(--muted);  font-size:clamp(12px,1.3vw,17px); font-weight:500; margin-top:.35em; }
@@ -85,9 +97,12 @@
 
   /* ── Card ── */
   .card {
-    background:var(--card); border-radius:clamp(10px,1.2vw,16px);
+    background:linear-gradient(160deg, rgba(255,255,255,.085), rgba(255,255,255,.03));
+    border:1px solid var(--border);
+    border-radius:clamp(10px,1.2vw,16px);
     padding:clamp(14px,1.8vw,24px);
     display:flex; flex-direction:column; gap:clamp(6px,1vh,10px);
+    box-shadow:0 4px 16px rgba(0,0,0,.35);
   }
   .lbl {
     color:var(--muted); font-size:clamp(10px,.9vw,12px); font-weight:600;
@@ -101,7 +116,7 @@
 
   /* ── Bar ── */
   .bar { height:clamp(4px,.55vh,6px); background:rgba(255,255,255,.1); border-radius:99px; overflow:hidden; }
-  .bar-fill { height:100%; border-radius:99px; transition:width .7s ease; width:0%; }
+  .bar-fill { height:100%; border-radius:99px; transition:width .7s ease; width:0%; box-shadow:0 0 8px currentColor; }
 
   /* ── Row list inside card ── */
   .rows { display:flex; flex-direction:column; gap:clamp(8px,1.2vh,14px); }
@@ -522,17 +537,15 @@ function applyData(data){
 
   // Wind
   if(data.wind_kt != null){
-    const kmh = Math.round(data.wind_kt * 1.852);
-    g('d-wind').textContent    = kmh+' km/h';
+    g('d-wind').textContent    = data.wind_kt+' kt';
     g('d-wind-bft').textContent= bft(data.wind_ms);
-    setBar('b-wind', kmh / 120 * 100);
+    setBar('b-wind', data.wind_kt / 60 * 100);
   }
   if(data.gust_kt != null){
-    const gkmh = Math.round(data.gust_kt * 1.852);
-    g('d-gust').textContent    = gkmh+' km/h';
+    g('d-gust').textContent    = data.gust_kt+' kt';
     g('d-gust-sub').textContent= data.wind_kt != null
-      ? '+'+(gkmh - Math.round(data.wind_kt*1.852))+' km/h above mean' : '';
-    setBar('b-gust', gkmh / 120 * 100);
+      ? '+'+(data.gust_kt - data.wind_kt)+' kt above mean' : '';
+    setBar('b-gust', data.gust_kt / 60 * 100);
   }
 
   // Compass
