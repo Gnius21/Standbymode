@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="StandBy">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <title>StandBy</title>
 <style>
   :root {
@@ -970,6 +975,21 @@
     }else if(document.exitFullscreen){
       document.exitFullscreen().catch(function(){});
     }
+  }
+
+  // ---------- PWA: service worker with auto-update ----------
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').then(function(reg){
+      // Check for a new version every 30 minutes while the app is open
+      setInterval(function(){ reg.update().catch(function(){}); }, 30*60*1000);
+    }).catch(function(){});
+    // When a new service worker takes over, reload once to run the new version
+    var reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function(){
+      if(reloaded) return;
+      reloaded = true;
+      location.reload();
+    });
   }
 </script>
 </body>
