@@ -933,8 +933,27 @@
   }
 
   setAll('j-place', 'Curaçao');
-  loadWeather();
-  setInterval(loadWeather, 10*60*1000);
+  let lastWeatherTs = 0;
+  async function refreshWeather(){
+    lastWeatherTs = Date.now();
+    await loadWeather();
+  }
+  refreshWeather();
+  setInterval(function(){ refreshWeather(); }, 10*60*1000);
+
+  // Instant refresh when the app returns to the foreground (phone
+  // unlocked, app switched back) if the data is older than 2 minutes —
+  // timers pause while the page is hidden, so this closes the gap.
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible' && Date.now() - lastWeatherTs > 2*60*1000){
+      refreshWeather();
+    }
+  });
+  window.addEventListener('pageshow', function(ev){
+    if(ev.persisted && Date.now() - lastWeatherTs > 2*60*1000){
+      refreshWeather();
+    }
+  });
 
   // ---------- Swipeable faces ----------
   const stage = document.getElementById('stage');
