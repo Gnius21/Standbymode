@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>StandBy</title>
+<style>
+  :root {
+    --accent: #6db8ff;
+    --accent-soft: #8fc8ff;
+    --muted: #8a8a8e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%;
+    background: #000;
+    color: #fff;
+    font-family: -apple-system, "SF Pro Display", "Helvetica Neue", system-ui, sans-serif;
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .stage {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    container-type: size;
+  }
+  .panel {
+    width: min(92cqw, 92cqh * 1.9);
+    aspect-ratio: 19 / 10;
+    display: flex;
+    align-items: stretch;
+    gap: clamp(12px, 4cqw, 60px);
+    padding: clamp(14px, 4cqw, 56px);
+  }
+  .clock {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    overflow: hidden;
+  }
+  .time {
+    font-weight: 700;
+    line-height: 0.86;
+    letter-spacing: -0.03em;
+    color: var(--accent);
+    font-size: clamp(60px, 34cqh, 360px);
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    align-items: baseline;
+  }
+  .colon {
+    margin: 0 0.02em;
+    transform: translateY(-0.04em);
+    animation: blink 1s steps(1) infinite;
+  }
+  @keyframes blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+  .ampm {
+    font-size: 0.18em;
+    font-weight: 700;
+    margin-left: 0.15em;
+    align-self: flex-end;
+    transform: translateY(-0.3em);
+    color: var(--accent-soft);
+  }
+  .side {
+    flex: 0 0 clamp(120px, 26%, 320px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(4px, 2cqh, 20px) 0;
+    min-width: 0;
+  }
+  .block { line-height: 1; }
+  .date {
+    color: #fff;
+    font-weight: 600;
+    font-size: clamp(36px, 11cqh, 100px);
+    letter-spacing: 0.01em;
+  }
+  .date .day { color: var(--muted); margin-right: 0.4em; }
+  .fulldate {
+    margin-top: clamp(6px, 1.6cqh, 18px);
+    color: var(--muted);
+    font-weight: 500;
+    font-size: clamp(22px, 5.2cqh, 52px);
+  }
+  .temp {
+    margin-top: clamp(16px, 4cqh, 40px);
+    color: #fff;
+    font-weight: 600;
+    font-size: clamp(36px, 11cqh, 100px);
+    display: flex;
+    align-items: center;
+    gap: 0.3em;
+  }
+  .temp .ico { font-size: 0.8em; line-height: 1; }
+  .place {
+    margin-top: clamp(4px, 1.3cqh, 14px);
+    color: var(--muted);
+    font-weight: 500;
+    font-size: clamp(18px, 4.2cqh, 42px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .extra {
+    margin-top: clamp(10px, 2.6cqh, 24px);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(4px, 1cqh, 10px);
+  }
+  .extra-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--muted);
+    font-weight: 500;
+    font-size: clamp(15px, 3.4cqh, 34px);
+    white-space: nowrap;
+  }
+  .extra-ico {
+    font-size: 1em;
+    line-height: 1;
+  }
+
+  /* Force landscape: when the device is portrait, rotate the whole stage 90 degrees. */
+  @media (orientation: portrait) {
+    .stage {
+      width: 100vh;
+      height: 100vw;
+      transform: rotate(90deg);
+      transform-origin: top left;
+      left: 100vw;
+      top: 0;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="panel">
+      <div class="clock">
+        <div class="time">
+          <span id="hh">5</span><span class="colon">:</span><span id="mm">13</span><span class="ampm" id="ampm">AM</span>
+        </div>
+      </div>
+      <div class="side">
+        <div class="block">
+          <div class="date"><span class="day" id="dow">WED</span><span id="dom">26</span></div>
+          <div class="fulldate" id="fulldate">August 26, 2026</div>
+          <div class="temp"><span class="ico" id="wico">&#x26C5;</span><span id="temp">--&deg;</span></div>
+          <div class="place" id="place">Locating&hellip;</div>
+          <div class="extra">
+            <span class="extra-item"><span class="extra-ico">&#x1F4A8;</span><span id="wind">-- km/h</span></span>
+            <span class="extra-item"><span class="extra-ico">&#x1F305;</span><span id="sunrise">--:--</span></span>
+            <span class="extra-item"><span class="extra-ico">&#x1F307;</span><span id="sunset">--:--</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const DAYS = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const hhEl=document.getElementById('hh'), mmEl=document.getElementById('mm');
+  const dowEl=document.getElementById('dow'), domEl=document.getElementById('dom');
+  const fullEl=document.getElementById('fulldate');
+  const tempEl=document.getElementById('temp'), wicoEl=document.getElementById('wico'), placeEl=document.getElementById('place');
+  const windEl=document.getElementById('wind'), sunriseEl=document.getElementById('sunrise'), sunsetEl=document.getElementById('sunset');
+
+  const ampmEl=document.getElementById('ampm');
+
+  function tick(){
+    const now=new Date();
+    const h12=(now.getHours()%12)||12;
+    hhEl.textContent=h12;
+    mmEl.textContent=String(now.getMinutes()).padStart(2,'0');
+    ampmEl.textContent=now.getHours()<12?'AM':'PM';
+    dowEl.textContent=DAYS[now.getDay()];
+    domEl.textContent=now.getDate();
+    fullEl.textContent=MONTHS[now.getMonth()]+' '+now.getDate()+', '+now.getFullYear();
+  }
+  tick(); setInterval(tick,1000);
+
+  function wmoIcon(c){
+    if(c===0) return '\u2600\uFE0F';
+    if(c<=2) return '\uD83C\uDF24\uFE0F';
+    if(c===3) return '\u2601\uFE0F';
+    if(c<=48) return '\uD83C\uDF2B\uFE0F';
+    if(c<=57) return '\uD83C\uDF26\uFE0F';
+    if(c<=67) return '\uD83C\uDF27\uFE0F';
+    if(c<=77) return '\uD83C\uDF28\uFE0F';
+    if(c<=82) return '\uD83C\uDF27\uFE0F';
+    if(c<=86) return '\uD83C\uDF28\uFE0F';
+    return '\u26C8\uFE0F';
+  }
+
+  function fmtTime(iso){
+    // iso like "2026-06-11T05:42" in local timezone (timezone=auto)
+    const t = iso.split('T')[1];
+    const [h,m] = t.split(':');
+    let hh = parseInt(h,10);
+    const ap = hh<12 ? 'AM':'PM';
+    hh = (hh%12)||12;
+    return hh+':'+m+' '+ap;
+  }
+
+  async function loadWeather(lat,lon){
+    try{
+      const url='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
+        +'&current=temperature_2m,weather_code,wind_speed_10m'
+        +'&daily=sunrise,sunset'
+        +'&temperature_unit=celsius&wind_speed_unit=kmh&timezone=auto';
+      const r=await fetch(url);
+      const d=await r.json();
+      tempEl.textContent=Math.round(d.current.temperature_2m)+'\u00B0';
+      wicoEl.textContent=wmoIcon(d.current.weather_code);
+      windEl.textContent=Math.round(d.current.wind_speed_10m)+' km/h';
+      sunriseEl.textContent=fmtTime(d.daily.sunrise[0]);
+      sunsetEl.textContent=fmtTime(d.daily.sunset[0]);
+    }catch(e){
+      tempEl.textContent='--\u00B0';
+      windEl.textContent='-- km/h';
+    }
+  }
+
+  function start(lat,lon){
+    loadWeather(lat,lon);
+    setInterval(function(){ loadWeather(lat,lon); },10*60*1000);
+  }
+
+  // Fixed to Curacao
+  placeEl.textContent='Cura\u00E7ao';
+  start(12.17,-68.99);
+
+  document.body.addEventListener('click',function(){
+    if(!document.fullscreenElement && document.documentElement.requestFullscreen){
+      document.documentElement.requestFullscreen().catch(function(){});
+    }else if(document.exitFullscreen){ document.exitFullscreen().catch(function(){}); }
+  });
+</script>
+</body>
+</html>
