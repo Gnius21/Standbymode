@@ -524,38 +524,22 @@
 
   const PLACE = 'Curaçao';
 
-  async function fetchForecast(lat, lon, model){
-    let url = 'https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
-      +'&current=temperature_2m,weather_code,wind_speed_10m'
-      +'&daily=sunrise,sunset'
-      +'&temperature_unit=celsius&wind_speed_unit=kmh&timezone=auto';
-    if(model) url += '&models='+model;
-    const r = await fetch(url);
-    if(!r.ok) throw new Error('http '+r.status);
-    const d = await r.json();
-    if(!d.current || d.current.temperature_2m == null) throw new Error('no data');
-    return d;
-  }
-
   async function loadWeather(lat, lon){
     try{
-      let d, src;
-      // Prefer the KNMI Harmonie Arome model (Dutch met office). It only
-      // covers Europe, so fall back to the best available model elsewhere.
-      try{
-        d = await fetchForecast(lat, lon, 'knmi_seamless');
-        src = 'KNMI';
-      }catch(e){
-        d = await fetchForecast(lat, lon, null);
-        src = null;
-      }
+      const url = 'https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
+        +'&current=temperature_2m,weather_code,wind_speed_10m'
+        +'&daily=sunrise,sunset'
+        +'&temperature_unit=celsius&wind_speed_unit=kmh&timezone=auto';
+      const r = await fetch(url);
+      if(!r.ok) throw new Error('http '+r.status);
+      const d = await r.json();
       setAll('j-temp', Math.round(d.current.temperature_2m)+'°');
       setAll('j-wico', wmoIcon(d.current.weather_code));
       setAll('j-wtext', wmoText(d.current.weather_code));
       setAll('j-wind', Math.round(d.current.wind_speed_10m)+' km/h');
       setAll('j-sunrise', fmtTime(d.daily.sunrise[0]));
       setAll('j-sunset', fmtTime(d.daily.sunset[0]));
-      setAll('j-place', src ? PLACE+' · '+src : PLACE);
+      setAll('j-place', PLACE);
     }catch(e){
       setAll('j-temp', '--°');
       setAll('j-wind', '-- km/h');
