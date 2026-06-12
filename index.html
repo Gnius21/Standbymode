@@ -426,11 +426,27 @@
     position: absolute;
     top: calc(env(safe-area-inset-top) + clamp(10px, 3cqh, 28px));
     right: calc(env(safe-area-inset-right) + clamp(14px, 4cqw, 60px));
-    color: var(--muted);
-    font-weight: 600;
-    font-size: clamp(18px, 5.5cqh, 48px);
+    text-align: right;
+  }
+  .f-weather .fw-st-time {
+    color: #fff;
+    font-weight: 700;
+    font-size: clamp(22px, 7cqh, 60px);
     font-variant-numeric: tabular-nums;
     line-height: 1;
+  }
+  .f-weather .fw-st-ampm {
+    font-size: 0.5em;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .f-weather .fw-st-date {
+    margin-top: clamp(3px, 1cqh, 10px);
+    color: var(--muted);
+    font-weight: 500;
+    font-size: clamp(11px, 3.2cqh, 28px);
+    line-height: 1;
+    white-space: nowrap;
   }
 
   /* ---------- Dots indicator ---------- */
@@ -522,7 +538,10 @@
 
       <!-- Face 4: Weather Dashboard -->
       <section class="face f-weather" style="position:relative;">
-        <div class="fw-smalltime"><span class="j-hh">5</span>:<span class="j-mm">13</span> <span class="j-ampm">AM</span></div>
+        <div class="fw-smalltime">
+          <div class="fw-st-time"><span class="j-hh">05</span><span class="colon">:</span><span class="j-mm">13</span> <span class="fw-st-ampm j-ampm">AM</span></div>
+          <div class="fw-st-date"><span class="j-dow">FRI</span> &middot; <span class="j-fulldate">June 12, 2026</span></div>
+        </div>
         <div class="fw-hero">
           <span class="fw-bigico j-wico">&#x26C5;</span>
           <div class="fw-heroright">
@@ -890,13 +909,13 @@
 
     if(!knmiOk){
       try{
-        const url='https://api.open-meteo.com/v1/forecast?latitude=12.17&longitude=-68.99&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=celsius&wind_speed_unit=kmh&timezone=auto';
+        const url='https://api.open-meteo.com/v1/forecast?latitude=12.17&longitude=-68.99&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=celsius&wind_speed_unit=kn&timezone=auto';
         const r=await fetch(url); if(!r.ok) throw new Error('http '+r.status);
         const d=await r.json();
         setAll('j-temp', Math.round(d.current.temperature_2m)+'°');
         setAll('j-wico', wmoIcon(d.current.weather_code));
         setAll('j-wtext', wmoText(d.current.weather_code));
-        setAll('j-wind', Math.round(d.current.wind_speed_10m/1.852)+' kt');
+        setAll('j-wind', Math.round(d.current.wind_speed_10m)+' kt');
         setAll('j-place', 'Curaçao');
       }catch(e){
         setAll('j-temp', '--°');
