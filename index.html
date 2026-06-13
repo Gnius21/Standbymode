@@ -809,8 +809,8 @@
           <div class="place j-place">Locating&hellip;</div>
           <div class="extra">
             <span class="extra-item"><span class="extra-ico">&#x1F4A8;</span><span class="j-wind">-- kt</span></span>
-            <span class="extra-item"><span class="extra-ico">&#x1F305;</span><span class="j-sunrise">--:--</span></span>
-            <span class="extra-item"><span class="extra-ico">&#x1F307;</span><span class="j-sunset">--:--</span></span>
+            <span class="extra-item"><span class="extra-ico">&#x2600;&#xFE0F;</span><span>UV&nbsp;<span class="j-uv">--</span></span></span>
+            <span class="extra-item"><span class="extra-ico">&#x1F32B;&#xFE0F;</span><span class="j-dust">-- &micro;g</span></span>
           </div>
         </div>
       </section>
@@ -937,12 +937,16 @@
             <span class="fw-tlbl">&#x2600;&#xFE0F; Radiation</span>
           </div>
           <div class="fw-tile">
-            <span class="fw-tval j-sunrise">--:--</span>
-            <span class="fw-tlbl">&#x1F305; Sunrise</span>
+            <span class="fw-tval warm j-uv">--</span>
+            <span class="fw-tsub j-uvsub">&nbsp;</span>
+            <div class="fw-bar"><div class="fw-bfill warm j-buv"></div></div>
+            <span class="fw-tlbl">&#x2600;&#xFE0F; UV Index</span>
           </div>
           <div class="fw-tile">
-            <span class="fw-tval j-sunset">--:--</span>
-            <span class="fw-tlbl">&#x1F307; Sunset</span>
+            <span class="fw-tval j-dust">--</span>
+            <span class="fw-tsub j-dustsub">&nbsp;</span>
+            <div class="fw-bar"><div class="fw-bfill j-bdust"></div></div>
+            <span class="fw-tlbl">&#x1F32B;&#xFE0F; Dust</span>
           </div>
         </div>
       </section>
@@ -1093,15 +1097,6 @@
     if(c<=82) return 'Showers';
     if(c<=86) return 'Snow showers';
     return 'Thunderstorm';
-  }
-
-  function fmtTime(iso){
-    const t = iso.split('T')[1];
-    const [h,m] = t.split(':');
-    let hh = parseInt(h,10);
-    const ap = hh<12 ? 'AM':'PM';
-    hh = (hh%12)||12;
-    return hh+':'+m+' '+ap;
   }
 
   // ---------- KNMI Bonaire live scraper (from RWC Caribbean) ----------
@@ -1261,12 +1256,24 @@
     return 'Overcast';
   }
 
-  // Fetch sunrise/sunset from Open-Meteo (daily, light request)
-  async function fetchSunriseSunset(lat, lon){
-    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&daily=sunrise,sunset&timezone=auto&forecast_days=1');
+  // Fetch UV index + Saharan dust from Open-Meteo air quality API
+  async function fetchAirQuality(lat, lon){
+    const r=await fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude='+lat+'&longitude='+lon+'&current=uv_index,dust&timezone=auto');
     if(!r.ok) throw new Error('http '+r.status);
     const d=await r.json();
-    return {sunrise:d.daily.sunrise[0], sunset:d.daily.sunset[0]};
+    return {uv:d.current.uv_index, dust:d.current.dust};
+  }
+  function uvLabel(uv){
+    if(uv==null) return '';
+    if(uv<3) return 'Low'; if(uv<6) return 'Moderate';
+    if(uv<8) return 'High'; if(uv<11) return 'Very high';
+    return 'Extreme';
+  }
+  function dustLabel(d){
+    if(d==null) return '';
+    if(d<20) return 'Clear air'; if(d<50) return 'Light haze';
+    if(d<100) return 'Hazy'; if(d<200) return 'Dusty';
+    return 'Heavy dust';
   }
 
   async function loadWeather(){
@@ -1330,11 +1337,17 @@
       }
     }
 
-    // Sunrise/sunset always from Open-Meteo (KNMI doesn't provide it)
+    // UV index + Saharan dust from Open-Meteo (KNMI doesn't provide these)
     try{
-      const ss=await fetchSunriseSunset(12.17,-68.99);
-      setAll('j-sunrise', fmtTime(ss.sunrise));
-      setAll('j-sunset', fmtTime(ss.sunset));
+      const aq=await fetchAirQuality(12.17,-68.99);
+      var uv = aq.uv!=null ? Math.round(aq.uv) : null;
+      setAll('j-uv', uv!=null ? String(uv) : '--');
+      setAll('j-uvsub', uvLabel(aq.uv));
+      setBarAll('j-buv', uv!=null ? uv/12*100 : 0);
+      var dust = aq.dust!=null ? Math.round(aq.dust) : null;
+      setAll('j-dust', dust!=null ? dust+' µg' : '-- µg');
+      setAll('j-dustsub', dustLabel(aq.dust));
+      setBarAll('j-bdust', dust!=null ? dust/200*100 : 0);
     }catch(e){}
   }
 
