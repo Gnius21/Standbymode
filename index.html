@@ -625,6 +625,105 @@
     white-space: nowrap;
   }
 
+  /* ---------- Face 5: Calendar ---------- */
+  .f-cal {
+    --cal-blue: #aab4ff;
+    --cal-red: #ff5a6e;
+    gap: clamp(16px, 5cqw, 80px);
+    justify-content: center;
+    background: #050507;
+  }
+  .f-cal .fc-left {
+    position: relative;
+    flex: 0 0 auto;
+    width: min(82cqh, 46cqw);
+    height: min(82cqh, 46cqw);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .f-cal .fc-ring {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .f-cal .fc-dash {
+    position: absolute;
+    width: clamp(2px, 0.55cqh, 5px);
+    height: clamp(8px, 2.4cqh, 20px);
+    border-radius: 99px;
+    background: rgba(150,160,255,0.5);
+  }
+  .f-cal .fc-time {
+    font-weight: 700;
+    font-size: clamp(48px, 22cqh, 240px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: #f2f3ff;
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    align-items: center;
+    filter: drop-shadow(0 4px 24px rgba(150,160,255,0.18));
+  }
+  .f-cal .fc-colon {
+    margin: 0 0.02em;
+    transform: translateY(-0.06em);
+  }
+  .f-cal .fc-right {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: clamp(180px, 40cqw, 620px);
+  }
+  .f-cal .fc-month {
+    color: var(--cal-red);
+    font-weight: 700;
+    font-size: clamp(18px, 5.5cqh, 56px);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: clamp(8px, 2.2cqh, 22px);
+  }
+  .f-cal .fc-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    row-gap: clamp(4px, 1.6cqh, 18px);
+    column-gap: clamp(2px, 0.8cqw, 10px);
+    justify-items: center;
+    align-items: center;
+  }
+  .f-cal .fc-wd {
+    color: var(--cal-blue);
+    font-weight: 700;
+    font-size: clamp(11px, 3.4cqh, 34px);
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: clamp(2px, 1cqh, 10px);
+  }
+  .f-cal .fc-wd.we { color: rgba(170,180,255,0.5); }
+  .f-cal .fc-day {
+    color: #e6e8ff;
+    font-weight: 600;
+    font-size: clamp(13px, 4cqh, 40px);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    width: 1.9em;
+    height: 1.9em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  .f-cal .fc-day.we { color: rgba(170,180,255,0.42); }
+  .f-cal .fc-day.past { opacity: 0.45; }
+  .f-cal .fc-day.today {
+    background: var(--cal-red);
+    color: #fff;
+    font-weight: 700;
+    opacity: 1;
+    box-shadow: 0 0 16px rgba(255,90,110,0.5);
+  }
+
   /* ---------- Dots indicator ---------- */
   .dots {
     position: absolute;
@@ -848,6 +947,18 @@
         </div>
       </section>
 
+      <!-- Face 5: Calendar -->
+      <section class="face f-cal">
+        <div class="fc-left">
+          <div class="fc-ring" id="fc-ring"></div>
+          <div class="fc-time"><span class="j-hh24">17</span><span class="fc-colon">:</span><span class="j-mm">56</span></div>
+        </div>
+        <div class="fc-right">
+          <div class="fc-month j-cal-month">JANUARY</div>
+          <div class="fc-grid" id="fc-grid"></div>
+        </div>
+      </section>
+
     </div>
     <div class="dots" id="dots"></div>
   </div>
@@ -865,15 +976,22 @@
   const handM = document.getElementById('hand-m');
   const handS = document.getElementById('hand-s');
 
+  let lastCalKey = '';
+
   function tick(){
     const now = new Date();
     const h12 = (now.getHours() % 12) || 12;
     setAll('j-hh', String(h12).padStart(2,'0'));
+    setAll('j-hh24', String(now.getHours()).padStart(2,'0'));
     setAll('j-mm', String(now.getMinutes()).padStart(2,'0'));
     setAll('j-ampm', now.getHours() < 12 ? 'AM' : 'PM');
     setAll('j-dow', DAYS[now.getDay()]);
     setAll('j-dom', now.getDate());
     setAll('j-fulldate', MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear());
+
+    // Rebuild the calendar only when the date changes
+    const calKey = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate();
+    if(calKey !== lastCalKey){ lastCalKey = calKey; buildCalendar(now); }
 
     const s = now.getSeconds();
     const m = now.getMinutes() + s / 60;
@@ -894,6 +1012,61 @@
       dial.insertBefore(t, dial.firstChild);
     }
   })();
+
+  // Calendar face: dashed squircle ring of marks around the clock
+  (function(){
+    const ring = document.getElementById('fc-ring');
+    if(!ring) return;
+    const N = 64, n = 4; // squircle exponent
+    for(let i=0;i<N;i++){
+      const t = (i/N) * Math.PI * 2;
+      const ct = Math.cos(t), st = Math.sin(t);
+      const sx = Math.sign(ct) * Math.pow(Math.abs(ct), 2/n);
+      const sy = Math.sign(st) * Math.pow(Math.abs(st), 2/n);
+      const ang = Math.atan2(sy, sx) * 180 / Math.PI + 90;
+      const d = document.createElement('div');
+      d.className = 'fc-dash';
+      d.style.left = (50 + sx*48) + '%';
+      d.style.top  = (50 + sy*48) + '%';
+      d.style.transform = 'translate(-50%,-50%) rotate(' + ang + 'deg)';
+      ring.appendChild(d);
+    }
+  })();
+
+  // Calendar face: month grid, Monday-first, today highlighted, weekends dimmed
+  function buildCalendar(now){
+    const grid = document.getElementById('fc-grid');
+    if(!grid) return;
+    setAll('j-cal-month', MONTHS[now.getMonth()].toUpperCase());
+    grid.textContent = '';
+    const wd = ['M','T','W','T','F','S','S'];
+    wd.forEach(function(label, i){
+      const el = document.createElement('div');
+      el.className = 'fc-wd' + (i>=5 ? ' we' : '');
+      el.textContent = label;
+      grid.appendChild(el);
+    });
+    const year = now.getFullYear(), month = now.getMonth(), today = now.getDate();
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    // JS getDay(): 0=Sun..6=Sat. Convert to Monday-first index 0=Mon..6=Sun.
+    const firstDow = (new Date(year, month, 1).getDay() + 6) % 7;
+    for(let i=0;i<firstDow;i++){
+      const blank = document.createElement('div');
+      blank.className = 'fc-day';
+      grid.appendChild(blank);
+    }
+    for(let day=1; day<=daysInMonth; day++){
+      const col = (firstDow + day - 1) % 7; // 0=Mon..6=Sun
+      const el = document.createElement('div');
+      let cls = 'fc-day';
+      if(col >= 5) cls += ' we';
+      if(day < today) cls += ' past';
+      if(day === today) cls += ' today';
+      el.className = cls;
+      el.textContent = day;
+      grid.appendChild(el);
+    }
+  }
 
   // ---------- Weather ----------
   function wmoIcon(c){
