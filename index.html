@@ -182,107 +182,94 @@
     100% { transform: translate(-2%,3%) scale(1.04); }
   }
   .f-glass > * { position: relative; z-index: 1; }
-  .f-glass .fg-topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+
+  /* Compact weather strip on top */
+  .f-glass .fg-wstrip {
     flex-shrink: 0;
-  }
-  .f-glass .fg-place-pill,
-  .f-glass .fg-clock-pill {
-    background: linear-gradient(160deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06));
+    align-self: center;
+    display: flex;
+    align-items: center;
+    gap: clamp(8px,2cqw,22px);
+    background: linear-gradient(160deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05));
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.16);
-    border-radius: clamp(14px,3cqh,30px);
-    padding: clamp(5px,1.3cqh,14px) clamp(12px,2.8cqw,32px);
-    color: rgba(255,255,255,0.78);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 99px;
+    padding: clamp(6px,1.6cqh,16px) clamp(14px,3cqw,34px);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.12);
     white-space: nowrap;
     line-height: 1;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.12);
   }
-  .f-glass .fg-place-pill {
-    border-radius: 99px;
-    display: flex;
-    align-items: center;
-    gap: 0.4em;
-    font-size: clamp(13px,3.8cqh,34px);
-    font-weight: 500;
+  .f-glass .fg-wstrip-ico {
+    font-size: clamp(20px,5.5cqh,52px);
+    filter: drop-shadow(0 0 8px var(--fg-glow));
   }
-  .f-glass .fg-clock-pill { text-align: right; }
-  .f-glass .fg-clock-time {
-    color: #fff;
+  .f-glass .fg-wstrip-temp {
     font-weight: 700;
-    font-size: clamp(16px,5cqh,48px);
+    font-size: clamp(18px,5cqh,48px);
+    color: #fff;
     font-variant-numeric: tabular-nums;
-    line-height: 1;
   }
-  .f-glass .fg-clock-date {
-    margin-top: clamp(2px,0.8cqh,8px);
-    color: rgba(255,255,255,0.55);
+  .f-glass .fg-wstrip-cond {
+    font-weight: 600;
+    font-size: clamp(12px,3.4cqh,30px);
+    color: var(--fg-violet);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .f-glass .fg-wstrip-sep {
+    width: 1px;
+    align-self: stretch;
+    margin: clamp(2px,0.6cqh,6px) 0;
+    background: rgba(255,255,255,0.18);
+  }
+  .f-glass .fg-wstrip-place {
     font-weight: 500;
-    font-size: clamp(10px,2.6cqh,22px);
-    line-height: 1;
+    font-size: clamp(12px,3.4cqh,30px);
+    color: rgba(255,255,255,0.62);
   }
-  .f-glass .fg-ampm { font-size: 0.6em; color: var(--fg-purple); font-weight: 600; }
-  .f-glass .fg-hero {
+
+  /* Big clock in the middle */
+  .f-glass .fg-clock {
     flex: 1;
-    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: clamp(4px,1.2cqh,14px);
-    background: linear-gradient(160deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03));
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: clamp(18px,3.8cqh,44px);
-    margin: clamp(8px,1.8cqh,18px) 0;
-    padding: clamp(14px,3.5cqh,44px) clamp(20px,5cqw,80px);
-    box-shadow: 0 10px 44px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.10);
+    gap: clamp(6px,2cqh,24px);
   }
-  /* Soft gradient sheen along the hero's top edge */
-  .f-glass .fg-hero::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(160deg, rgba(196,181,253,0.55), transparent 40%, transparent 70%, rgba(167,139,250,0.30));
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-  }
-  .f-glass .fg-ico {
-    font-size: clamp(48px,18cqh,170px);
-    line-height: 1;
-    filter: drop-shadow(0 0 clamp(14px,3.4cqh,36px) var(--fg-glow));
-    animation: fg-float 5s ease-in-out infinite;
-  }
-  @keyframes fg-float {
-    0%,100% { transform: translateY(0); }
-    50%     { transform: translateY(-0.12em); }
-  }
-  .f-glass .fg-bigtemp {
+  .f-glass .fg-time {
     font-weight: 700;
-    font-size: clamp(56px,25cqh,250px);
-    line-height: 0.88;
-    letter-spacing: -0.03em;
+    font-size: clamp(96px,46cqh,560px);
+    line-height: 0.86;
+    letter-spacing: -0.04em;
     font-variant-numeric: tabular-nums;
-    background: linear-gradient(160deg, #ffffff 18%, #ddd0ff 60%, var(--fg-purple) 100%);
+    display: flex;
+    align-items: baseline;
+    background: linear-gradient(160deg, #ffffff 16%, #ddd0ff 58%, var(--fg-purple) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    filter: drop-shadow(0 2px 18px rgba(167,139,250,0.25));
+    filter: drop-shadow(0 4px 30px rgba(167,139,250,0.28));
   }
-  .f-glass .fg-cond {
-    color: var(--fg-violet);
+  .f-glass .fg-time .colon {
+    margin: 0 0.04em;
+    transform: translateY(-0.04em);
+  }
+  .f-glass .fg-ampm {
+    font-size: 0.26em;
     font-weight: 600;
-    font-size: clamp(14px,4.5cqh,46px);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    margin-left: 0.3em;
+    align-self: flex-end;
+    transform: translateY(-1.1em);
+    color: var(--fg-violet);
+    -webkit-text-fill-color: var(--fg-violet);
+  }
+  .f-glass .fg-date {
+    color: rgba(255,255,255,0.6);
+    font-weight: 500;
+    font-size: clamp(16px,5cqh,56px);
+    letter-spacing: 0.03em;
     white-space: nowrap;
   }
   .f-glass .fg-stats {
@@ -346,7 +333,7 @@
     white-space: nowrap;
   }
   @media (prefers-reduced-motion: reduce) {
-    .f-glass::before, .f-glass .fg-ico { animation: none; }
+    .f-glass::before { animation: none; }
   }
 
   /* ---------- Face 3: Analog ---------- */
@@ -671,17 +658,16 @@
 
       <!-- Face 2: Glass Weather -->
       <section class="face f-glass">
-        <div class="fg-topbar">
-          <div class="fg-place-pill">&#x1F4CD; <span class="j-place">Locating&hellip;</span></div>
-          <div class="fg-clock-pill">
-            <div class="fg-clock-time"><span class="j-hh">05</span><span class="colon">:</span><span class="j-mm">13</span> <span class="fg-ampm j-ampm">AM</span></div>
-            <div class="fg-clock-date"><span class="j-dow">WED</span> &middot; <span class="j-fulldate">June 13, 2026</span></div>
-          </div>
+        <div class="fg-wstrip">
+          <span class="fg-wstrip-ico j-wico">&#x26C5;</span>
+          <span class="fg-wstrip-temp j-temp">--&deg;</span>
+          <span class="fg-wstrip-cond j-wtext">Loading&hellip;</span>
+          <span class="fg-wstrip-sep"></span>
+          <span class="fg-wstrip-place">&#x1F4CD; <span class="j-place">Locating&hellip;</span></span>
         </div>
-        <div class="fg-hero">
-          <div class="fg-ico j-wico">&#x26C5;</div>
-          <div class="fg-bigtemp j-temp">--&deg;</div>
-          <div class="fg-cond j-wtext">Loading&hellip;</div>
+        <div class="fg-clock">
+          <div class="fg-time"><span class="j-hh">05</span><span class="colon">:</span><span class="j-mm">13</span><span class="fg-ampm j-ampm">AM</span></div>
+          <div class="fg-date"><span class="j-dow">WED</span> &middot; <span class="j-fulldate">June 13, 2026</span></div>
         </div>
         <div class="fg-stats">
           <div class="fg-stat s-wind">
