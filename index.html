@@ -25,6 +25,11 @@
     -webkit-user-select: none;
     user-select: none;
   }
+  /* Smooth transitions when data updates */
+  [class*="j-"] { transition: color 0.6s ease, opacity 0.6s ease; }
+  @media (prefers-reduced-motion: reduce) {
+    [class*="j-"] { transition: none; }
+  }
   .stage {
     position: fixed;
     inset: 0;
@@ -661,14 +666,16 @@
     content: "";
     position: absolute;
     inset: 0;
-    border: 2px solid rgba(94,230,200,0.2);
+    border: 2px solid rgba(94,230,200,0.15);
     border-top-color: #5ee6c8;
     border-right-color: #5ee6c8;
     border-radius: 50%;
-    animation: spin-loader 1s linear infinite;
+    animation: spin-loader 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    box-shadow: 0 0 12px rgba(94,230,200,0.4), inset 0 0 8px rgba(94,230,200,0.1);
   }
   @keyframes spin-loader {
-    to { transform: rotate(360deg); }
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
 
   /* Force landscape: when the device is portrait, rotate the whole stage 90 degrees. */
