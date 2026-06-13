@@ -642,6 +642,35 @@
   }
   .dots .dot.active { opacity: 0.9; transform: scale(1.25); }
 
+  /* ---------- Data loader ---------- */
+  .data-loader {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + clamp(8px, 2cqh, 18px));
+    left: calc(env(safe-area-inset-left) + clamp(8px, 2cqw, 18px));
+    width: clamp(20px, 4cqh, 28px);
+    height: clamp(20px, 4cqh, 28px);
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .data-loader.active {
+    opacity: 1;
+  }
+  .data-loader::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 2px solid rgba(94,230,200,0.2);
+    border-top-color: #5ee6c8;
+    border-right-color: #5ee6c8;
+    border-radius: 50%;
+    animation: spin-loader 1s linear infinite;
+  }
+  @keyframes spin-loader {
+    to { transform: rotate(360deg); }
+  }
+
   /* Force landscape: when the device is portrait, rotate the whole stage 90 degrees. */
   @media (orientation: portrait) {
     .stage {
@@ -656,6 +685,7 @@
 </style>
 </head>
 <body>
+  <div class="data-loader" id="data-loader"></div>
   <div class="stage" id="stage">
     <div class="carousel" id="carousel">
 
@@ -1130,12 +1160,15 @@
 
   setAll('j-place', 'Curaçao');
   let lastWeatherTs = 0;
+  const loaderEl = document.getElementById('data-loader');
   async function refreshWeather(){
     lastWeatherTs = Date.now();
+    loaderEl.classList.add('active');
     await loadWeather();
+    setTimeout(function(){ loaderEl.classList.remove('active'); }, 300);
   }
   refreshWeather();
-  setInterval(function(){ refreshWeather(); }, 10*60*1000);
+  setInterval(function(){ refreshWeather(); }, 5*60*1000);
 
   // Instant refresh when the app returns to the foreground (phone
   // unlocked, app switched back) if the data is older than 2 minutes —
