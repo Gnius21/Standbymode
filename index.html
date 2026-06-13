@@ -149,44 +149,132 @@
     line-height: 1;
   }
 
-  /* ---------- Face 2: Minimal ---------- */
-  .f-minimal {
+  /* ---------- Face 2: Glass Weather ---------- */
+  .f-glass {
+    --fg-purple: #c4b5fd;
+    --fg-violet: #a78bfa;
+    --fg-glow: rgba(167,139,250,0.28);
     flex-direction: column;
-    justify-content: center;
-    text-align: center;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(99,72,200,0.38), transparent 65%),
+      radial-gradient(ellipse 60% 50% at 80% 90%, rgba(60,30,140,0.28), transparent 65%),
+      linear-gradient(160deg, #0e0a28, #130f30 50%, #1a1040);
   }
-  .f-minimal .time {
-    font-weight: 200;
-    line-height: 0.9;
-    letter-spacing: -0.02em;
-    color: #fff;
-    font-size: clamp(80px, 58cqh, 560px);
-    font-variant-numeric: tabular-nums;
+  .f-glass .fg-topbar {
     display: flex;
-    align-items: baseline;
-    justify-content: center;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
   }
-  .f-minimal .ampm {
-    font-size: 0.14em;
-    font-weight: 400;
-    margin-left: 0.2em;
-    align-self: flex-end;
-    transform: translateY(-0.4em);
-    color: var(--muted);
-  }
-  .f-minimal .sub {
-    margin-top: clamp(10px, 4cqh, 44px);
-    color: var(--muted);
-    font-weight: 400;
-    font-size: clamp(20px, 7cqh, 64px);
+  .f-glass .fg-place-pill,
+  .f-glass .fg-time-pill {
+    background: rgba(255,255,255,0.09);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 99px;
+    padding: clamp(5px,1.3cqh,14px) clamp(12px,2.8cqw,32px);
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.7em;
+    gap: 0.4em;
+    color: rgba(255,255,255,0.72);
+    font-size: clamp(13px,3.8cqh,34px);
+    font-weight: 500;
     white-space: nowrap;
     line-height: 1;
   }
-  .f-minimal .sub .sep { opacity: 0.4; }
+  .f-glass .fg-ampm { font-size: 0.72em; color: var(--fg-purple); font-weight: 600; }
+  .f-glass .fg-hero {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(4px,1.2cqh,14px);
+    background: rgba(255,255,255,0.065);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(255,255,255,0.11);
+    border-radius: clamp(18px,3.8cqh,44px);
+    margin: clamp(8px,1.8cqh,18px) 0;
+    padding: clamp(14px,3.5cqh,44px) clamp(20px,5cqw,80px);
+    box-shadow: 0 10px 44px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.09);
+  }
+  .f-glass .fg-ico {
+    font-size: clamp(48px,18cqh,170px);
+    line-height: 1;
+    filter: drop-shadow(0 0 clamp(12px,3cqh,32px) var(--fg-glow));
+  }
+  .f-glass .fg-bigtemp {
+    font-weight: 700;
+    font-size: clamp(56px,25cqh,250px);
+    line-height: 0.88;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    background: linear-gradient(160deg, #ffffff 20%, var(--fg-purple) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .f-glass .fg-cond {
+    color: var(--fg-violet);
+    font-weight: 600;
+    font-size: clamp(14px,4.5cqh,46px);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .f-glass .fg-date {
+    color: rgba(255,255,255,0.42);
+    font-size: clamp(11px,3cqh,26px);
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+  .f-glass .fg-stats {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: clamp(6px,1.2cqw,14px);
+    flex-shrink: 0;
+  }
+  .f-glass .fg-stat {
+    background: rgba(255,255,255,0.075);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.11);
+    border-radius: clamp(12px,2.2cqh,26px);
+    padding: clamp(8px,2.2cqh,24px) clamp(8px,1.5cqw,20px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(3px,0.8cqh,8px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.07);
+  }
+  .f-glass .fg-stat-ico {
+    font-size: clamp(18px,5.5cqh,52px);
+    line-height: 1;
+    filter: drop-shadow(0 0 4px var(--fg-glow));
+  }
+  .f-glass .fg-stat-val {
+    font-weight: 700;
+    font-size: clamp(13px,4.8cqh,46px);
+    color: #fff;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .f-glass .fg-stat-lbl {
+    color: var(--fg-purple);
+    font-size: clamp(9px,2.6cqh,22px);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
 
   /* ---------- Face 3: Analog ---------- */
   .f-analog { --accent: #ffb45e; gap: clamp(16px, 6cqw, 90px); justify-content: center; }
@@ -508,15 +596,39 @@
         </div>
       </section>
 
-      <!-- Face 2: Minimal -->
-      <section class="face f-minimal">
-        <div class="time">
-          <span class="j-hh">5</span><span class="colon">:</span><span class="j-mm">13</span><span class="ampm j-ampm">AM</span>
+      <!-- Face 2: Glass Weather -->
+      <section class="face f-glass">
+        <div class="fg-topbar">
+          <div class="fg-place-pill">&#x1F4CD; <span class="j-place">Locating&hellip;</span></div>
+          <div class="fg-time-pill"><span class="j-hh">05</span><span class="colon">:</span><span class="j-mm">13</span>&ensp;<span class="fg-ampm j-ampm">AM</span></div>
         </div>
-        <div class="sub">
-          <span><span class="j-dow">WED</span> <span class="j-dom">26</span></span>
-          <span class="sep">&middot;</span>
-          <span><span class="j-wico">&#x26C5;</span> <span class="j-temp">--&deg;</span></span>
+        <div class="fg-hero">
+          <div class="fg-ico j-wico">&#x26C5;</div>
+          <div class="fg-bigtemp j-temp">--&deg;</div>
+          <div class="fg-cond j-wtext">Loading&hellip;</div>
+          <div class="fg-date"><span class="j-dow">WED</span> &middot; <span class="j-fulldate">June 13, 2026</span></div>
+        </div>
+        <div class="fg-stats">
+          <div class="fg-stat">
+            <div class="fg-stat-ico">&#x1F4A8;</div>
+            <div class="fg-stat-val j-wind">-- kt</div>
+            <div class="fg-stat-lbl">Wind</div>
+          </div>
+          <div class="fg-stat">
+            <div class="fg-stat-ico">&#x1F4A7;</div>
+            <div class="fg-stat-val j-rh">--%</div>
+            <div class="fg-stat-lbl">Humidity</div>
+          </div>
+          <div class="fg-stat">
+            <div class="fg-stat-ico">&#x1F327;&#xFE0F;</div>
+            <div class="fg-stat-val j-precip">-- mm</div>
+            <div class="fg-stat-lbl">Rain</div>
+          </div>
+          <div class="fg-stat">
+            <div class="fg-stat-ico">&#x2601;&#xFE0F;</div>
+            <div class="fg-stat-val j-cloud">--</div>
+            <div class="fg-stat-lbl">Cloud</div>
+          </div>
         </div>
       </section>
 
