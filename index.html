@@ -724,6 +724,201 @@
     box-shadow: 0 0 16px rgba(255,90,110,0.5);
   }
 
+  /* ---------- Face 6: Night Weather (3D) ---------- */
+  .f-night {
+    --nt-gold: #ffd27a;
+    --nt-blue: #8fb4ff;
+    gap: clamp(16px, 4cqw, 70px);
+    justify-content: center;
+    background:
+      radial-gradient(ellipse 60% 50% at 75% 18%, rgba(120,150,255,0.16), transparent 60%),
+      linear-gradient(175deg, #0a1130 0%, #0d1638 45%, #141449 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .f-night .fn-stars { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+  .f-night .fn-star {
+    position: absolute;
+    width: 2px; height: 2px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 4px rgba(255,255,255,0.8);
+    animation: fn-twinkle 4s ease-in-out infinite;
+  }
+  @keyframes fn-twinkle {
+    0%,100% { opacity: 0.25; }
+    50%     { opacity: 0.9; }
+  }
+  .f-night > *:not(.fn-stars) { position: relative; z-index: 1; }
+  .f-night .fn-hero {
+    flex: 0 0 clamp(150px, 33%, 460px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-width: 0;
+  }
+  .f-night .fn-ico {
+    font-size: clamp(56px, 22cqh, 200px);
+    line-height: 1;
+    filter: drop-shadow(0 10px 22px rgba(0,0,0,0.55)) drop-shadow(0 0 26px rgba(150,180,255,0.35));
+    animation: fn-float 6s ease-in-out infinite;
+  }
+  @keyframes fn-float {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-0.1em); }
+  }
+  .f-night .fn-city {
+    margin-top: clamp(6px, 2cqh, 22px);
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    font-size: clamp(20px, 6.5cqh, 72px);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #f4f6ff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .f-night .fn-temp {
+    font-weight: 300;
+    font-size: clamp(54px, 22cqh, 220px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 4px 30px rgba(140,170,255,0.35);
+  }
+  .f-night .fn-cond {
+    font-family: Georgia, "Times New Roman", serif;
+    font-style: italic;
+    color: var(--nt-blue);
+    font-size: clamp(15px, 4.5cqh, 46px);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .f-night .fn-grid {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 1fr;
+    gap: clamp(6px, 1.4cqw, 18px);
+    min-width: 0;
+  }
+  .f-night .fn-card {
+    position: relative;
+    background: linear-gradient(160deg, rgba(140,160,230,0.16), rgba(90,110,190,0.06));
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(170,190,255,0.16);
+    border-radius: clamp(12px, 2.4cqh, 28px);
+    padding: clamp(7px, 1.8cqh, 20px) clamp(8px, 1.4cqw, 20px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(2px, 0.7cqh, 8px);
+    overflow: hidden;
+    box-shadow: 0 6px 22px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.10);
+  }
+  .f-night .fn-card-hd {
+    color: rgba(200,210,255,0.7);
+    font-size: clamp(8px, 2.2cqh, 20px);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .f-night .fn-cico { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+  .f-night .fn-card-val {
+    color: #fff;
+    font-weight: 700;
+    font-size: clamp(18px, 6.5cqh, 64px);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .f-night .fn-card-val.warm { color: var(--nt-gold); }
+  .f-night .fn-card-val.blue { color: var(--nt-blue); }
+  .f-night .fn-card-sub {
+    color: rgba(190,200,240,0.6);
+    font-size: clamp(8px, 2.1cqh, 19px);
+    font-weight: 500;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .f-night .fn-bar {
+    margin-top: clamp(2px, 0.6cqh, 6px);
+    height: clamp(3px, 0.7cqh, 6px);
+    background: rgba(255,255,255,0.12);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .f-night .fn-bfill {
+    height: 100%;
+    width: 0%;
+    border-radius: 99px;
+    transition: width 0.7s ease;
+    background: linear-gradient(90deg, #6f8fe0, var(--nt-blue));
+    box-shadow: 0 0 8px rgba(143,180,255,0.6);
+  }
+  .f-night .fn-bfill.warm { background: linear-gradient(90deg, #d6a23a, var(--nt-gold)); box-shadow: 0 0 8px rgba(255,210,122,0.6); }
+  /* Wind compass */
+  .f-night .fn-card-wind { align-items: center; }
+  .f-night .fn-compass {
+    position: relative;
+    width: clamp(46px, 13cqh, 120px);
+    height: clamp(46px, 13cqh, 120px);
+    margin-top: clamp(2px, 0.6cqh, 8px);
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 42%, rgba(40,55,110,0.6), rgba(15,22,55,0.5));
+    border: 1px solid rgba(170,190,255,0.22);
+    box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+  }
+  .f-night .fn-cdir {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(190,200,240,0.65);
+    font-size: clamp(7px, 2cqh, 17px);
+    font-weight: 700;
+  }
+  .f-night .fn-cN { top: clamp(4px,1.4cqh,12px); }
+  .f-night .fn-cS { top: auto; bottom: clamp(2px,1cqh,9px); transform: translate(-50%, 0); }
+  .f-night .fn-cE { left: auto; right: clamp(4px,1.4cqh,12px); transform: translate(0, -50%); color: var(--nt-gold); }
+  .f-night .fn-cW { left: clamp(4px,1.4cqh,12px); transform: translate(0, -50%); }
+  .f-night .fn-needle {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: clamp(3px, 0.9cqh, 7px);
+    height: 60%;
+    transform-origin: 50% 50%;
+    transform: translate(-50%, -50%) rotate(var(--nrot, 0deg));
+    transition: transform 0.7s ease;
+    background: linear-gradient(180deg, #ff6b8a 0 50%, rgba(255,255,255,0.55) 50% 100%);
+    border-radius: 99px;
+    box-shadow: 0 0 8px rgba(255,107,138,0.6);
+  }
+  .f-night .fn-compass-val {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-weight: 700;
+    font-size: clamp(9px, 2.6cqh, 24px);
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+    white-space: nowrap;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .f-night .fn-star, .f-night .fn-ico { animation: none; }
+  }
+
   /* ---------- Dots indicator ---------- */
   .dots {
     position: absolute;
@@ -963,6 +1158,56 @@
         </div>
       </section>
 
+      <!-- Face 6: Night Weather (3D) -->
+      <section class="face f-night">
+        <div class="fn-stars" id="fn-stars"></div>
+        <div class="fn-hero">
+          <div class="fn-ico j-wx3d">&#x1F319;</div>
+          <div class="fn-city">BONAIRE</div>
+          <div class="fn-temp j-temp">--&deg;</div>
+          <div class="fn-cond j-wtext">Mostly Clear</div>
+        </div>
+        <div class="fn-grid">
+          <div class="fn-card">
+            <div class="fn-card-hd"><span class="fn-cico">&#x2600;&#xFE0F;</span> UV INDEX</div>
+            <div class="fn-card-val warm j-uv">--</div>
+            <div class="fn-card-sub j-uvsub">&nbsp;</div>
+            <div class="fn-bar"><div class="fn-bfill warm j-buv"></div></div>
+          </div>
+          <div class="fn-card fn-card-wind">
+            <div class="fn-card-hd"><span class="fn-cico">&#x1F4A8;</span> WIND</div>
+            <div class="fn-compass">
+              <span class="fn-cdir fn-cN">N</span>
+              <span class="fn-cdir fn-cE">E</span>
+              <span class="fn-cdir fn-cS">S</span>
+              <span class="fn-cdir fn-cW">W</span>
+              <div class="fn-needle j-windneedle"></div>
+              <div class="fn-compass-val"><span class="j-wind">--</span></div>
+            </div>
+          </div>
+          <div class="fn-card">
+            <div class="fn-card-hd"><span class="fn-cico">&#x1F4A7;</span> HUMIDITY</div>
+            <div class="fn-card-val blue j-rh">--%</div>
+            <div class="fn-card-sub">Dew point <span class="j-dew">--&deg;</span></div>
+          </div>
+          <div class="fn-card">
+            <div class="fn-card-hd"><span class="fn-cico">&#x1F321;&#xFE0F;</span> FEELS LIKE</div>
+            <div class="fn-card-val j-feelsbig">--&deg;</div>
+            <div class="fn-card-sub">vs actual temperature</div>
+          </div>
+          <div class="fn-card">
+            <div class="fn-card-hd"><span class="fn-cico">&#x1F32B;&#xFE0F;</span> DUST</div>
+            <div class="fn-card-val j-dust">--</div>
+            <div class="fn-card-sub j-dustsub">&nbsp;</div>
+          </div>
+          <div class="fn-card">
+            <div class="fn-card-hd"><span class="fn-cico">&#x1F327;&#xFE0F;</span> RAINFALL</div>
+            <div class="fn-card-val blue j-precip">--</div>
+            <div class="fn-card-sub">in the last 10 min</div>
+          </div>
+        </div>
+      </section>
+
     </div>
     <div class="dots" id="dots"></div>
   </div>
@@ -1034,6 +1279,21 @@
       d.style.top  = (50 + sy*48) + '%';
       d.style.transform = 'translate(-50%,-50%) rotate(' + ang + 'deg)';
       ring.appendChild(d);
+    }
+  })();
+
+  // Night weather face: sprinkle a starfield in the upper sky
+  (function(){
+    const sky = document.getElementById('fn-stars');
+    if(!sky) return;
+    for(let i=0;i<46;i++){
+      const s = document.createElement('div');
+      s.className = 'fn-star';
+      s.style.left = (Math.random()*100) + '%';
+      s.style.top = (Math.random()*72) + '%';
+      s.style.transform = 'scale(' + (0.5 + Math.random()*1.5) + ')';
+      s.style.animationDelay = (Math.random()*4) + 's';
+      sky.appendChild(s);
     }
   })();
 
@@ -1255,6 +1515,16 @@
     if(octa<=5) return 'Mostly cloudy';
     return 'Overcast';
   }
+  // Day/night-aware glossy emoji for the night face hero icon
+  function skyIcon(octa, precip){
+    var night = (function(){ var h=new Date().getHours(); return h<6 || h>=19; })();
+    if(precip!=null&&precip>0.2) return night ? '🌧️' : '🌦️';
+    if(octa==null) return night ? '🌙' : '⛅';
+    if(octa<=1) return night ? '🌙' : '☀️';
+    if(octa<=3) return night ? '🌤️' : '🌤️';
+    if(octa<=5) return night ? '☁️' : '⛅';
+    return '☁️';
+  }
 
   // Fetch UV index + Saharan dust from Open-Meteo air quality API
   async function fetchAirQuality(lat, lon){
@@ -1287,7 +1557,9 @@
         var hi=heatIndex(data.temp_c, data.rh);
         setAll('j-temp', Math.round(data.temp_c)+'°');
         setAll('j-wico', cloudIcon(data.cloud_octa, data.precip_10m));
+        setAll('j-wx3d', skyIcon(data.cloud_octa, data.precip_10m));
         setAll('j-wtext', cloudText(data.cloud_octa, data.precip_10m));
+        setAll('j-feelsbig', (hi!=null?hi:Math.round(data.temp_c))+'°');
         setAll('j-wind', windKt!=null ? windKt+' kt' : '--');
         setAll('j-windbft', bft(data.wind_ms));
         setBarAll('j-bwind', windKt!=null ? windKt/60*100 : 0);
@@ -1298,6 +1570,9 @@
         setAll('j-winddeg', data.wind_dir!=null ? Math.round(data.wind_dir)+'° from N' : '');
         document.querySelectorAll('.j-warrow').forEach(function(el){
           el.style.transform='rotate('+(data.wind_dir||0)+'deg)';
+        });
+        document.querySelectorAll('.j-windneedle').forEach(function(el){
+          el.style.setProperty('--nrot', (data.wind_dir||0)+'deg');
         });
         setAll('j-rh', data.rh!=null ? Math.round(data.rh)+'%' : '--%');
         setBarAll('j-brh', data.rh!=null ? data.rh : 0);
@@ -1325,9 +1600,13 @@
         const url='https://api.open-meteo.com/v1/forecast?latitude=12.17&longitude=-68.99&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=celsius&wind_speed_unit=kn&timezone=auto';
         const r=await fetch(url); if(!r.ok) throw new Error('http '+r.status);
         const d=await r.json();
+        var fc=d.current.weather_code;
+        var fnight=(new Date().getHours()<6 || new Date().getHours()>=19);
         setAll('j-temp', Math.round(d.current.temperature_2m)+'°');
-        setAll('j-wico', wmoIcon(d.current.weather_code));
-        setAll('j-wtext', wmoText(d.current.weather_code));
+        setAll('j-wico', wmoIcon(fc));
+        setAll('j-wx3d', fc===0 ? (fnight?'🌙':'☀️') : fc<=3 ? (fnight?'🌤️':'⛅') : wmoIcon(fc));
+        setAll('j-wtext', wmoText(fc));
+        setAll('j-feelsbig', Math.round(d.current.temperature_2m)+'°');
         setAll('j-wind', Math.round(d.current.wind_speed_10m)+' kt');
         setAll('j-place', 'Curaçao');
       }catch(e){
