@@ -1041,6 +1041,7 @@
           <div class="fulldate j-fulldate">August 26, 2026</div>
           <div class="temp"><span class="ico j-wico">&#x26C5;</span><span class="j-temp">--&deg;</span></div>
           <div class="place j-place">Locating&hellip;</div>
+          <div class="place" style="font-size: 0.85em; margin-top: -2px; opacity: 0.6;">Actual <span class="j-actualtemp">--&deg;</span></div>
           <div class="extra">
             <span class="extra-item"><span class="extra-ico">&#x1F4A8;</span><span class="j-wind">-- kt</span></span>
             <span class="extra-item"><span class="extra-ico">&#x2600;&#xFE0F;</span><span>UV&nbsp;<span class="j-uv">--</span></span></span>
@@ -1099,6 +1100,7 @@
           <div class="fulldate j-fulldate">August 26, 2026</div>
           <div class="temp"><span class="ico j-wico">&#x26C5;</span><span class="j-temp">--&deg;</span></div>
           <div class="place j-place">Locating&hellip;</div>
+          <div class="place" style="font-size: 0.85em; margin-top: -2px; opacity: 0.6;">Actual <span class="j-actualtemp">--&deg;</span></div>
         </div>
       </section>
 
@@ -1113,7 +1115,7 @@
           <div class="fw-heroright">
             <span class="fw-bigtemp j-temp">--&deg;</span>
             <span class="fw-cond j-wtext">&nbsp;</span>
-            <span class="fw-meta"><span class="j-place">Locating&hellip;</span><span class="fw-sep"> &middot; </span><span class="j-obstime"></span></span>
+            <span class="fw-meta"><span class="j-place">Locating&hellip;</span><span class="fw-sep"> &middot; </span><span class="j-obstime"></span><span class="fw-sep"> &middot; </span>Actual <span class="j-actualtemp">--&deg;</span></span>
           </div>
         </div>
         <div class="fw-grid">
@@ -1502,10 +1504,13 @@
     for(var i=0;i<scale.length;i++) if(ms>=scale[i]) b=i;
     return 'Bft '+b+' · '+names[b];
   }
-  function heatIndex(t, rh){
-    if(t==null||rh==null||t<27) return null;
-    var hi=-8.785+1.611*t+2.339*rh-.146*t*rh-.012*t*t-.016*rh*rh+.002*t*t*rh+.0007*t*rh*rh-0.000003*t*t*rh*rh;
-    return Math.round(hi);
+  function feelLike(t, rh){
+    if(t==null||rh==null) return null;
+    if(t>=27){
+      var hi=-8.785+1.611*t+2.339*rh-.146*t*rh-.012*t*t-.016*rh*rh+.002*t*t*rh+.0007*t*rh*rh-0.000003*t*t*rh*rh;
+      return Math.round(hi);
+    }
+    return Math.round(t);
   }
   function visQual(m){
     if(m==null) return '';
@@ -1597,14 +1602,15 @@
       if(data&&data.temp_c!=null){
         var windKt=data.wind_kt;
         var gustKt=data.gust_kt;
-        var hi=heatIndex(data.temp_c, data.rh);
-        setAll('j-temp', Math.round(data.temp_c)+'°');
+        var feels=feelLike(data.temp_c, data.rh);
+        var actualTemp=Math.round(data.temp_c);
+        setAll('j-temp', feels+'°');
+        setAll('j-actualtemp', actualTemp+'°');
         setAll('j-wico', cloudIcon(data.cloud_octa, data.precip_10m));
         setAll('j-wx3d', skyIcon(data.cloud_octa, data.precip_10m));
         setAll('j-wtext', cloudText(data.cloud_octa, data.precip_10m));
-        var feelsVal = hi!=null ? hi : Math.round(data.temp_c);
-        setAll('j-feelsbig', feelsVal+'°');
-        setAll('j-feelssub', hi!=null ? (hi>data.temp_c?'+':'')+(hi-Math.round(data.temp_c))+'° vs actual · heat stress' : 'Actual · no heat stress');
+        setAll('j-feelsbig', feels+'°');
+        setAll('j-feelssub', feels>actualTemp ? '+'+Math.round(feels-actualTemp)+'° vs actual · heat stress' : (feels<actualTemp ? Math.round(feels-actualTemp)+'°' : 'Same as actual'));
         setAll('j-wind', windKt!=null ? windKt+' kt' : '--');
         setAll('j-windbft', bft(data.wind_ms));
         setBarAll('j-bwind', windKt!=null ? windKt/60*100 : 0);
@@ -1642,17 +1648,20 @@
 
     if(!knmiOk){
       try{
-        const url='https://api.open-meteo.com/v1/forecast?latitude=12.17&longitude=-68.99&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=celsius&wind_speed_unit=kn&timezone=auto';
+        const url='https://api.open-meteo.com/v1/forecast?latitude=12.17&longitude=-68.99&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&temperature_unit=celsius&wind_speed_unit=kn&timezone=auto';
         const r=await fetch(url); if(!r.ok) throw new Error('http '+r.status);
         const d=await r.json();
         var fc=d.current.weather_code;
         var fnight=(new Date().getHours()<6 || new Date().getHours()>=19);
-        setAll('j-temp', Math.round(d.current.temperature_2m)+'°');
+        var feels=Math.round(d.current.apparent_temperature);
+        var actual=Math.round(d.current.temperature_2m);
+        setAll('j-temp', feels+'°');
+        setAll('j-actualtemp', actual+'°');
         setAll('j-wico', wmoIcon(fc));
         setAll('j-wx3d', fc===0 ? (fnight?'🌙':'☀️') : fc<=3 ? (fnight?'🌤️':'⛅') : wmoIcon(fc));
         setAll('j-wtext', wmoText(fc));
-        setAll('j-feelsbig', Math.round(d.current.temperature_2m)+'°');
-        setAll('j-feelssub', 'Actual · no KNMI data');
+        setAll('j-feelsbig', feels+'°');
+        setAll('j-feelssub', feels>actual ? '+'+Math.round(feels-actual)+'° vs actual' : (feels<actual ? Math.round(feels-actual)+'°' : 'Same as actual'));
         setAll('j-wind', Math.round(d.current.wind_speed_10m)+' kt');
         setAll('j-place', 'Curaçao');
       }catch(e){
