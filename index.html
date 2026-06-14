@@ -724,18 +724,92 @@
     box-shadow: 0 0 16px rgba(255,90,110,0.5);
   }
 
-  /* ---------- Face 6: Night Weather (3D) ---------- */
+  /* ---------- Face 6: Sky Weather (dynamic bg) ---------- */
   .f-night {
     --nt-gold: #ffd27a;
     --nt-blue: #8fb4ff;
     gap: clamp(16px, 4cqw, 70px);
     justify-content: center;
+    /* Default/fallback = night sky */
     background:
       radial-gradient(ellipse 60% 50% at 75% 18%, rgba(120,150,255,0.16), transparent 60%),
       linear-gradient(175deg, #0a1130 0%, #0d1638 45%, #141449 100%);
     position: relative;
     overflow: hidden;
+    transition: background 1.2s ease;
   }
+
+  /* ---- Clear day: vivid blue sky + warm sun glow ---- */
+  .f-night.sky-clear-day {
+    background: linear-gradient(175deg, #0a4a8a 0%, #1468b8 28%, #2882d8 62%, #5aaae8 100%);
+  }
+  .f-night.sky-clear-day::before {
+    content: "";
+    position: absolute;
+    width: clamp(120px, 48cqh, 450px);
+    height: clamp(120px, 48cqh, 450px);
+    top: clamp(-90px, -20cqh, -180px);
+    right: 6cqw;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,240,130,0.95) 0%, rgba(255,210,60,0.55) 30%, rgba(255,170,30,0.2) 60%, transparent 80%);
+    filter: blur(clamp(8px, 2cqh, 20px));
+    animation: fn-sun-glow 5s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .f-night.sky-clear-day::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 55% at 75% 0%, rgba(255,200,80,0.14), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  @keyframes fn-sun-glow {
+    0%,100% { opacity: 0.72; transform: scale(1); }
+    50%      { opacity: 1;    transform: scale(1.07); }
+  }
+  .f-night.sky-clear-day .fn-stars { display: none; }
+
+  /* ---- Cloudy day: steely blue-gray ---- */
+  .f-night.sky-cloudy-day {
+    background:
+      radial-gradient(ellipse 80% 45% at 50% -5%, rgba(180,205,225,0.30), transparent 55%),
+      linear-gradient(175deg, #384f64 0%, #4a6278 38%, #5c7890 70%, #6a8ba2 100%);
+  }
+  .f-night.sky-cloudy-day .fn-stars { display: none; }
+
+  /* ---- Rain / storm: dark slate ---- */
+  .f-night.sky-rain {
+    background:
+      radial-gradient(ellipse 80% 55% at 40% 10%, rgba(45,55,75,0.55), transparent 60%),
+      linear-gradient(175deg, #10141e 0%, #161d2c 45%, #1e283c 100%);
+  }
+  .f-night.sky-rain::before {
+    content: "";
+    position: absolute;
+    inset: -30% 0 -10%;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      linear-gradient(105deg, rgba(160,185,220,0.18) 1px, transparent 1px),
+      linear-gradient(105deg, rgba(120,155,200,0.10) 1px, transparent 1px);
+    background-size: 22px 36px, 38px 58px;
+    animation: fn-rain 0.5s linear infinite;
+  }
+  @keyframes fn-rain {
+    0%   { transform: translateY(-36px); }
+    100% { transform: translateY(0); }
+  }
+  .f-night.sky-rain .fn-stars { display: none; }
+
+  /* ---- Night (default) ---- */
+  .f-night.sky-night {
+    background:
+      radial-gradient(ellipse 60% 50% at 75% 18%, rgba(120,150,255,0.16), transparent 60%),
+      linear-gradient(175deg, #0a1130 0%, #0d1638 45%, #141449 100%);
+  }
+
   .f-night .fn-stars { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
   .f-night .fn-star {
     position: absolute;
@@ -750,6 +824,12 @@
     50%     { opacity: 0.9; }
   }
   .f-night > *:not(.fn-stars) { position: relative; z-index: 1; }
+  /* Slightly more opaque cards in bright day modes for readability */
+  .f-night.sky-clear-day .fn-card,
+  .f-night.sky-cloudy-day .fn-card {
+    background: linear-gradient(160deg, rgba(0,20,50,0.45), rgba(0,15,40,0.28));
+    border-color: rgba(255,255,255,0.22);
+  }
   .f-night .fn-hero {
     flex: 0 0 clamp(150px, 33%, 460px);
     display: flex;
@@ -955,7 +1035,9 @@
     text-overflow: ellipsis;
   }
   @media (prefers-reduced-motion: reduce) {
-    .f-night .fn-star, .f-night .fn-ico { animation: none; }
+    .f-night .fn-star, .f-night .fn-ico,
+    .f-night.sky-clear-day::before,
+    .f-night.sky-rain::before { animation: none; }
   }
 
   /* ---------- Dots indicator ---------- */
@@ -1563,6 +1645,19 @@
     if(octa<=5) return 'Mostly cloudy';
     return 'Overcast';
   }
+  // Drive Face 6 background class from live weather + time of day
+  function setSkyMood(octa, precip){
+    var h = new Date().getHours();
+    var night = h < 6 || h >= 19;
+    var isRain = precip != null && precip > 0.2;
+    var isCloudy = octa != null && octa >= 4;
+    var mood = night ? 'sky-night' : isRain ? 'sky-rain' : isCloudy ? 'sky-cloudy-day' : 'sky-clear-day';
+    var face = document.querySelector('.f-night');
+    if(!face) return;
+    face.classList.remove('sky-night','sky-clear-day','sky-cloudy-day','sky-rain');
+    face.classList.add(mood);
+  }
+
   // Day/night-aware glossy emoji for the night face hero icon
   function skyIcon(octa, precip){
     var night = (function(){ var h=new Date().getHours(); return h<6 || h>=19; })();
@@ -1609,6 +1704,7 @@
         setAll('j-wico', cloudIcon(data.cloud_octa, data.precip_10m));
         setAll('j-wx3d', skyIcon(data.cloud_octa, data.precip_10m));
         setAll('j-wtext', cloudText(data.cloud_octa, data.precip_10m));
+        setSkyMood(data.cloud_octa, data.precip_10m);
         setAll('j-feelsbig', feels+'°');
         setAll('j-feelssub', feels>actualTemp ? '+'+Math.round(feels-actualTemp)+'° vs actual · heat stress' : (feels<actualTemp ? Math.round(feels-actualTemp)+'°' : 'Same as actual'));
         setAll('j-wind', windKt!=null ? windKt+' kt' : '--');
@@ -1660,6 +1756,7 @@
         setAll('j-wico', wmoIcon(fc));
         setAll('j-wx3d', fc===0 ? (fnight?'🌙':'☀️') : fc<=3 ? (fnight?'🌤️':'⛅') : wmoIcon(fc));
         setAll('j-wtext', wmoText(fc));
+        setSkyMood(fc<=2?0:fc<=5?5:null, fc>=51?0.5:0);
         setAll('j-feelsbig', feels+'°');
         setAll('j-feelssub', feels>actual ? '+'+Math.round(feels-actual)+'° vs actual' : (feels<actual ? Math.round(feels-actual)+'°' : 'Same as actual'));
         setAll('j-wind', Math.round(d.current.wind_speed_10m)+' kt');
@@ -1686,6 +1783,7 @@
   }
 
   setAll('j-place', 'Curaçao');
+  setSkyMood(null, null); // set initial sky mood from time of day
   let lastWeatherTs = 0;
   const loaderEl = document.getElementById('data-loader');
   async function refreshWeather(){
