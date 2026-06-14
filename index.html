@@ -915,6 +915,45 @@
     text-shadow: 0 1px 4px rgba(0,0,0,0.7);
     white-space: nowrap;
   }
+  /* Night face: time + date block below condition */
+  .f-night .fn-datetime {
+    margin-top: clamp(8px, 2.6cqh, 26px);
+    text-align: center;
+  }
+  .f-night .fn-dt-time {
+    font-weight: 300;
+    font-size: clamp(24px, 8.5cqh, 84px);
+    letter-spacing: -0.01em;
+    color: var(--nt-gold);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    text-shadow: 0 2px 18px rgba(255,210,122,0.35);
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+  }
+  .f-night .fn-dt-colon {
+    margin: 0 0.04em;
+    animation: blink 1s steps(1) infinite;
+  }
+  .f-night .fn-dt-ampm {
+    font-size: 0.42em;
+    font-weight: 500;
+    color: rgba(255,210,122,0.72);
+    margin-left: 0.2em;
+    align-self: flex-end;
+    transform: translateY(-0.15em);
+  }
+  .f-night .fn-dt-date {
+    margin-top: clamp(2px, 0.7cqh, 7px);
+    color: rgba(190,200,240,0.62);
+    font-size: clamp(10px, 3cqh, 28px);
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   @media (prefers-reduced-motion: reduce) {
     .f-night .fn-star, .f-night .fn-ico { animation: none; }
   }
@@ -1166,6 +1205,10 @@
           <div class="fn-city">BONAIRE</div>
           <div class="fn-temp j-temp">--&deg;</div>
           <div class="fn-cond j-wtext">Mostly Clear</div>
+          <div class="fn-datetime">
+            <div class="fn-dt-time"><span class="j-hh">--</span><span class="fn-dt-colon">:</span><span class="j-mm">--</span><span class="fn-dt-ampm j-ampm">AM</span></div>
+            <div class="fn-dt-date"><span class="j-dow">---</span> &middot; <span class="j-fulldate">---</span></div>
+          </div>
         </div>
         <div class="fn-grid">
           <div class="fn-card">
@@ -1193,7 +1236,7 @@
           <div class="fn-card">
             <div class="fn-card-hd"><span class="fn-cico">&#x1F321;&#xFE0F;</span> FEELS LIKE</div>
             <div class="fn-card-val j-feelsbig">--&deg;</div>
-            <div class="fn-card-sub">vs actual temperature</div>
+            <div class="fn-card-sub j-feelssub">--</div>
           </div>
           <div class="fn-card">
             <div class="fn-card-hd"><span class="fn-cico">&#x1F32B;&#xFE0F;</span> DUST</div>
@@ -1559,7 +1602,9 @@
         setAll('j-wico', cloudIcon(data.cloud_octa, data.precip_10m));
         setAll('j-wx3d', skyIcon(data.cloud_octa, data.precip_10m));
         setAll('j-wtext', cloudText(data.cloud_octa, data.precip_10m));
-        setAll('j-feelsbig', (hi!=null?hi:Math.round(data.temp_c))+'°');
+        var feelsVal = hi!=null ? hi : Math.round(data.temp_c);
+        setAll('j-feelsbig', feelsVal+'°');
+        setAll('j-feelssub', hi!=null ? (hi>data.temp_c?'+':'')+(hi-Math.round(data.temp_c))+'° vs actual · heat stress' : 'Actual · no heat stress');
         setAll('j-wind', windKt!=null ? windKt+' kt' : '--');
         setAll('j-windbft', bft(data.wind_ms));
         setBarAll('j-bwind', windKt!=null ? windKt/60*100 : 0);
@@ -1607,6 +1652,7 @@
         setAll('j-wx3d', fc===0 ? (fnight?'🌙':'☀️') : fc<=3 ? (fnight?'🌤️':'⛅') : wmoIcon(fc));
         setAll('j-wtext', wmoText(fc));
         setAll('j-feelsbig', Math.round(d.current.temperature_2m)+'°');
+        setAll('j-feelssub', 'Actual · no KNMI data');
         setAll('j-wind', Math.round(d.current.wind_speed_10m)+' kt');
         setAll('j-place', 'Curaçao');
       }catch(e){
