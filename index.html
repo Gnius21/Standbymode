@@ -27,8 +27,22 @@
   }
   /* Smooth transitions when data updates */
   [class*="j-"] { transition: color 0.6s ease, opacity 0.6s ease; }
+
+  /* Staggered entrance: content rises + fades in when a face settles */
+  .face.is-active > * {
+    animation: face-in 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+  .face.is-active > *:nth-child(2) { animation-delay: 0.06s; }
+  .face.is-active > *:nth-child(3) { animation-delay: 0.12s; }
+  .face.is-active > *:nth-child(4) { animation-delay: 0.18s; }
+  @keyframes face-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     [class*="j-"] { transition: none; }
+    .face.is-active > * { animation: none; }
   }
   .stage {
     position: fixed;
@@ -1115,12 +1129,15 @@
   .dots .dot {
     width: clamp(7px, 1.4cqh, 12px);
     height: clamp(7px, 1.4cqh, 12px);
-    border-radius: 50%;
+    border-radius: 99px;
     background: #fff;
-    opacity: 0.25;
-    transition: opacity 0.25s, transform 0.25s;
+    opacity: 0.28;
+    transition: opacity 0.3s ease, width 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
   }
-  .dots .dot.active { opacity: 0.9; transform: scale(1.25); }
+  .dots .dot.active {
+    opacity: 0.95;
+    width: clamp(22px, 5cqh, 44px);
+  }
 
   /* ---------- Data loader ---------- */
   .data-loader {
@@ -1894,10 +1911,19 @@
     });
   }
 
+  // Replay the staggered entrance animation on whichever face just settled
+  function markActive(){
+    const faces = carousel.children;
+    for(let i=0;i<faces.length;i++) faces[i].classList.remove('is-active');
+    void carousel.offsetWidth; // force reflow so the animation restarts
+    if(faces[index]) faces[index].classList.add('is-active');
+  }
+
   function goTo(i){
     index = Math.min(FACES-1, Math.max(0, i));
     localStorage.setItem('faceIndex', index);
     render(0);
+    markActive();
   }
   goTo(index);
 
