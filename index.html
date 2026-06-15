@@ -1973,15 +1973,19 @@
           localGeoLon = lon;
 
           try {
-            // Reverse geocode using Open-Meteo Geocoding API
-            const geoUrl = 'https://geocoding-api.open-meteo.com/v1/search?latitude='+lat+'&longitude='+lon+'&limit=1&language=en';
+            // Reverse geocode coordinates -> place name. BigDataCloud's
+            // reverse-geocode-client endpoint is free, key-less and CORS-enabled
+            // for browser use (Open-Meteo's geocoder only does name -> coords).
+            const geoUrl = 'https://api.bigdatacloud.net/data/reverse-geocode-client?latitude='+lat+'&longitude='+lon+'&localityLanguage=en';
             const geoResp = await fetch(geoUrl);
             if(geoResp.ok){
-              const geoData = await geoResp.json();
-              if(geoData.results && geoData.results[0]){
-                var r = geoData.results[0];
-                localGeoName = (r.name || '') + (r.admin1 ? ', '+r.admin1 : '') + (r.country ? ' · '+r.country : '');
-              }
+              const g = await geoResp.json();
+              var place = g.city || g.locality || g.principalSubdivision || '';
+              var region = g.principalSubdivision && g.principalSubdivision !== place ? g.principalSubdivision : '';
+              var country = g.countryName || '';
+              localGeoName = place
+                ? place + (region ? ', '+region : '') + (country ? ' · '+country : '')
+                : (region ? region + (country ? ' · '+country : '') : country);
             }
 
             // Fetch weather for this location
@@ -2006,7 +2010,8 @@
               const face6Hero = document.querySelector('.f-night .fn-hero');
               if(face6Hero){
                 face6Hero.querySelector('.fn-ico').textContent = skyIcon(cloudOcta, precip);
-                face6Hero.querySelector('.fn-city').textContent = localGeoName || (lat+','+lon);
+                var coordLabel = Math.abs(lat)+'°'+(lat>=0?'N':'S')+' '+Math.abs(lon)+'°'+(lon>=0?'E':'W');
+                face6Hero.querySelector('.fn-city').textContent = localGeoName || coordLabel;
                 face6Hero.querySelector('.fn-temp').textContent = feels+'°';
                 face6Hero.querySelector('.fn-cond').textContent = cloudText(cloudOcta, precip);
               }

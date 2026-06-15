@@ -3,7 +3,7 @@
    offline use. Cross-origin requests (weather APIs, CORS proxies)
    are passed through untouched so live data is never staled. */
 
-const CACHE = 'standby-v11';
+const CACHE = 'standby-v12';
 const ASSETS = [
   './',
   './index.html',
