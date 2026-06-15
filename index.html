@@ -1176,6 +1176,48 @@
     100% { transform: rotate(360deg); }
   }
 
+  /* ---------- Data freshness indicator ---------- */
+  .data-fresh {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + clamp(8px, 2cqh, 18px));
+    left: calc(env(safe-area-inset-left) + clamp(34px, 7cqw, 56px));
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: clamp(4px, 1cqw, 8px);
+    font-size: clamp(9px, 2cqh, 16px);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: rgba(255,255,255,0.32);
+    pointer-events: none;
+    white-space: nowrap;
+    transition: color 0.4s ease, opacity 0.4s ease;
+  }
+  .data-fresh .df-dot {
+    width: clamp(5px, 1.1cqh, 8px);
+    height: clamp(5px, 1.1cqh, 8px);
+    border-radius: 50%;
+    background: #5ee6c8;
+    box-shadow: 0 0 6px rgba(94,230,200,0.6);
+    transition: background 0.4s ease, box-shadow 0.4s ease;
+  }
+  /* Stale: data is old — surface a warm amber warning */
+  .data-fresh.stale {
+    color: rgba(255,190,90,0.9);
+  }
+  .data-fresh.stale .df-dot {
+    background: #ffb45e;
+    box-shadow: 0 0 8px rgba(255,180,94,0.7);
+  }
+  /* Failed: no data at all */
+  .data-fresh.failed {
+    color: rgba(255,120,120,0.9);
+  }
+  .data-fresh.failed .df-dot {
+    background: #ff6b6b;
+    box-shadow: 0 0 8px rgba(255,107,107,0.7);
+  }
+
   /* Force landscape: when the device is portrait, rotate the whole stage 90 degrees. */
   @media (orientation: portrait) {
     .stage {
@@ -1191,6 +1233,7 @@
 </head>
 <body>
   <div class="data-loader" id="data-loader"></div>
+  <div class="data-fresh" id="data-fresh" style="opacity:0"><span class="df-dot"></span><span class="df-text"></span></div>
   <div class="stage" id="stage">
     <div class="carousel" id="carousel">
 
@@ -1779,7 +1822,7 @@
   }
 
   async function loadWeather(){
-    let knmiOk=false;
+    let knmiOk=false, omOk=false;
     try{
       const raw=await fetchKnmiPage();
       const data=knmiToNormalized(parseKnmiBonaire(raw));
@@ -1890,6 +1933,7 @@
         setBarAll('j-brad', rad!=null ? rad/1200*100 : 0);
         setAll('j-windbft', bft(windKt!=null ? windKt/1.94384 : null));
         setAll('j-place', 'Bonaire · Open-Meteo');
+        omOk=true;
       }catch(e){
         setAll('j-temp', '--°');
         setAll('j-wind', '-- kt');
@@ -1909,20 +1953,51 @@
       setAll('j-dustsub', dustLabel(aq.dust));
       setBarAll('j-bdust', dust!=null ? dust/200*100 : 0);
     }catch(e){}
+
+    return knmiOk || omOk;
   }
 
   setAll('j-place', 'Curaçao');
   setSkyMood(null, null); // set initial sky mood from time of day
   let lastWeatherTs = 0;
+  let lastDataOkTs = 0;   // last time live weather actually loaded
   const loaderEl = document.getElementById('data-loader');
+  const freshEl = document.getElementById('data-fresh');
+  const freshTextEl = freshEl.querySelector('.df-text');
+
+  // Refresh the "updated Xm ago" indicator; turn amber when stale, red when failing
+  function updateFreshness(){
+    if(lastDataOkTs === 0){
+      // Never loaded yet — stay hidden unless the first load has clearly failed
+      if(lastWeatherTs !== 0 && Date.now() - lastWeatherTs > 20*1000){
+        freshEl.style.opacity = '1';
+        freshEl.classList.add('failed');
+        freshEl.classList.remove('stale');
+        freshTextEl.textContent = 'no live data';
+      }
+      return;
+    }
+    const ageMin = Math.floor((Date.now() - lastDataOkTs) / 60000);
+    freshEl.style.opacity = '1';
+    freshEl.classList.remove('failed');
+    freshEl.classList.toggle('stale', ageMin >= 15);
+    if(ageMin < 1)        freshTextEl.textContent = 'updated just now';
+    else if(ageMin === 1) freshTextEl.textContent = 'updated 1 min ago';
+    else                  freshTextEl.textContent = 'updated ' + ageMin + ' min ago';
+  }
+
   async function refreshWeather(){
     lastWeatherTs = Date.now();
     loaderEl.classList.add('active');
-    await loadWeather();
+    const ok = await loadWeather();
+    if(ok) lastDataOkTs = Date.now();
+    updateFreshness();
     setTimeout(function(){ loaderEl.classList.remove('active'); }, 300);
   }
   refreshWeather();
   setInterval(function(){ refreshWeather(); }, 5*60*1000);
+  // Keep the relative "X min ago" label current between fetches
+  setInterval(updateFreshness, 30*1000);
 
   // Instant refresh when the app returns to the foreground (phone
   // unlocked, app switched back) if the data is older than 2 minutes —
@@ -2125,6 +2200,28 @@
       location.reload();
     });
   }
+
+  // ---------- Screen Wake Lock: keep the display on while docked ----------
+  // A StandBy clock needs the screen to stay awake. The Wake Lock API
+  // (iOS 16.4+, modern Chrome/Edge) holds the screen on while the app is
+  // visible; the lock is auto-released when the phone locks or the app is
+  // backgrounded, so we re-acquire it whenever we become visible again.
+  (function(){
+    if(!('wakeLock' in navigator)) return;
+    var wakeLock = null;
+    async function acquire(){
+      if(document.visibilityState !== 'visible') return;
+      try{
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', function(){ wakeLock = null; });
+      }catch(e){ /* denied, low battery, or unsupported context */ }
+    }
+    acquire();
+    document.addEventListener('visibilitychange', function(){
+      if(document.visibilityState === 'visible' && wakeLock === null) acquire();
+    });
+    window.addEventListener('focus', function(){ if(wakeLock === null) acquire(); });
+  })();
 </script>
 </body>
 </html>
