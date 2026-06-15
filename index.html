@@ -2095,10 +2095,23 @@
 
   // ---------- PWA: service worker with auto-update ----------
   if('serviceWorker' in navigator){
+    var swReg = null;
     navigator.serviceWorker.register('sw.js').then(function(reg){
-      // Check for a new version every 30 minutes while the app is open
-      setInterval(function(){ reg.update().catch(function(){}); }, 30*60*1000);
+      swReg = reg;
+      // Check for a new version every 15 minutes while the app stays open
+      setInterval(function(){ reg.update().catch(function(){}); }, 15*60*1000);
     }).catch(function(){});
+
+    // Check for a new version every time the app is brought to the foreground.
+    // Home-screen PWAs (especially on iOS) otherwise hold a stale copy because
+    // the periodic timer is paused while the app is backgrounded.
+    function checkForUpdate(){ if(swReg) swReg.update().catch(function(){}); }
+    document.addEventListener('visibilitychange', function(){
+      if(document.visibilityState === 'visible') checkForUpdate();
+    });
+    window.addEventListener('pageshow', checkForUpdate);
+    window.addEventListener('focus', checkForUpdate);
+
     // When a new service worker takes over, reload once to run the new version
     var reloaded = false;
     navigator.serviceWorker.addEventListener('controllerchange', function(){
