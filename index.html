@@ -66,15 +66,16 @@
     display: flex;
     align-items: center;
     padding:
-      calc(env(safe-area-inset-top) + clamp(10px, 4cqh, 40px))
-      calc(env(safe-area-inset-right) + clamp(14px, 5cqw, 70px))
-      calc(env(safe-area-inset-bottom) + clamp(10px, 4cqh, 40px))
-      calc(env(safe-area-inset-left) + clamp(14px, 5cqw, 70px));
+      calc(env(safe-area-inset-top) + clamp(8px, 3cqh, 28px))
+      calc(env(safe-area-inset-right) + clamp(10px, 3.5cqw, 48px))
+      calc(env(safe-area-inset-bottom) + clamp(8px, 3cqh, 28px))
+      calc(env(safe-area-inset-left) + clamp(10px, 3.5cqw, 48px));
   }
 
   /* ---------- Face 1: Classic ---------- */
   .f-classic {
     --accent: #6db8ff; --accent-soft: #8fc8ff;
+    min-width: 0;
     gap: clamp(12px, 4cqw, 60px);
     background:
       radial-gradient(ellipse 70% 60% at 18% 35%, rgba(109,184,255,0.13), transparent 65%),
@@ -184,6 +185,7 @@
     --fg-purple: #c4b5fd;
     --fg-violet: #a78bfa;
     --fg-glow: rgba(167,139,250,0.32);
+    min-width: 0;
     flex-direction: column;
     justify-content: space-between;
     align-items: stretch;
@@ -369,6 +371,7 @@
   /* ---------- Face 3: Analog ---------- */
   .f-analog {
     --accent: #ffb45e;
+    min-width: 0;
     gap: clamp(16px, 6cqw, 90px);
     justify-content: center;
     background:
@@ -475,6 +478,7 @@
   .f-weather {
     --accent: #5ee6c8;
     --accent2: #5ea8ff;
+    min-width: 0;
     flex-direction: column;
     justify-content: center;
     gap: clamp(8px, 2cqh, 22px);
@@ -703,6 +707,7 @@
   .f-cal {
     --cal-blue: #aab4ff;
     --cal-red: #ff5a6e;
+    min-width: 0;
     gap: clamp(16px, 5cqw, 80px);
     justify-content: center;
     background: #050507;
@@ -802,6 +807,7 @@
   .f-night {
     --nt-gold: #ffd27a;
     --nt-blue: #8fb4ff;
+    min-width: 0;
     gap: clamp(16px, 4cqw, 70px);
     justify-content: center;
     /* Default/fallback = night sky */
