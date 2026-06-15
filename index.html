@@ -1574,12 +1574,13 @@
   async function fetchKnmiPage(){
     const proxies = [
       function(u){ return 'https://api.allorigins.win/raw?url='+encodeURIComponent(u); },
+      function(u){ return 'https://corsproxy.io/?url='+encodeURIComponent(u); },
       function(u){ return 'https://r.jina.ai/'+u; },
       function(u){ return u; }
     ];
     for(var i=0;i<proxies.length;i++){
       try{
-        var ctrl=new AbortController(), t=setTimeout(function(){ctrl.abort();},8000);
+        var ctrl=new AbortController(), t=setTimeout(function(){ctrl.abort();},10000);
         var r=await fetch(proxies[i](KNMI_URL),{signal:ctrl.signal});
         clearTimeout(t);
         if(r.ok){var text=await r.text(); if(text&&text.length>500) return text;}
@@ -1806,7 +1807,7 @@
         setAll('j-rh', data.rh!=null ? Math.round(data.rh)+'%' : '--%');
         setBarAll('j-brh', data.rh!=null ? data.rh : 0);
         setAll('j-dew', data.dew_c!=null ? data.dew_c.toFixed(1)+'°' : '--°');
-        setAll('j-feels', hi!=null ? 'Feels '+hi+'°C' : '');
+        setAll('j-feels', feels!=actualTemp ? 'Feels '+feels+'°' : '');
         setAll('j-slp', data.slp!=null ? Math.round(data.slp)+' hPa' : '--');
         setAll('j-slpstate', slpState(data.slp));
         setAll('j-vis', fmtVis(data.vis_m));
@@ -1826,27 +1827,67 @@
 
     if(!knmiOk){
       try{
-        const url='https://api.open-meteo.com/v1/forecast?latitude=12.17&longitude=-68.99&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&temperature_unit=celsius&wind_speed_unit=kn&timezone=auto';
+        const url='https://api.open-meteo.com/v1/forecast?latitude=12.17&longitude=-68.99'
+          +'&current=temperature_2m,apparent_temperature,weather_code,'
+          +'wind_speed_10m,wind_direction_10m,wind_gusts_10m,'
+          +'relative_humidity_2m,dew_point_2m,precipitation,'
+          +'cloud_cover,surface_pressure,visibility,shortwave_radiation'
+          +'&temperature_unit=celsius&wind_speed_unit=kn&timezone=auto';
         const r=await fetch(url); if(!r.ok) throw new Error('http '+r.status);
         const d=await r.json();
-        var fc=d.current.weather_code;
+        var c=d.current;
+        var fc=c.weather_code;
         var fnight=(new Date().getHours()<6 || new Date().getHours()>=19);
-        var feels=Math.round(d.current.apparent_temperature);
-        var actual=Math.round(d.current.temperature_2m);
+        var feels=Math.round(c.apparent_temperature);
+        var actual=Math.round(c.temperature_2m);
+        var windKt=c.wind_speed_10m!=null?Math.round(c.wind_speed_10m):null;
+        var gustKt=c.wind_gusts_10m!=null?Math.round(c.wind_gusts_10m):null;
+        var wdir=c.wind_direction_10m!=null?Math.round(c.wind_direction_10m):null;
+        var rh=c.relative_humidity_2m!=null?Math.round(c.relative_humidity_2m):null;
+        var dew=c.dew_point_2m!=null?c.dew_point_2m.toFixed(1):null;
+        var precip=c.precipitation!=null?c.precipitation:null;
+        var cloudOcta=c.cloud_cover!=null?Math.round(c.cloud_cover/12.5):null;
+        var slp=c.surface_pressure!=null?Math.round(c.surface_pressure):null;
+        var vis=c.visibility!=null?c.visibility:null;
+        var rad=c.shortwave_radiation!=null?Math.round(c.shortwave_radiation):null;
         setAll('j-temp', feels+'°');
         setAll('j-actualtemp', actual+'°');
-        setAll('j-wico', wmoIcon(fc));
+        setAll('j-wico', cloudIcon(cloudOcta, precip));
         setAll('j-wx3d', fc===0 ? (fnight?'🌙':'☀️') : fc<=3 ? (fnight?'🌤️':'⛅') : wmoIcon(fc));
         setAll('j-wtext', wmoText(fc));
-        setSkyMood(fc<=2?0:fc<=5?5:null, fc>=51?0.5:0);
+        setSkyMood(cloudOcta, precip);
         setAll('j-feelsbig', feels+'°');
-        setAll('j-feelssub', feels>actual ? '+'+Math.round(feels-actual)+'° vs actual' : (feels<actual ? Math.round(feels-actual)+'°' : 'Same as actual'));
-        setAll('j-wind', Math.round(d.current.wind_speed_10m)+' kt');
-        setAll('j-place', 'Curaçao');
+        setAll('j-feelssub', feels>actual ? '+'+Math.round(feels-actual)+'° vs actual' : (feels<actual ? Math.round(feels-actual)+'° vs actual' : 'Same as actual'));
+        setAll('j-feels', feels!=actual ? 'Feels '+feels+'°' : '');
+        setAll('j-wind', windKt!=null ? windKt+' kt' : '--');
+        setBarAll('j-bwind', windKt!=null ? windKt/60*100 : 0);
+        setAll('j-gust', gustKt!=null ? gustKt+' kt' : '--');
+        setAll('j-gustsub', gustKt!=null&&windKt!=null ? '+'+(gustKt-windKt)+' kt above avg' : '');
+        setBarAll('j-bgust', gustKt!=null ? gustKt/60*100 : 0);
+        setAll('j-winddir', wdir!=null ? degToCompass(wdir) : '--');
+        setAll('j-winddeg', wdir!=null ? wdir+'° from N' : '');
+        document.querySelectorAll('.j-warrow').forEach(function(el){ el.style.transform='rotate('+(wdir||0)+'deg)'; });
+        document.querySelectorAll('.j-windneedle').forEach(function(el){ el.style.setProperty('--nrot',(wdir||0)+'deg'); });
+        setAll('j-rh', rh!=null ? rh+'%' : '--%');
+        setBarAll('j-brh', rh!=null ? rh : 0);
+        setAll('j-dew', dew!=null ? dew+'°' : '--°');
+        setAll('j-cloud', cloudOcta!=null ? cloudOcta+'/8' : '--');
+        setOcta(cloudOcta);
+        setAll('j-precip', precip!=null ? precip.toFixed(1)+' mm' : '--');
+        setBarAll('j-bprecip', precip!=null ? precip/5*100 : 0);
+        setAll('j-slp', slp!=null ? slp+' hPa' : '--');
+        setAll('j-slpstate', slpState(slp));
+        setAll('j-vis', fmtVis(vis));
+        setAll('j-visqual', visQual(vis));
+        setAll('j-rad', rad!=null ? rad+' W/m²' : '--');
+        setAll('j-radsub', rad!=null ? (rad>800?'Intense':rad>400?'Moderate':rad>50?'Low':'Minimal') : '');
+        setBarAll('j-brad', rad!=null ? rad/1200*100 : 0);
+        setAll('j-windbft', bft(windKt!=null ? windKt/1.94384 : null));
+        setAll('j-place', 'Bonaire · Open-Meteo');
       }catch(e){
         setAll('j-temp', '--°');
         setAll('j-wind', '-- kt');
-        setAll('j-place', 'Curaçao');
+        setAll('j-place', 'Bonaire');
       }
     }
 
