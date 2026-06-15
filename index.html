@@ -1958,7 +1958,69 @@
     });
   }
 
-  // Replay the staggered entrance animation on whichever face just settled
+  // Face 6 (night face): fetch weather for user's local location if they allow geolocation
+  let localGeoLat = null, localGeoLon = null, localGeoName = null;
+
+  async function loadLocalWeather(){
+    if(!navigator.geolocation) return;
+
+    return new Promise(function(resolve){
+      navigator.geolocation.getCurrentPosition(
+        async function(pos){
+          var lat = pos.coords.latitude.toFixed(2);
+          var lon = pos.coords.longitude.toFixed(2);
+          localGeoLat = lat;
+          localGeoLon = lon;
+
+          try {
+            // Reverse geocode using Open-Meteo Geocoding API
+            const geoUrl = 'https://geocoding-api.open-meteo.com/v1/search?latitude='+lat+'&longitude='+lon+'&limit=1&language=en';
+            const geoResp = await fetch(geoUrl);
+            if(geoResp.ok){
+              const geoData = await geoResp.json();
+              if(geoData.results && geoData.results[0]){
+                var r = geoData.results[0];
+                localGeoName = (r.name || '') + (r.admin1 ? ', '+r.admin1 : '') + (r.country ? ' · '+r.country : '');
+              }
+            }
+
+            // Fetch weather for this location
+            const wxUrl = 'https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
+              +'&current=temperature_2m,apparent_temperature,weather_code,'
+              +'wind_speed_10m,wind_direction_10m,wind_gusts_10m,'
+              +'relative_humidity_2m,dew_point_2m,precipitation,'
+              +'cloud_cover,surface_pressure,visibility,shortwave_radiation'
+              +'&temperature_unit=celsius&wind_speed_unit=kn&timezone=auto';
+            const wxResp = await fetch(wxUrl);
+            if(wxResp.ok){
+              const wxData = await wxResp.json();
+              var c = wxData.current;
+              var fc = c.weather_code;
+              var fnight = (new Date().getHours()<6 || new Date().getHours()>=19);
+              var feels = Math.round(c.apparent_temperature);
+              var actual = Math.round(c.temperature_2m);
+              var cloudOcta = c.cloud_cover!=null ? Math.round(c.cloud_cover/12.5) : null;
+              var precip = c.precipitation!=null ? c.precipitation : null;
+
+              // Update Face 6 hero only
+              const face6Hero = document.querySelector('.f-night .fn-hero');
+              if(face6Hero){
+                face6Hero.querySelector('.fn-ico').textContent = skyIcon(cloudOcta, precip);
+                face6Hero.querySelector('.fn-city').textContent = localGeoName || (lat+','+lon);
+                face6Hero.querySelector('.fn-temp').textContent = feels+'°';
+                face6Hero.querySelector('.fn-cond').textContent = cloudText(cloudOcta, precip);
+              }
+
+              // Update sky mood for Face 6
+              setSkyMood(cloudOcta, precip);
+            }
+          } catch(e){}
+          resolve();
+        },
+        function(err){ resolve(); } // permission denied or unavailable
+      );
+    });
+  }
   function markActive(){
     const faces = carousel.children;
     for(let i=0;i<faces.length;i++) faces[i].classList.remove('is-active');
@@ -1971,6 +2033,10 @@
     localStorage.setItem('faceIndex', index);
     render(0);
     markActive();
+    // When swiping to Face 6 (night/sky), load local weather
+    if(index === 5){
+      loadLocalWeather();
+    }
   }
   goTo(index);
 
