@@ -1120,6 +1120,97 @@
     .f-night.sky-rain::before { animation: none; }
   }
 
+  /* ---------- Face 7: iOS Lock-Screen (date + local weather) ---------- */
+  .f-ios {
+    --ios-red: #ff453a;
+    min-width: 0;
+    justify-content: center;
+    background: #000;
+  }
+  .f-ios .fi-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: clamp(28px, 9cqw, 170px);
+    min-width: 0;
+  }
+  .f-ios .fi-left { flex: 0 0 auto; min-width: 0; }
+  .f-ios .fi-dateline {
+    font-weight: 800;
+    font-size: clamp(22px, 9cqh, 92px);
+    line-height: 1;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .f-ios .fi-dow { color: var(--ios-red); }
+  .f-ios .fi-mon { color: var(--muted); }
+  .f-ios .fi-daynum {
+    margin-top: clamp(2px, 1cqh, 12px);
+    font-weight: 800;
+    font-size: clamp(64px, 34cqh, 340px);
+    line-height: 0.86;
+    letter-spacing: -0.04em;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+  .f-ios .fi-right {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .f-ios .fi-loc {
+    display: flex;
+    align-items: center;
+    gap: 0.25em;
+    font-weight: 800;
+    font-size: clamp(20px, 8cqh, 82px);
+    line-height: 1;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .f-ios .fi-arrow {
+    flex: 0 0 auto;
+    width: 0.62em;
+    height: 0.62em;
+    display: inline-block;
+  }
+  .f-ios .fi-arrow svg { width: 100%; height: 100%; fill: #fff; display: block; }
+  .f-ios .fi-temp {
+    margin-top: clamp(2px, 1cqh, 12px);
+    font-weight: 800;
+    font-size: clamp(64px, 34cqh, 340px);
+    line-height: 0.86;
+    letter-spacing: -0.04em;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+  .f-ios .fi-wx { margin-top: clamp(8px, 2.4cqh, 26px); }
+  .f-ios .fi-ico {
+    font-size: clamp(26px, 9cqh, 92px);
+    line-height: 1;
+  }
+  .f-ios .fi-cond {
+    margin-top: clamp(3px, 1cqh, 10px);
+    font-weight: 800;
+    font-size: clamp(20px, 7cqh, 70px);
+    line-height: 1.05;
+    color: #fff;
+    text-transform: capitalize;
+    white-space: nowrap;
+  }
+  .f-ios .fi-hl {
+    margin-top: clamp(2px, 0.6cqh, 8px);
+    font-weight: 700;
+    font-size: clamp(16px, 5.5cqh, 56px);
+    line-height: 1;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
   /* ---------- Dots indicator ---------- */
   .dots {
     position: absolute;
@@ -1466,12 +1557,32 @@
         </div>
       </section>
 
+      <!-- Face 7: iOS Lock-Screen (date + local weather) -->
+      <section class="face f-ios">
+        <div class="fi-wrap">
+          <div class="fi-left">
+            <div class="fi-dateline"><span class="fi-dow j-dow-tc">Wed</span> <span class="fi-mon j-mon-tc">Jun</span></div>
+            <div class="fi-daynum j-dom">17</div>
+          </div>
+          <div class="fi-right">
+            <div class="fi-loc"><span class="j-ios-place">Locating&hellip;</span><span class="fi-arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 2.5 2.7 10.3c-1 .4-.9 1.8.1 2.1l7.6 2.2 2.2 7.6c.3 1 1.7 1.1 2.1.1L24.6 5.5c.4-1-.6-2-1.6-1.6z" transform="translate(-1 -1)"/></svg></span></div>
+            <div class="fi-temp j-ios-temp">--&deg;</div>
+            <div class="fi-wx">
+              <div class="fi-ico j-ios-ico">&#x26C5;</div>
+              <div class="fi-cond j-ios-cond">&mdash;</div>
+              <div class="fi-hl j-ios-hl">H:--&deg; L:--&deg;</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
     <div class="dots" id="dots"></div>
   </div>
 
 <script>
   const DAYS = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const DAYS_TC = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
   function setAll(cls, text){
@@ -1493,6 +1604,8 @@
     setAll('j-mm', String(now.getMinutes()).padStart(2,'0'));
     setAll('j-ampm', now.getHours() < 12 ? 'AM' : 'PM');
     setAll('j-dow', DAYS[now.getDay()]);
+    setAll('j-dow-tc', DAYS_TC[now.getDay()]);
+    setAll('j-mon-tc', MONTHS[now.getMonth()].slice(0,3));
     setAll('j-dom', now.getDate());
     setAll('j-fulldate', MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear());
 
@@ -2063,12 +2176,13 @@
                 : (region ? region + (country ? ' · '+country : '') : country);
             }
 
-            // Fetch weather for this location
+            // Fetch weather for this location (current + today's high/low)
             const wxUrl = 'https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
               +'&current=temperature_2m,apparent_temperature,weather_code,'
               +'wind_speed_10m,wind_direction_10m,wind_gusts_10m,'
               +'relative_humidity_2m,dew_point_2m,precipitation,'
               +'cloud_cover,surface_pressure,visibility,shortwave_radiation'
+              +'&daily=temperature_2m_max,temperature_2m_min'
               +'&temperature_unit=celsius&wind_speed_unit=kn&timezone=auto';
             const wxResp = await fetch(wxUrl);
             if(wxResp.ok){
@@ -2080,16 +2194,26 @@
               var actual = Math.round(c.temperature_2m);
               var cloudOcta = c.cloud_cover!=null ? Math.round(c.cloud_cover/12.5) : null;
               var precip = c.precipitation!=null ? c.precipitation : null;
+              var hi = (wxData.daily && wxData.daily.temperature_2m_max) ? Math.round(wxData.daily.temperature_2m_max[0]) : null;
+              var lo = (wxData.daily && wxData.daily.temperature_2m_min) ? Math.round(wxData.daily.temperature_2m_min[0]) : null;
+              var coordLabel = Math.abs(lat)+'°'+(lat>=0?'N':'S')+' '+Math.abs(lon)+'°'+(lon>=0?'E':'W');
+              var placeLabel = localGeoName || coordLabel;
 
-              // Update Face 6 hero only
+              // Update Face 6 hero
               const face6Hero = document.querySelector('.f-night .fn-hero');
               if(face6Hero){
                 face6Hero.querySelector('.fn-ico').textContent = skyIcon(cloudOcta, precip);
-                var coordLabel = Math.abs(lat)+'°'+(lat>=0?'N':'S')+' '+Math.abs(lon)+'°'+(lon>=0?'E':'W');
-                face6Hero.querySelector('.fn-city').textContent = localGeoName || coordLabel;
+                face6Hero.querySelector('.fn-city').textContent = placeLabel;
                 face6Hero.querySelector('.fn-temp').textContent = feels+'°';
                 face6Hero.querySelector('.fn-cond').textContent = cloudText(cloudOcta, precip);
               }
+
+              // Update Face 7 (iOS lock-screen)
+              setAll('j-ios-place', placeLabel);
+              setAll('j-ios-temp', feels+'°');
+              setAll('j-ios-ico', skyIcon(cloudOcta, precip));
+              setAll('j-ios-cond', cloudText(cloudOcta, precip) || 'Clear');
+              setAll('j-ios-hl', 'H:'+(hi!=null?hi:'--')+'° L:'+(lo!=null?lo:'--')+'°');
 
               // Update sky mood for Face 6
               setSkyMood(cloudOcta, precip);
@@ -2113,8 +2237,8 @@
     localStorage.setItem('faceIndex', index);
     render(0);
     markActive();
-    // When swiping to Face 6 (night/sky), load local weather
-    if(index === 5){
+    // Faces 6 (night/sky) and 7 (iOS lock-screen) show local-location weather
+    if(index === 5 || index === 6){
       loadLocalWeather();
     }
   }
