@@ -61,16 +61,21 @@
   .carousel.dragging { transition: none; }
   .face {
     flex: 0 0 100%;
+    width: 100%;
     min-width: 100%;
+    max-width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
+    overflow: hidden;
     padding:
-      calc(env(safe-area-inset-top) + clamp(8px, 3cqh, 28px))
-      calc(env(safe-area-inset-right) + clamp(10px, 3.5cqw, 48px))
-      calc(env(safe-area-inset-bottom) + clamp(8px, 3cqh, 28px))
-      calc(env(safe-area-inset-left) + clamp(10px, 3.5cqw, 48px));
+      calc(env(safe-area-inset-top) + clamp(8px, 2.6cqh, 24px))
+      calc(env(safe-area-inset-right) + clamp(10px, 2.6cqw, 36px))
+      calc(env(safe-area-inset-bottom) + clamp(8px, 2.6cqh, 24px))
+      calc(env(safe-area-inset-left) + clamp(10px, 2.6cqw, 36px));
   }
+  /* Safety net: nothing inside a face may push past its edges */
+  .face > * { max-width: 100%; }
 
   /* ---------- Face 1: Classic ---------- */
   .f-classic {
@@ -143,10 +148,10 @@
     line-height: 1;
   }
   .f-classic .temp {
-    margin-top: clamp(16px, 4.5cqh, 48px);
+    margin-top: clamp(14px, 3.8cqh, 40px);
     color: #fff;
-    font-weight: 600;
-    font-size: clamp(36px, 13cqh, 120px);
+    font-weight: 700;
+    font-size: clamp(46px, 17cqh, 160px);
     display: flex;
     align-items: center;
     gap: 0.3em;
@@ -237,10 +242,11 @@
     filter: drop-shadow(0 0 8px var(--fg-glow));
   }
   .f-glass .fg-wstrip-temp {
-    font-weight: 700;
-    font-size: clamp(18px,5cqh,48px);
+    font-weight: 800;
+    font-size: clamp(28px,8.5cqh,86px);
     color: #fff;
     font-variant-numeric: tabular-nums;
+    line-height: 0.9;
   }
   .f-glass .fg-wstrip-cond {
     font-weight: 600;
@@ -454,10 +460,10 @@
     line-height: 1;
   }
   .f-analog .temp {
-    margin-top: clamp(14px, 4.5cqh, 48px);
+    margin-top: clamp(12px, 3.8cqh, 40px);
     color: #fff;
-    font-weight: 600;
-    font-size: clamp(34px, 12cqh, 110px);
+    font-weight: 700;
+    font-size: clamp(44px, 16cqh, 150px);
     display: flex;
     align-items: center;
     gap: 0.3em;
@@ -583,6 +589,9 @@
     line-height: 1.2;
     margin-top: 0.15em;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
   .f-weather .fw-meta {
     color: var(--muted);
