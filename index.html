@@ -1428,10 +1428,10 @@
       <section class="face f-night">
         <div class="fn-stars" id="fn-stars"></div>
         <div class="fn-hero">
-          <div class="fn-ico j-wx3d">&#x1F319;</div>
-          <div class="fn-city">BONAIRE</div>
-          <div class="fn-temp j-temp">--&deg;</div>
-          <div class="fn-cond j-wtext">Mostly Clear</div>
+          <div class="fn-ico jn-ico">&#x1F319;</div>
+          <div class="fn-city jn-city">BONAIRE</div>
+          <div class="fn-temp jn-temp">--&deg;</div>
+          <div class="fn-cond jn-cond">Mostly Clear</div>
           <div class="fn-datetime">
             <div class="fn-dt-time"><span class="j-hh">--</span><span class="fn-dt-colon">:</span><span class="j-mm">--</span><span class="fn-dt-ampm j-ampm">AM</span></div>
             <div class="fn-dt-date"><span class="j-dow">---</span> &middot; <span class="j-fulldate">---</span></div>
@@ -1440,9 +1440,9 @@
         <div class="fn-grid">
           <div class="fn-card">
             <div class="fn-card-hd"><span class="fn-cico">&#x2600;&#xFE0F;</span> UV INDEX</div>
-            <div class="fn-card-val warm j-uv">--</div>
-            <div class="fn-card-sub j-uvsub">&nbsp;</div>
-            <div class="fn-bar"><div class="fn-bfill warm j-buv"></div></div>
+            <div class="fn-card-val warm jn-uv">--</div>
+            <div class="fn-card-sub jn-uvsub">&nbsp;</div>
+            <div class="fn-bar"><div class="fn-bfill warm jn-buv"></div></div>
           </div>
           <div class="fn-card fn-card-wind">
             <div class="fn-card-hd"><span class="fn-cico">&#x1F4A8;</span> WIND</div>
@@ -1451,28 +1451,28 @@
               <span class="fn-cdir fn-cE">E</span>
               <span class="fn-cdir fn-cS">S</span>
               <span class="fn-cdir fn-cW">W</span>
-              <div class="fn-needle j-windneedle"></div>
-              <div class="fn-compass-val"><span class="j-wind">--</span></div>
+              <div class="fn-needle jn-windneedle"></div>
+              <div class="fn-compass-val"><span class="jn-wind">--</span></div>
             </div>
           </div>
           <div class="fn-card">
             <div class="fn-card-hd"><span class="fn-cico">&#x1F4A7;</span> HUMIDITY</div>
-            <div class="fn-card-val blue j-rh">--%</div>
-            <div class="fn-card-sub">Dew point <span class="j-dew">--&deg;</span></div>
+            <div class="fn-card-val blue jn-rh">--%</div>
+            <div class="fn-card-sub">Dew point <span class="jn-dew">--&deg;</span></div>
           </div>
           <div class="fn-card">
             <div class="fn-card-hd"><span class="fn-cico">&#x1F321;&#xFE0F;</span> FEELS LIKE</div>
-            <div class="fn-card-val j-feelsbig">--&deg;</div>
-            <div class="fn-card-sub j-feelssub">--</div>
+            <div class="fn-card-val jn-feelsbig">--&deg;</div>
+            <div class="fn-card-sub jn-feelssub">--</div>
           </div>
           <div class="fn-card">
             <div class="fn-card-hd"><span class="fn-cico">&#x1F32B;&#xFE0F;</span> DUST</div>
-            <div class="fn-card-val j-dust">--</div>
-            <div class="fn-card-sub j-dustsub">&nbsp;</div>
+            <div class="fn-card-val jn-dust">--</div>
+            <div class="fn-card-sub jn-dustsub">&nbsp;</div>
           </div>
           <div class="fn-card">
             <div class="fn-card-hd"><span class="fn-cico">&#x1F327;&#xFE0F;</span> RAINFALL</div>
-            <div class="fn-card-val blue j-precip">--</div>
+            <div class="fn-card-val blue jn-precip">--</div>
             <div class="fn-card-sub">in the last 10 min</div>
           </div>
         </div>
@@ -1691,9 +1691,21 @@
     function find(sub){for(var k in parsed){if(k.indexOf(sub)>=0) return parsed[k];} return null;}
     function num(rec){if(!rec||rec.value==null) return null; var n=parseFloat(rec.value); return isFinite(n)?n:null;}
     var windMs=num(find('Windspeed')), gustMs=num(find('Gusts')), wd=find('Winddirection');
+    // Prefer an explicit air-temperature row; never let the dewpoint row
+    // (which also matches "...temperature...") stand in for it.
+    var tempRec=null;
+    for(var k in parsed){
+      var kl=k.toLowerCase();
+      if(kl.indexOf('temp')>=0 && kl.indexOf('dew')<0 && kl.indexOf('sea')<0 && kl.indexOf('water')<0 && kl.indexOf('wet')<0){ tempRec=parsed[k]; break; }
+    }
+    var temp_c=num(tempRec!=null?tempRec:find('Temperature ('));
+    var dew_c=num(find('Dewpoint'));
+    // Physics guard: air temperature is always >= dewpoint. If they came out
+    // swapped (column misalignment in the source), put them back in order.
+    if(temp_c!=null && dew_c!=null && temp_c < dew_c){ var t=temp_c; temp_c=dew_c; dew_c=t; }
     return {
-      temp_c:     num(find('Temperature (')),
-      dew_c:      num(find('Dewpoint')),
+      temp_c:     temp_c,
+      dew_c:      dew_c,
       rh:         num(find('Relative humidity')),
       wind_ms:    windMs,
       wind_kt:    windMs!=null?Math.round(windMs*1.94384):null,
@@ -2005,6 +2017,8 @@
     loaderEl.classList.add('active');
     const ok = await loadWeather();
     if(ok) lastDataOkTs = Date.now();
+    // Face 6 shows the user's local location — keep it fresh too when active
+    if(typeof index !== 'undefined' && index === 5) loadLocalWeather();
     updateFreshness();
     setTimeout(function(){ loaderEl.classList.remove('active'); }, 300);
   }
@@ -2084,25 +2098,50 @@
       if(!wxResp.ok) return;
       const wxData = await wxResp.json();
       var c = wxData.current;
-      var feels = Math.round(c.apparent_temperature);
+      var feels = Math.round(c.apparent_temperature);   // includes wind + humidity
+      var actual = c.temperature_2m!=null ? Math.round(c.temperature_2m) : feels;
       var cloudOcta = c.cloud_cover!=null ? Math.round(c.cloud_cover/12.5) : null;
       var precip = c.precipitation!=null ? c.precipitation : null;
-      var hi = (wxData.daily && wxData.daily.temperature_2m_max) ? Math.round(wxData.daily.temperature_2m_max[0]) : null;
-      var lo = (wxData.daily && wxData.daily.temperature_2m_min) ? Math.round(wxData.daily.temperature_2m_min[0]) : null;
+      var windKt = c.wind_speed_10m!=null ? Math.round(c.wind_speed_10m) : null;
+      var wdir = c.wind_direction_10m!=null ? Math.round(c.wind_direction_10m) : null;
+      var rh = c.relative_humidity_2m!=null ? Math.round(c.relative_humidity_2m) : null;
+      var dew = c.dew_point_2m!=null ? c.dew_point_2m.toFixed(1) : null;
       var coordLabel = Math.abs(lat)+'°'+(parseFloat(lat)>=0?'N':'S')+' '+Math.abs(lon)+'°'+(parseFloat(lon)>=0?'E':'W');
       var placeLabel = localGeoName || coordLabel;
 
-      // Update Face 6 hero
-      const face6Hero = document.querySelector('.f-night .fn-hero');
-      if(face6Hero){
-        face6Hero.querySelector('.fn-ico').textContent = skyIcon(cloudOcta, precip);
-        face6Hero.querySelector('.fn-city').textContent = placeLabel;
-        face6Hero.querySelector('.fn-temp').textContent = feels+'°';
-        face6Hero.querySelector('.fn-cond').textContent = cloudText(cloudOcta, precip);
-      }
+      // Hero (feels-like is the big number)
+      setAll('jn-ico', skyIcon(cloudOcta, precip));
+      setAll('jn-city', placeLabel);
+      setAll('jn-temp', feels+'°');
+      setAll('jn-cond', cloudText(cloudOcta, precip));
 
-      // Update sky mood for Face 6
+      // Cards — all driven by the LOCAL location, independent of Bonaire faces
+      setAll('jn-feelsbig', feels+'°');
+      setAll('jn-feelssub', feels>actual ? '+'+(feels-actual)+'° vs actual '+actual+'°'
+                          : feels<actual ? (feels-actual)+'° vs actual '+actual+'°'
+                          : 'Same as actual '+actual+'°');
+      setAll('jn-wind', windKt!=null ? windKt+' kt' : '--');
+      document.querySelectorAll('.jn-windneedle').forEach(function(el){
+        el.style.setProperty('--nrot', (wdir||0)+'deg');
+      });
+      setAll('jn-rh', rh!=null ? rh+'%' : '--%');
+      setAll('jn-dew', dew!=null ? dew+'°' : '--°');
+      setAll('jn-precip', precip!=null ? precip.toFixed(1)+' mm' : '--');
+
+      // Sky mood for the background
       setSkyMood(cloudOcta, precip);
+
+      // Local air quality (UV + Saharan dust) for this exact location
+      try{
+        const aq = await fetchAirQuality(lat, lon);
+        var uv = aq.uv!=null ? Math.round(aq.uv) : null;
+        setAll('jn-uv', uv!=null ? String(uv) : '--');
+        setAll('jn-uvsub', uvLabel(aq.uv));
+        setBarAll('jn-buv', uv!=null ? uv/12*100 : 0);
+        var dust = aq.dust!=null ? Math.round(aq.dust) : null;
+        setAll('jn-dust', dust!=null ? dust+' µg' : '--');
+        setAll('jn-dustsub', dustLabel(aq.dust));
+      }catch(e){}
     } catch(e){}
   }
 
