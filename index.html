@@ -69,13 +69,13 @@
     align-items: center;
     overflow: hidden;
     padding:
-      calc(env(safe-area-inset-top) + clamp(8px, 2.6cqh, 24px))
-      calc(env(safe-area-inset-right) + clamp(10px, 2.6cqw, 36px))
-      calc(env(safe-area-inset-bottom) + clamp(8px, 2.6cqh, 24px))
-      calc(env(safe-area-inset-left) + clamp(10px, 2.6cqw, 36px));
+      calc(env(safe-area-inset-top) + clamp(6px, 2cqh, 20px))
+      calc(env(safe-area-inset-right) + clamp(8px, 1.8cqw, 28px))
+      calc(env(safe-area-inset-bottom) + clamp(6px, 2cqh, 20px))
+      calc(env(safe-area-inset-left) + clamp(8px, 1.8cqw, 28px));
   }
   /* Safety net: nothing inside a face may push past its edges */
-  .face > * { max-width: 100%; }
+  .face > * { max-width: 100%; overflow: hidden; }
 
   /* ---------- Face 1: Classic ---------- */
   .f-classic {
@@ -487,8 +487,9 @@
     --accent2: #5ea8ff;
     min-width: 0;
     flex-direction: column;
+    align-items: stretch;       /* override face's align-items:center so children fill exact content width */
     justify-content: center;
-    gap: clamp(8px, 2cqh, 22px);
+    gap: clamp(6px, 1.6cqh, 18px);
     background:
       radial-gradient(ellipse 55% 65% at 8% 50%, rgba(94,230,200,0.09), transparent 60%),
       radial-gradient(ellipse 50% 50% at 92% 80%, rgba(94,168,255,0.07), transparent 60%),
@@ -499,12 +500,13 @@
   .f-weather .fw-top {
     display: flex;
     align-items: center;
-    gap: clamp(12px, 3.5cqw, 52px);
+    gap: clamp(10px, 2.8cqw, 44px);
     flex-shrink: 0;
-    width: 100%;
+    overflow: hidden;           /* clip any content that somehow overruns */
   }
   .f-weather .fw-timediv {
     flex: 0 0 auto;
+    max-width: 44%;             /* never let the time crowd out the weather side */
     display: flex;
     flex-direction: column;
     gap: clamp(4px, 1cqh, 10px);
@@ -553,14 +555,15 @@
   }
   /* Weather hero (right side of top row) */
   .f-weather .fw-hero {
-    flex: 1 1 auto;
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;           /* clip children that overflow the flex allocation */
     display: flex;
     align-items: center;
-    gap: clamp(8px, 2cqw, 30px);
-    min-width: 0;
+    gap: clamp(8px, 2cqw, 28px);
   }
   .f-weather .fw-bigico {
-    font-size: clamp(44px, 18cqh, 160px);
+    font-size: clamp(40px, 17cqh, 150px);
     line-height: 1;
     flex-shrink: 0;
     filter: drop-shadow(0 0 clamp(8px, 2.5cqh, 24px) rgba(94,230,200,0.4));
@@ -569,6 +572,8 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
+    overflow: hidden;           /* required for text-overflow:ellipsis on descendants */
+    max-width: 100%;
   }
   .f-weather .fw-bigtemp {
     font-weight: 700;
@@ -605,13 +610,14 @@
   }
   .f-weather .fw-sep { opacity: 0.45; }
 
-  /* Grid */
+  /* Grid — align-self:stretch ensures width matches the content box, not the border box */
   .f-weather .fw-grid {
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: clamp(5px, 1cqw, 11px);
-    width: 100%;
+    gap: clamp(5px, 1cqw, 10px);
+    align-self: stretch;
     flex-shrink: 0;
+    overflow: hidden;
   }
   .f-weather .fw-tile {
     position: relative;
@@ -1338,7 +1344,7 @@
             <div class="fw-heroright">
               <span class="fw-bigtemp j-temp">--&deg;</span>
               <span class="fw-cond j-wtext">&nbsp;</span>
-              <span class="fw-meta"><span class="j-place">Locating&hellip;</span><span class="fw-sep"> &middot; </span><span class="j-obstime"></span><span class="fw-sep"> &middot; </span>Actual <span class="j-actualtemp">--&deg;</span></span>
+              <span class="fw-meta"><span class="j-place">Locating&hellip;</span><span class="fw-sep j-obssep"> &middot; </span><span class="j-obstime"></span><span class="fw-sep"> &middot; </span>Actual <span class="j-actualtemp">--&deg;</span></span>
             </div>
           </div>
         </div>
@@ -1894,7 +1900,10 @@
         setAll('j-rad', data.radiation!=null ? Math.round(data.radiation)+' W/m²' : '--');
         setAll('j-radsub', data.radiation!=null ? (data.radiation>800?'Intense':data.radiation>400?'Moderate':data.radiation>50?'Low':'Minimal') : '');
         setBarAll('j-brad', data.radiation!=null ? data.radiation/1200*100 : 0);
-        setAll('j-obstime', data.time || '');
+        // Show only HH:MM UTC, not the full date string (date is shown on the left)
+        var obsShort = data.time ? (data.time.match(/\d{2}:\d{2}\s*UTC/i)||[data.time])[0] : '';
+        setAll('j-obstime', obsShort);
+        document.querySelectorAll('.j-obssep').forEach(function(el){ el.style.display = obsShort ? '' : 'none'; });
         setAll('j-place', 'Bonaire · KNMI');
         knmiOk=true;
       }
