@@ -1120,23 +1120,52 @@
     .f-night.sky-rain::before { animation: none; }
   }
 
-  /* ---------- Face 7: iOS Lock-Screen (date + local weather) ---------- */
+  /* ---------- Face 7: iOS Lock-Screen (time + date + local weather) ---------- */
   .f-ios {
     --ios-red: #ff453a;
     min-width: 0;
+    flex-direction: column;
     justify-content: center;
+    align-items: stretch;
+    gap: clamp(8px, 3cqh, 36px);
     background: #000;
   }
-  .f-ios .fi-wrap {
+  .f-ios .fi-clock {
+    flex: 0 0 auto;
     display: flex;
-    align-items: flex-start;
-    gap: clamp(28px, 9cqw, 170px);
+    align-items: baseline;
+    font-weight: 800;
+    font-size: clamp(54px, 26cqh, 280px);
+    line-height: 0.86;
+    letter-spacing: -0.04em;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+  .f-ios .fi-colon {
+    margin: 0 0.02em;
+    animation: blink 1s steps(1) infinite;
+  }
+  .f-ios .fi-ampm {
+    font-size: 0.28em;
+    font-weight: 700;
+    color: var(--muted);
+    margin-left: 0.3em;
+    align-self: flex-end;
+    transform: translateY(-0.4em);
+  }
+  .f-ios .fi-wrap {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: clamp(20px, 6cqw, 120px);
+    width: 100%;
     min-width: 0;
   }
   .f-ios .fi-left { flex: 0 0 auto; min-width: 0; }
   .f-ios .fi-dateline {
     font-weight: 800;
-    font-size: clamp(22px, 9cqh, 92px);
+    font-size: clamp(20px, 8cqh, 82px);
     line-height: 1;
     letter-spacing: -0.01em;
     white-space: nowrap;
@@ -1144,18 +1173,20 @@
   .f-ios .fi-dow { color: var(--ios-red); }
   .f-ios .fi-mon { color: var(--muted); }
   .f-ios .fi-daynum {
-    margin-top: clamp(2px, 1cqh, 12px);
+    margin-top: clamp(2px, 0.8cqh, 10px);
     font-weight: 800;
-    font-size: clamp(64px, 34cqh, 340px);
+    font-size: clamp(54px, 26cqh, 280px);
     line-height: 0.86;
     letter-spacing: -0.04em;
     color: #fff;
     font-variant-numeric: tabular-nums;
   }
   .f-ios .fi-right {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     display: flex;
     flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
     min-width: 0;
   }
   .f-ios .fi-loc {
@@ -1163,7 +1194,7 @@
     align-items: center;
     gap: 0.25em;
     font-weight: 800;
-    font-size: clamp(20px, 8cqh, 82px);
+    font-size: clamp(18px, 7cqh, 72px);
     line-height: 1;
     color: #fff;
     white-space: nowrap;
@@ -1179,34 +1210,39 @@
   }
   .f-ios .fi-arrow svg { width: 100%; height: 100%; fill: #fff; display: block; }
   .f-ios .fi-temp {
-    margin-top: clamp(2px, 1cqh, 12px);
+    margin-top: clamp(2px, 0.8cqh, 10px);
     font-weight: 800;
-    font-size: clamp(64px, 34cqh, 340px);
+    font-size: clamp(54px, 26cqh, 280px);
     line-height: 0.86;
     letter-spacing: -0.04em;
     color: #fff;
     font-variant-numeric: tabular-nums;
   }
-  .f-ios .fi-wx { margin-top: clamp(8px, 2.4cqh, 26px); }
+  .f-ios .fi-wx {
+    margin-top: clamp(6px, 1.8cqh, 20px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
   .f-ios .fi-ico {
-    font-size: clamp(26px, 9cqh, 92px);
+    font-size: clamp(24px, 8cqh, 82px);
     line-height: 1;
   }
   .f-ios .fi-cond {
-    margin-top: clamp(3px, 1cqh, 10px);
+    margin-top: clamp(3px, 0.9cqh, 10px);
     font-weight: 800;
-    font-size: clamp(20px, 7cqh, 70px);
+    font-size: clamp(18px, 6cqh, 62px);
     line-height: 1.05;
     color: #fff;
     text-transform: capitalize;
     white-space: nowrap;
   }
   .f-ios .fi-hl {
-    margin-top: clamp(2px, 0.6cqh, 8px);
+    margin-top: clamp(2px, 0.5cqh, 8px);
     font-weight: 700;
-    font-size: clamp(16px, 5.5cqh, 56px);
+    font-size: clamp(15px, 5cqh, 52px);
     line-height: 1;
-    color: #fff;
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
@@ -1557,8 +1593,9 @@
         </div>
       </section>
 
-      <!-- Face 7: iOS Lock-Screen (date + local weather) -->
+      <!-- Face 7: iOS Lock-Screen (time + date + local weather) -->
       <section class="face f-ios">
+        <div class="fi-clock"><span class="j-hh">12</span><span class="fi-colon">:</span><span class="j-mm">00</span><span class="fi-ampm j-ampm">PM</span></div>
         <div class="fi-wrap">
           <div class="fi-left">
             <div class="fi-dateline"><span class="fi-dow j-dow-tc">Wed</span> <span class="fi-mon j-mon-tc">Jun</span></div>
@@ -2146,84 +2183,82 @@
     });
   }
 
-  // Face 6 (night face): fetch weather for user's local location if they allow geolocation
-  let localGeoLat = null, localGeoLon = null, localGeoName = null;
+  // Faces 6 & 7: weather for the user's location, falling back to Bonaire
+  // when geolocation is denied/unavailable so these faces always show data.
+  const LOCAL_FALLBACK = { lat: '12.15', lon: '-68.28', name: 'Bonaire' };
+  let localGeoName = null;
 
-  async function loadLocalWeather(){
-    if(!navigator.geolocation) return;
+  async function renderLocalWeather(lat, lon, nameOverride){
+    try {
+      // Resolve a readable place name (skip if we already have one for fallback)
+      localGeoName = nameOverride || null;
+      if(!localGeoName){
+        try{
+          const geoUrl = 'https://api.bigdatacloud.net/data/reverse-geocode-client?latitude='+lat+'&longitude='+lon+'&localityLanguage=en';
+          const geoResp = await fetch(geoUrl);
+          if(geoResp.ok){
+            const g = await geoResp.json();
+            var place = g.city || g.locality || g.principalSubdivision || '';
+            var region = g.principalSubdivision && g.principalSubdivision !== place ? g.principalSubdivision : '';
+            var country = g.countryName || '';
+            localGeoName = place
+              ? place + (region ? ', '+region : '') + (country ? ' · '+country : '')
+              : (region ? region + (country ? ' · '+country : '') : country);
+          }
+        }catch(e){}
+      }
 
-    return new Promise(function(resolve){
+      // Fetch weather for this location (current + today's high/low)
+      const wxUrl = 'https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
+        +'&current=temperature_2m,apparent_temperature,weather_code,'
+        +'wind_speed_10m,wind_direction_10m,wind_gusts_10m,'
+        +'relative_humidity_2m,dew_point_2m,precipitation,'
+        +'cloud_cover,surface_pressure,visibility,shortwave_radiation'
+        +'&daily=temperature_2m_max,temperature_2m_min'
+        +'&temperature_unit=celsius&wind_speed_unit=kn&timezone=auto';
+      const wxResp = await fetch(wxUrl);
+      if(!wxResp.ok) return;
+      const wxData = await wxResp.json();
+      var c = wxData.current;
+      var feels = Math.round(c.apparent_temperature);
+      var cloudOcta = c.cloud_cover!=null ? Math.round(c.cloud_cover/12.5) : null;
+      var precip = c.precipitation!=null ? c.precipitation : null;
+      var hi = (wxData.daily && wxData.daily.temperature_2m_max) ? Math.round(wxData.daily.temperature_2m_max[0]) : null;
+      var lo = (wxData.daily && wxData.daily.temperature_2m_min) ? Math.round(wxData.daily.temperature_2m_min[0]) : null;
+      var coordLabel = Math.abs(lat)+'°'+(parseFloat(lat)>=0?'N':'S')+' '+Math.abs(lon)+'°'+(parseFloat(lon)>=0?'E':'W');
+      var placeLabel = localGeoName || coordLabel;
+
+      // Update Face 6 hero
+      const face6Hero = document.querySelector('.f-night .fn-hero');
+      if(face6Hero){
+        face6Hero.querySelector('.fn-ico').textContent = skyIcon(cloudOcta, precip);
+        face6Hero.querySelector('.fn-city').textContent = placeLabel;
+        face6Hero.querySelector('.fn-temp').textContent = feels+'°';
+        face6Hero.querySelector('.fn-cond').textContent = cloudText(cloudOcta, precip);
+      }
+
+      // Update Face 7 (iOS lock-screen)
+      setAll('j-ios-place', placeLabel);
+      setAll('j-ios-temp', feels+'°');
+      setAll('j-ios-ico', skyIcon(cloudOcta, precip));
+      setAll('j-ios-cond', cloudText(cloudOcta, precip) || 'Clear');
+      setAll('j-ios-hl', 'H:'+(hi!=null?hi:'--')+'° L:'+(lo!=null?lo:'--')+'°');
+
+      // Update sky mood for Face 6
+      setSkyMood(cloudOcta, precip);
+    } catch(e){}
+  }
+
+  function loadLocalWeather(){
+    if(navigator.geolocation){
       navigator.geolocation.getCurrentPosition(
-        async function(pos){
-          var lat = pos.coords.latitude.toFixed(2);
-          var lon = pos.coords.longitude.toFixed(2);
-          localGeoLat = lat;
-          localGeoLon = lon;
-
-          try {
-            // Reverse geocode coordinates -> place name. BigDataCloud's
-            // reverse-geocode-client endpoint is free, key-less and CORS-enabled
-            // for browser use (Open-Meteo's geocoder only does name -> coords).
-            const geoUrl = 'https://api.bigdatacloud.net/data/reverse-geocode-client?latitude='+lat+'&longitude='+lon+'&localityLanguage=en';
-            const geoResp = await fetch(geoUrl);
-            if(geoResp.ok){
-              const g = await geoResp.json();
-              var place = g.city || g.locality || g.principalSubdivision || '';
-              var region = g.principalSubdivision && g.principalSubdivision !== place ? g.principalSubdivision : '';
-              var country = g.countryName || '';
-              localGeoName = place
-                ? place + (region ? ', '+region : '') + (country ? ' · '+country : '')
-                : (region ? region + (country ? ' · '+country : '') : country);
-            }
-
-            // Fetch weather for this location (current + today's high/low)
-            const wxUrl = 'https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
-              +'&current=temperature_2m,apparent_temperature,weather_code,'
-              +'wind_speed_10m,wind_direction_10m,wind_gusts_10m,'
-              +'relative_humidity_2m,dew_point_2m,precipitation,'
-              +'cloud_cover,surface_pressure,visibility,shortwave_radiation'
-              +'&daily=temperature_2m_max,temperature_2m_min'
-              +'&temperature_unit=celsius&wind_speed_unit=kn&timezone=auto';
-            const wxResp = await fetch(wxUrl);
-            if(wxResp.ok){
-              const wxData = await wxResp.json();
-              var c = wxData.current;
-              var fc = c.weather_code;
-              var fnight = (new Date().getHours()<6 || new Date().getHours()>=19);
-              var feels = Math.round(c.apparent_temperature);
-              var actual = Math.round(c.temperature_2m);
-              var cloudOcta = c.cloud_cover!=null ? Math.round(c.cloud_cover/12.5) : null;
-              var precip = c.precipitation!=null ? c.precipitation : null;
-              var hi = (wxData.daily && wxData.daily.temperature_2m_max) ? Math.round(wxData.daily.temperature_2m_max[0]) : null;
-              var lo = (wxData.daily && wxData.daily.temperature_2m_min) ? Math.round(wxData.daily.temperature_2m_min[0]) : null;
-              var coordLabel = Math.abs(lat)+'°'+(lat>=0?'N':'S')+' '+Math.abs(lon)+'°'+(lon>=0?'E':'W');
-              var placeLabel = localGeoName || coordLabel;
-
-              // Update Face 6 hero
-              const face6Hero = document.querySelector('.f-night .fn-hero');
-              if(face6Hero){
-                face6Hero.querySelector('.fn-ico').textContent = skyIcon(cloudOcta, precip);
-                face6Hero.querySelector('.fn-city').textContent = placeLabel;
-                face6Hero.querySelector('.fn-temp').textContent = feels+'°';
-                face6Hero.querySelector('.fn-cond').textContent = cloudText(cloudOcta, precip);
-              }
-
-              // Update Face 7 (iOS lock-screen)
-              setAll('j-ios-place', placeLabel);
-              setAll('j-ios-temp', feels+'°');
-              setAll('j-ios-ico', skyIcon(cloudOcta, precip));
-              setAll('j-ios-cond', cloudText(cloudOcta, precip) || 'Clear');
-              setAll('j-ios-hl', 'H:'+(hi!=null?hi:'--')+'° L:'+(lo!=null?lo:'--')+'°');
-
-              // Update sky mood for Face 6
-              setSkyMood(cloudOcta, precip);
-            }
-          } catch(e){}
-          resolve();
-        },
-        function(err){ resolve(); } // permission denied or unavailable
+        function(pos){ renderLocalWeather(pos.coords.latitude.toFixed(2), pos.coords.longitude.toFixed(2)); },
+        function(err){ renderLocalWeather(LOCAL_FALLBACK.lat, LOCAL_FALLBACK.lon, LOCAL_FALLBACK.name); },
+        { enableHighAccuracy:false, timeout:8000, maximumAge:600000 }
       );
-    });
+    } else {
+      renderLocalWeather(LOCAL_FALLBACK.lat, LOCAL_FALLBACK.lon, LOCAL_FALLBACK.name);
+    }
   }
   function markActive(){
     const faces = carousel.children;
