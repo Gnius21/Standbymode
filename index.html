@@ -312,6 +312,7 @@
   }
   .f-glass .fg-stat {
     position: relative;
+    min-width: 0;
     background: linear-gradient(160deg, rgba(255,255,255,0.11), rgba(255,255,255,0.04));
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -605,6 +606,7 @@
   }
   .f-weather .fw-tile {
     position: relative;
+    min-width: 0;
     background: linear-gradient(160deg, rgba(255,255,255,0.09), rgba(255,255,255,0.03));
     border: 1px solid rgba(255,255,255,0.09);
     border-radius: clamp(8px, 1.4cqw, 16px);
@@ -969,6 +971,7 @@
   }
   .f-night .fn-card {
     position: relative;
+    min-width: 0;
     background: linear-gradient(160deg, rgba(140,160,230,0.16), rgba(90,110,190,0.06));
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
@@ -1118,133 +1121,6 @@
     .f-night .fn-star, .f-night .fn-ico,
     .f-night.sky-clear-day::before,
     .f-night.sky-rain::before { animation: none; }
-  }
-
-  /* ---------- Face 7: iOS Lock-Screen (time + date + local weather) ---------- */
-  .f-ios {
-    --ios-red: #ff453a;
-    min-width: 0;
-    flex-direction: column;
-    justify-content: center;
-    align-items: stretch;
-    gap: clamp(8px, 3cqh, 36px);
-    background: #000;
-  }
-  .f-ios .fi-clock {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: baseline;
-    font-weight: 800;
-    font-size: clamp(54px, 26cqh, 280px);
-    line-height: 0.86;
-    letter-spacing: -0.04em;
-    color: #fff;
-    font-variant-numeric: tabular-nums;
-  }
-  .f-ios .fi-colon {
-    margin: 0 0.02em;
-    animation: blink 1s steps(1) infinite;
-  }
-  .f-ios .fi-ampm {
-    font-size: 0.28em;
-    font-weight: 700;
-    color: var(--muted);
-    margin-left: 0.3em;
-    align-self: flex-end;
-    transform: translateY(-0.4em);
-  }
-  .f-ios .fi-wrap {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: clamp(20px, 6cqw, 120px);
-    width: 100%;
-    min-width: 0;
-  }
-  .f-ios .fi-left { flex: 0 0 auto; min-width: 0; }
-  .f-ios .fi-dateline {
-    font-weight: 800;
-    font-size: clamp(20px, 8cqh, 82px);
-    line-height: 1;
-    letter-spacing: -0.01em;
-    white-space: nowrap;
-  }
-  .f-ios .fi-dow { color: var(--ios-red); }
-  .f-ios .fi-mon { color: var(--muted); }
-  .f-ios .fi-daynum {
-    margin-top: clamp(2px, 0.8cqh, 10px);
-    font-weight: 800;
-    font-size: clamp(54px, 26cqh, 280px);
-    line-height: 0.86;
-    letter-spacing: -0.04em;
-    color: #fff;
-    font-variant-numeric: tabular-nums;
-  }
-  .f-ios .fi-right {
-    flex: 0 1 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    text-align: right;
-    min-width: 0;
-  }
-  .f-ios .fi-loc {
-    display: flex;
-    align-items: center;
-    gap: 0.25em;
-    font-weight: 800;
-    font-size: clamp(18px, 7cqh, 72px);
-    line-height: 1;
-    color: #fff;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-  }
-  .f-ios .fi-arrow {
-    flex: 0 0 auto;
-    width: 0.62em;
-    height: 0.62em;
-    display: inline-block;
-  }
-  .f-ios .fi-arrow svg { width: 100%; height: 100%; fill: #fff; display: block; }
-  .f-ios .fi-temp {
-    margin-top: clamp(2px, 0.8cqh, 10px);
-    font-weight: 800;
-    font-size: clamp(54px, 26cqh, 280px);
-    line-height: 0.86;
-    letter-spacing: -0.04em;
-    color: #fff;
-    font-variant-numeric: tabular-nums;
-  }
-  .f-ios .fi-wx {
-    margin-top: clamp(6px, 1.8cqh, 20px);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-  }
-  .f-ios .fi-ico {
-    font-size: clamp(24px, 8cqh, 82px);
-    line-height: 1;
-  }
-  .f-ios .fi-cond {
-    margin-top: clamp(3px, 0.9cqh, 10px);
-    font-weight: 800;
-    font-size: clamp(18px, 6cqh, 62px);
-    line-height: 1.05;
-    color: #fff;
-    text-transform: capitalize;
-    white-space: nowrap;
-  }
-  .f-ios .fi-hl {
-    margin-top: clamp(2px, 0.5cqh, 8px);
-    font-weight: 700;
-    font-size: clamp(15px, 5cqh, 52px);
-    line-height: 1;
-    color: var(--muted);
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
   }
 
   /* ---------- Dots indicator ---------- */
@@ -1593,33 +1469,12 @@
         </div>
       </section>
 
-      <!-- Face 7: iOS Lock-Screen (time + date + local weather) -->
-      <section class="face f-ios">
-        <div class="fi-clock"><span class="j-hh">12</span><span class="fi-colon">:</span><span class="j-mm">00</span><span class="fi-ampm j-ampm">PM</span></div>
-        <div class="fi-wrap">
-          <div class="fi-left">
-            <div class="fi-dateline"><span class="fi-dow j-dow-tc">Wed</span> <span class="fi-mon j-mon-tc">Jun</span></div>
-            <div class="fi-daynum j-dom">17</div>
-          </div>
-          <div class="fi-right">
-            <div class="fi-loc"><span class="j-ios-place">Locating&hellip;</span><span class="fi-arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 2.5 2.7 10.3c-1 .4-.9 1.8.1 2.1l7.6 2.2 2.2 7.6c.3 1 1.7 1.1 2.1.1L24.6 5.5c.4-1-.6-2-1.6-1.6z" transform="translate(-1 -1)"/></svg></span></div>
-            <div class="fi-temp j-ios-temp">--&deg;</div>
-            <div class="fi-wx">
-              <div class="fi-ico j-ios-ico">&#x26C5;</div>
-              <div class="fi-cond j-ios-cond">&mdash;</div>
-              <div class="fi-hl j-ios-hl">H:--&deg; L:--&deg;</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
     </div>
     <div class="dots" id="dots"></div>
   </div>
 
 <script>
   const DAYS = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
-  const DAYS_TC = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
   function setAll(cls, text){
@@ -1641,8 +1496,6 @@
     setAll('j-mm', String(now.getMinutes()).padStart(2,'0'));
     setAll('j-ampm', now.getHours() < 12 ? 'AM' : 'PM');
     setAll('j-dow', DAYS[now.getDay()]);
-    setAll('j-dow-tc', DAYS_TC[now.getDay()]);
-    setAll('j-mon-tc', MONTHS[now.getMonth()].slice(0,3));
     setAll('j-dom', now.getDate());
     setAll('j-fulldate', MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear());
 
@@ -2237,13 +2090,6 @@
         face6Hero.querySelector('.fn-cond').textContent = cloudText(cloudOcta, precip);
       }
 
-      // Update Face 7 (iOS lock-screen)
-      setAll('j-ios-place', placeLabel);
-      setAll('j-ios-temp', feels+'°');
-      setAll('j-ios-ico', skyIcon(cloudOcta, precip));
-      setAll('j-ios-cond', cloudText(cloudOcta, precip) || 'Clear');
-      setAll('j-ios-hl', 'H:'+(hi!=null?hi:'--')+'° L:'+(lo!=null?lo:'--')+'°');
-
       // Update sky mood for Face 6
       setSkyMood(cloudOcta, precip);
     } catch(e){}
@@ -2272,8 +2118,8 @@
     localStorage.setItem('faceIndex', index);
     render(0);
     markActive();
-    // Faces 6 (night/sky) and 7 (iOS lock-screen) show local-location weather
-    if(index === 5 || index === 6){
+    // Face 6 (night/sky) shows weather for the user's local location
+    if(index === 5){
       loadLocalWeather();
     }
   }
