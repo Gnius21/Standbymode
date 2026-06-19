@@ -1730,13 +1730,15 @@
     for(var i=0;i<scale.length;i++) if(ms>=scale[i]) b=i;
     return 'Bft '+b+' · '+names[b];
   }
-  function feelLike(t, rh){
+  // "Feels like" apparent temperature (Australian BoM model).
+  // Uses air temp, humidity (via water-vapour pressure) and wind:
+  // warmer than actual in humid heat, cooler when the wind is strong.
+  function feelLike(t, rh, windMs){
     if(t==null||rh==null) return null;
-    if(t>=27){
-      var hi=-8.785+1.611*t+2.339*rh-.146*t*rh-.012*t*t-.016*rh*rh+.002*t*t*rh+.0007*t*rh*rh-0.000003*t*t*rh*rh;
-      return Math.round(hi);
-    }
-    return Math.round(t);
+    var ws = (windMs!=null && isFinite(windMs)) ? windMs : 0;
+    var e = (rh/100) * 6.105 * Math.exp(17.27*t/(237.7+t)); // vapour pressure, hPa
+    var at = t + 0.33*e - 0.70*ws - 4.00;
+    return Math.round(at);
   }
   function visQual(m){
     if(m==null) return '';
@@ -1841,7 +1843,7 @@
       if(data&&data.temp_c!=null){
         var windKt=data.wind_kt;
         var gustKt=data.gust_kt;
-        var feels=feelLike(data.temp_c, data.rh);
+        var feels=feelLike(data.temp_c, data.rh, data.wind_ms);
         var actualTemp=Math.round(data.temp_c);
         setAll('j-temp', feels+'°');
         setAll('j-actualtemp', actualTemp+'°');
