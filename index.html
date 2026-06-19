@@ -608,7 +608,7 @@
   /* Grid */
   .f-weather .fw-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: clamp(5px, 1cqw, 11px);
     width: 100%;
     flex-shrink: 0;
@@ -1670,8 +1670,8 @@
       ['Windspeed',/Windspeed[^0-9-]*([\d.]+)/i],
       ['Gusts',/Gusts[^0-9-]*([\d.]+)/i],
       ['Cloud cover',/Cloud cover[^0-9-]*([\d.]+)/i],
-      ['Radiation',/Radiation[^)]+\)\s*([\d.]+)/i],
-      ['Precipitation',/Precipitation[^)]+\)\s*([\d.]+)/i],
+      ['Radiation',/Radiation(?:[^)]+\)\s*|[^0-9-]+)([\d.]+)/i],
+      ['Precipitation',/Precipitation(?:[^)]+\)\s*|[^0-9-]+)([\d.]+)/i],
       ['Relative humidity',/Relative humidity[^0-9-]*([\d.]+)/i],
       ['Temperature (°C)',/Temperature[^0-9-]*(-?[\d.]+)/i],
       ['Dewpoint',/Dewpoint[^0-9-]*(-?[\d.]+)/i],
