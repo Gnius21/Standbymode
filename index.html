@@ -1180,6 +1180,328 @@
     .f-night.sky-rain::before { animation: none; }
   }
 
+  /* ---------- Face 7: Sun & Moon ---------- */
+  .f-astro {
+    --au-gold: #ffcf6e;
+    --au-blue: #8fb0ff;
+    min-width: 0;
+    gap: clamp(16px, 4cqw, 70px);
+    justify-content: center;
+    background:
+      radial-gradient(ellipse 55% 45% at 22% 28%, rgba(150,170,255,0.14), transparent 62%),
+      radial-gradient(ellipse 60% 50% at 88% 90%, rgba(255,190,110,0.10), transparent 60%),
+      linear-gradient(165deg, #0a0e1c 0%, #0d1226 55%, #141a33 100%);
+    overflow: hidden;
+  }
+  .f-astro .fa-moon {
+    flex: 0 0 clamp(120px, 30%, 360px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(6px, 1.8cqh, 18px);
+    min-width: 0;
+  }
+  .f-astro .fa-moondisc {
+    width: min(58cqh, 30cqw);
+    height: min(58cqh, 30cqw);
+    filter: drop-shadow(0 6px 26px rgba(150,170,255,0.32));
+  }
+  .f-astro .fa-moonname {
+    font-weight: 700;
+    font-size: clamp(13px, 3.6cqh, 34px);
+    color: #eef1ff;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .f-astro .fa-moonpct {
+    font-weight: 500;
+    font-size: clamp(10px, 2.6cqh, 22px);
+    color: rgba(190,200,235,0.62);
+    white-space: nowrap;
+  }
+  .f-astro .fa-main {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(8px, 2cqh, 22px);
+  }
+  .f-astro .fa-clockrow { display: flex; align-items: baseline; gap: clamp(8px, 2cqw, 24px); flex-wrap: wrap; }
+  .f-astro .fa-time {
+    font-weight: 700;
+    font-size: clamp(40px, 15cqh, 150px);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: #f5f7ff;
+    display: flex;
+    align-items: baseline;
+  }
+  .f-astro .fa-colon { margin: 0 0.03em; color: var(--au-gold); }
+  .f-astro .fa-ampm {
+    font-size: 0.32em;
+    font-weight: 600;
+    margin-left: 0.2em;
+    color: var(--au-gold);
+    align-self: flex-end;
+    transform: translateY(-0.25em);
+  }
+  .f-astro .fa-date {
+    color: rgba(190,200,235,0.6);
+    font-weight: 500;
+    font-size: clamp(13px, 4cqh, 38px);
+    white-space: nowrap;
+  }
+  .f-astro .fa-arcwrap {
+    position: relative;
+    width: 100%;
+    height: clamp(46px, 16cqh, 150px);
+  }
+  .f-astro .fa-arc { width: 100%; height: 100%; overflow: visible; }
+  .f-astro .fa-arc-track {
+    fill: none;
+    stroke: rgba(255,255,255,0.12);
+    stroke-width: 2;
+    stroke-dasharray: 3 5;
+    stroke-linecap: round;
+  }
+  .f-astro .fa-arc-fill {
+    fill: none;
+    stroke: var(--au-gold);
+    stroke-width: 3;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 6px rgba(255,200,110,0.6));
+    transition: stroke-dashoffset 0.8s ease;
+  }
+  .f-astro .fa-horizon {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: clamp(5px, 8.3%, 14px);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18) 20%, rgba(255,255,255,0.18) 80%, transparent);
+  }
+  .f-astro .fa-sun {
+    position: absolute;
+    font-size: clamp(16px, 5cqh, 44px);
+    line-height: 1;
+    transform: translate(-50%, -50%);
+    filter: drop-shadow(0 0 10px rgba(255,200,110,0.7));
+    transition: left 0.8s ease, top 0.8s ease, opacity 0.5s ease;
+    pointer-events: none;
+  }
+  .f-astro .fa-countdown { display: flex; align-items: baseline; gap: clamp(6px, 1.4cqw, 14px); }
+  .f-astro .fa-cd-lbl {
+    font-weight: 700;
+    font-size: clamp(10px, 2.8cqh, 24px);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--au-gold);
+    white-space: nowrap;
+  }
+  .f-astro .fa-cd-val {
+    font-weight: 700;
+    font-size: clamp(16px, 5cqh, 48px);
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .f-astro .fa-chips {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(6px, 1.2cqw, 14px);
+  }
+  .f-astro .fa-chip {
+    min-width: 0;
+    background: linear-gradient(160deg, rgba(255,255,255,0.09), rgba(255,255,255,0.03));
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: clamp(8px, 1.6cqh, 18px);
+    padding: clamp(6px, 1.4cqh, 14px) clamp(6px, 1cqw, 12px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(2px, 0.5cqh, 5px);
+    text-align: center;
+  }
+  .f-astro .fa-chip-ico { font-size: clamp(14px, 3.4cqh, 30px); line-height: 1; }
+  .f-astro .fa-chip-val {
+    font-weight: 700;
+    font-size: clamp(12px, 3.4cqh, 32px);
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .f-astro .fa-chip-lbl {
+    font-size: clamp(8px, 2cqh, 17px);
+    font-weight: 500;
+    color: rgba(190,200,235,0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  /* ---------- Face 8: Marine / Dive ---------- */
+  .f-marine {
+    --mr-teal: #5ee6c8;
+    --mr-blue: #5ea8ff;
+    --mr-warm: #ffb45e;
+    min-width: 0;
+    gap: clamp(16px, 4cqw, 64px);
+    justify-content: center;
+    background:
+      radial-gradient(ellipse 55% 60% at 18% 40%, rgba(94,230,200,0.10), transparent 62%),
+      radial-gradient(ellipse 55% 55% at 88% 85%, rgba(94,168,255,0.10), transparent 60%),
+      linear-gradient(165deg, #04121a 0%, #06202b 55%, #07303c 100%);
+    overflow: hidden;
+  }
+  .f-marine .fm-dialwrap {
+    flex: 0 0 clamp(130px, 33%, 400px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(6px, 1.6cqh, 16px);
+    min-width: 0;
+  }
+  .f-marine .fm-compass {
+    position: relative;
+    width: min(62cqh, 32cqw);
+    height: min(62cqh, 32cqw);
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 42%, rgba(20,60,75,0.7), rgba(6,24,32,0.6));
+    border: 1px solid rgba(94,230,200,0.28);
+    box-shadow: inset 0 0 22px rgba(0,0,0,0.6), 0 8px 30px rgba(0,0,0,0.45);
+  }
+  .f-marine .fm-cdir {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(190,225,235,0.7);
+    font-weight: 700;
+    font-size: clamp(8px, 2.4cqh, 22px);
+  }
+  .f-marine .fm-cN { top: clamp(5px, 1.6cqh, 14px); }
+  .f-marine .fm-cS { top: auto; bottom: clamp(3px, 1.2cqh, 11px); transform: translate(-50%, 0); }
+  .f-marine .fm-cE { left: auto; right: clamp(5px, 1.6cqh, 14px); transform: translate(0, -50%); color: var(--mr-teal); }
+  .f-marine .fm-cW { left: clamp(5px, 1.6cqh, 14px); transform: translate(0, -50%); }
+  .f-marine .fm-needle {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: clamp(4px, 1.1cqh, 9px);
+    height: 64%;
+    transform-origin: 50% 50%;
+    transform: translate(-50%, -50%) rotate(var(--mrot, 0deg));
+    transition: transform 0.8s ease;
+    background: linear-gradient(180deg, #ff7a7a 0 50%, rgba(255,255,255,0.5) 50% 100%);
+    border-radius: 99px;
+    box-shadow: 0 0 10px rgba(255,122,122,0.6);
+  }
+  .f-marine .fm-center {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 0.95;
+  }
+  .f-marine .fm-wind {
+    font-weight: 800;
+    font-size: clamp(22px, 9cqh, 86px);
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+  }
+  .f-marine .fm-windunit { font-size: clamp(9px, 2.6cqh, 22px); color: var(--mr-teal); font-weight: 700; letter-spacing: 0.08em; }
+  .f-marine .fm-bft {
+    font-weight: 700;
+    font-size: clamp(11px, 3cqh, 28px);
+    color: var(--mr-teal);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    text-align: center;
+  }
+  .f-marine .fm-gust {
+    font-size: clamp(9px, 2.4cqh, 20px);
+    color: rgba(190,215,225,0.6);
+    white-space: nowrap;
+  }
+  .f-marine .fm-main {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(8px, 2cqh, 22px);
+  }
+  .f-marine .fm-verdict {
+    display: flex;
+    align-items: center;
+    gap: clamp(8px, 2cqw, 22px);
+    background: linear-gradient(160deg, rgba(94,230,200,0.16), rgba(94,168,255,0.06));
+    border: 1px solid rgba(94,230,200,0.22);
+    border-radius: clamp(12px, 2.4cqh, 26px);
+    padding: clamp(8px, 2cqh, 22px) clamp(12px, 2.4cqw, 28px);
+    min-width: 0;
+  }
+  .f-marine .fm-verdict-ico { font-size: clamp(28px, 9cqh, 80px); line-height: 1; flex-shrink: 0; }
+  .f-marine .fm-verdict-txt { display: flex; flex-direction: column; min-width: 0; gap: clamp(1px, 0.4cqh, 4px); }
+  .f-marine .fm-verdict-hd {
+    font-weight: 800;
+    font-size: clamp(16px, 5.5cqh, 54px);
+    color: #fff;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .f-marine .fm-verdict-sub {
+    font-size: clamp(11px, 3cqh, 28px);
+    color: var(--mr-teal);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .f-marine .fm-spark { display: flex; flex-direction: column; gap: clamp(3px, 0.8cqh, 8px); min-width: 0; }
+  .f-marine .fm-spark-hd {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    font-size: clamp(9px, 2.4cqh, 20px);
+    font-weight: 600;
+    color: rgba(200,220,225,0.62);
+    white-space: nowrap;
+  }
+  .f-marine .fm-spark-hd > span:last-child { color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .f-marine .fm-spark-svg {
+    width: 100%;
+    height: clamp(28px, 9cqh, 80px);
+    overflow: visible;
+  }
+  .f-marine .fm-spark-line {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+  .f-marine .fm-spark-line.warm { stroke: var(--mr-warm); filter: drop-shadow(0 0 5px rgba(255,180,94,0.5)); }
+  .f-marine .fm-spark-line.teal { stroke: var(--mr-teal); filter: drop-shadow(0 0 5px rgba(94,230,200,0.5)); }
+
   /* ---------- Dots indicator ---------- */
   .dots {
     position: absolute;
@@ -1542,6 +1864,90 @@
         </div>
       </section>
 
+      <!-- Face 7: Sun & Moon -->
+      <section class="face f-astro">
+        <div class="fa-moon">
+          <svg class="fa-moondisc" viewBox="-50 -50 100 100" aria-hidden="true">
+            <defs>
+              <radialGradient id="fa-moonlit" cx="38%" cy="34%" r="78%">
+                <stop offset="0%" stop-color="#fffdf3"/>
+                <stop offset="62%" stop-color="#e7eaf4"/>
+                <stop offset="100%" stop-color="#b4bace"/>
+              </radialGradient>
+            </defs>
+            <circle r="48" fill="#0e111b"/>
+            <path id="fa-moonlitpath" d="" fill="url(#fa-moonlit)"/>
+            <circle r="48" fill="none" stroke="rgba(180,190,220,0.22)" stroke-width="1"/>
+          </svg>
+          <div class="fa-moonname ja-moonname">&mdash;</div>
+          <div class="fa-moonpct"><span class="ja-moonpct">--</span>% illuminated</div>
+        </div>
+        <div class="fa-main">
+          <div class="fa-clockrow">
+            <div class="fa-time"><span class="j-hh">--</span><span class="fa-colon">:</span><span class="j-mm">--</span><span class="fa-ampm j-ampm">AM</span></div>
+            <div class="fa-date"><span class="j-dow">---</span> &middot; <span class="j-fulldate">---</span></div>
+          </div>
+          <div class="fa-arcwrap">
+            <svg class="fa-arc" viewBox="0 0 200 72" preserveAspectRatio="none">
+              <path class="fa-arc-track" d="M6,66 A105.17,105.17 0 0,1 194,66"/>
+              <path class="fa-arc-fill" id="fa-arcfill" d="M6,66 A105.17,105.17 0 0,1 194,66"/>
+            </svg>
+            <div class="fa-horizon"></div>
+            <div class="fa-sun" id="fa-sun">&#x2600;&#xFE0F;</div>
+          </div>
+          <div class="fa-countdown">
+            <span class="fa-cd-lbl ja-nextlbl">&mdash;</span>
+            <span class="fa-cd-val ja-countdown">--</span>
+          </div>
+          <div class="fa-chips">
+            <div class="fa-chip"><span class="fa-chip-ico">&#x1F305;</span><span class="fa-chip-val ja-sunrise">--:--</span><span class="fa-chip-lbl">Sunrise</span></div>
+            <div class="fa-chip"><span class="fa-chip-ico">&#x1F307;</span><span class="fa-chip-val ja-sunset">--:--</span><span class="fa-chip-lbl">Sunset</span></div>
+            <div class="fa-chip"><span class="fa-chip-ico">&#x23F3;</span><span class="fa-chip-val ja-daylen">--</span><span class="fa-chip-lbl">Daylight</span></div>
+            <div class="fa-chip"><span class="fa-chip-ico ja-nowico">&#x1F327;&#xFE0F;</span><span class="fa-chip-val ja-nowcast">--</span><span class="fa-chip-lbl">Nowcast</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Face 8: Marine / Dive -->
+      <section class="face f-marine">
+        <div class="fm-dialwrap">
+          <div class="fm-compass">
+            <span class="fm-cdir fm-cN">N</span>
+            <span class="fm-cdir fm-cE">E</span>
+            <span class="fm-cdir fm-cS">S</span>
+            <span class="fm-cdir fm-cW">W</span>
+            <div class="fm-needle jm-needle"></div>
+            <div class="fm-center">
+              <span class="fm-wind jm-wind">--</span>
+              <span class="fm-windunit">kt</span>
+            </div>
+          </div>
+          <div class="fm-bft jm-bft">&mdash;</div>
+          <div class="fm-gust">Gust <span class="jm-gust">--</span> kt &middot; from <span class="jm-dir">--</span></div>
+        </div>
+        <div class="fm-main">
+          <div class="fm-verdict">
+            <span class="fm-verdict-ico jm-verdicon">&#x1F93F;</span>
+            <div class="fm-verdict-txt">
+              <span class="fm-verdict-hd jm-verdict-hd">&mdash;</span>
+              <span class="fm-verdict-sub jm-verdict-sub">&mdash;</span>
+            </div>
+          </div>
+          <div class="fm-spark">
+            <div class="fm-spark-hd"><span>&#x1F321;&#xFE0F; Temperature &middot; 24h</span><span class="jm-temprange">--</span></div>
+            <svg class="fm-spark-svg" viewBox="0 0 300 56" preserveAspectRatio="none">
+              <polyline class="fm-spark-line warm" id="fm-tempspark" points=""/>
+            </svg>
+          </div>
+          <div class="fm-spark">
+            <div class="fm-spark-hd"><span>&#x1F4A8; Wind &middot; 24h</span><span class="jm-windrange">--</span></div>
+            <svg class="fm-spark-svg" viewBox="0 0 300 56" preserveAspectRatio="none">
+              <polyline class="fm-spark-line teal" id="fm-windspark" points=""/>
+            </svg>
+          </div>
+        </div>
+      </section>
+
     </div>
     <div class="dots" id="dots"></div>
   </div>
@@ -1582,6 +1988,9 @@
     handS.style.transform = 'rotate(' + (s * 6) + 'deg)';
     handM.style.transform = 'rotate(' + (m * 6) + 'deg)';
     handH.style.transform = 'rotate(' + (h * 30) + 'deg)';
+
+    // Faces 7 & 8: live sun position, countdown, moon (cheap, guarded)
+    if(typeof updateAstroLive === 'function') updateAstroLive();
   }
   tick(); setInterval(tick, 1000);
 
@@ -2051,6 +2460,195 @@
     return knmiOk || omOk;
   }
 
+  // ---------- Faces 7 & 8: Sun/Moon + Marine (Bonaire) ----------
+  var astroData = null;
+  var lastMoonKey = '';
+  var arcLen = 0;
+  const ARC = { cx:100, cy:113.17, r:105.17, a0:-153.35*Math.PI/180, a1:-26.65*Math.PI/180, vbW:200, vbH:72 };
+
+  function moonPhase(date){
+    var syn = 29.530588853;                       // synodic month, days
+    var ref = Date.UTC(2000,0,6,18,14,0)/86400000; // a known new moon
+    var p = (((date.getTime()/86400000) - ref) / syn) % 1;
+    return p < 0 ? p + 1 : p;                      // 0=new, 0.5=full
+  }
+  function moonName(p){
+    if(p < 0.02 || p > 0.98) return 'New Moon';
+    if(p < 0.23) return 'Waxing Crescent';
+    if(p < 0.27) return 'First Quarter';
+    if(p < 0.48) return 'Waxing Gibbous';
+    if(p < 0.52) return 'Full Moon';
+    if(p < 0.73) return 'Waning Gibbous';
+    if(p < 0.77) return 'Last Quarter';
+    return 'Waning Crescent';
+  }
+  // SVG path for the lit portion of a moon of radius r, illuminated fraction f.
+  // waxing => lit on the right (northern hemisphere).
+  function moonLitPath(r, f, waxing){
+    if(f <= 0.005) return '';
+    if(f >= 0.995) return 'M 0 '+(-r)+' A '+r+' '+r+' 0 1 1 0 '+r+' A '+r+' '+r+' 0 1 1 0 '+(-r)+' Z';
+    var rx = r*(1 - 2*f), arx = Math.abs(rx);
+    var outerSweep = waxing ? 1 : 0;
+    var innerSweep = (rx > 0) ? (waxing ? 0 : 1) : (waxing ? 1 : 0);
+    return 'M 0 '+(-r)+' A '+r+' '+r+' 0 0 '+outerSweep+' 0 '+r+
+           ' A '+arx+' '+r+' 0 0 '+innerSweep+' 0 '+(-r)+' Z';
+  }
+
+  function fmtDur(ms){
+    var m = Math.max(0, Math.round(ms/60000));
+    var h = Math.floor(m/60);
+    return h > 0 ? h+'h '+(m%60)+'m' : m+'m';
+  }
+  function fmtDayLen(ms){
+    var m = Math.round(ms/60000);
+    return Math.floor(m/60)+'h '+(m%60)+'m';
+  }
+
+  function rainNowcast(){
+    if(!astroData || !astroData.m15times) return { txt:'No data', rain:false };
+    var times = astroData.m15times, vals = astroData.m15precip, now = Date.now();
+    var start = 0;
+    for(var i=0;i<times.length;i++){ if(new Date(times[i]).getTime() >= now){ start = i; break; } }
+    for(var k=0;k<8 && start+k<vals.length;k++){
+      if(vals[start+k] > 0.1){
+        if(k === 0) return { txt:'Raining', rain:true };
+        return { txt:'Rain ~'+(k*15)+'m', rain:true };
+      }
+    }
+    return { txt:'Dry · 2h', rain:false };
+  }
+
+  function updateAstroLive(){
+    var now = new Date();
+    // Moon: only rebuild when the day changes (phase moves slowly)
+    var dk = now.getFullYear()+'-'+now.getMonth()+'-'+now.getDate();
+    if(dk !== lastMoonKey){
+      lastMoonKey = dk;
+      var p = moonPhase(now);
+      var f = (1 - Math.cos(p*2*Math.PI))/2;
+      var path = document.getElementById('fa-moonlitpath');
+      if(path) path.setAttribute('d', moonLitPath(48, f, p < 0.5));
+      setAll('ja-moonname', moonName(p));
+      setAll('ja-moonpct', String(Math.round(f*100)));
+    }
+    if(!astroData || !astroData.sunrise || !astroData.sunset) return;
+    var sr = astroData.sunrise, ss = astroData.sunset, srNext = astroData.sunriseNext;
+    var sunEl = document.getElementById('fa-sun');
+    var fill = document.getElementById('fa-arcfill');
+    var daytime = now >= sr && now < ss;
+    var t = daytime ? (now - sr)/(ss - sr) : (now < sr ? 0 : 1);
+
+    if(sunEl){
+      var ang = ARC.a0 + t*(ARC.a1 - ARC.a0);
+      sunEl.style.left = ((ARC.cx + ARC.r*Math.cos(ang))/ARC.vbW*100) + '%';
+      sunEl.style.top  = ((ARC.cy + ARC.r*Math.sin(ang))/ARC.vbH*100) + '%';
+      sunEl.style.opacity = daytime ? '1' : '0';
+    }
+    if(fill){
+      if(!arcLen){ try{ arcLen = fill.getTotalLength(); }catch(e){ arcLen = 330; } }
+      fill.style.strokeDasharray = arcLen;
+      fill.style.strokeDashoffset = daytime ? (arcLen*(1 - t)) : arcLen;
+    }
+    // Countdown to next sun event (+ golden-hour flag in the last hour of light)
+    var nextEv, lbl;
+    if(now < sr){ nextEv = sr; lbl = 'Sunrise in'; }
+    else if(now < ss){ nextEv = ss; lbl = (ss - now <= 3600000) ? 'Golden hour' : 'Sunset in'; }
+    else { nextEv = srNext || sr; lbl = 'Sunrise in'; }
+    setAll('ja-nextlbl', lbl);
+    setAll('ja-countdown', fmtDur(nextEv - now));
+    // Rain nowcast
+    var nc = rainNowcast();
+    setAll('ja-nowcast', nc.txt);
+    setAll('ja-nowico', nc.rain ? '🌧️' : '🌤️');
+  }
+
+  function hourIndexNow(times){
+    var now = Date.now();
+    for(var i=0;i<times.length;i++){ if(new Date(times[i]).getTime() >= now - 3600000) return i; }
+    return 0;
+  }
+  function buildSpark(elId, vals){
+    var el = document.getElementById(elId);
+    if(!el || !vals || vals.length < 2) return;
+    var w = 300, h = 56, pad = 5;
+    var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    var range = (max - min) || 1;
+    var pts = vals.map(function(v,i){
+      var x = pad + i/(vals.length-1)*(w - 2*pad);
+      var y = (h - pad) - (v - min)/range*(h - 2*pad);
+      return x.toFixed(1)+','+y.toFixed(1);
+    }).join(' ');
+    el.setAttribute('points', pts);
+  }
+  function diveVerdict(kt, gust){
+    if(kt == null) return { ico:'🤿', hd:'No data', sub:'' };
+    if(kt < 8)  return { ico:'🤿', hd:'Great diving', sub:'Calm seas · excellent viz' };
+    if(kt < 16) return { ico:'🤿', hd:'Good for diving', sub:'Leeward side is calm' };
+    if(kt < 22) return { ico:'🌬️', hd:'Breezy', sub:'Stick to the lee shore' };
+    if(kt < 28) return { ico:'🏄', hd:'Windy', sub:'Choppy · windsurf weather' };
+    return { ico:'⚠️', hd:'Very windy', sub:'Rough seas — take care' };
+  }
+
+  function renderMarine(){
+    if(!astroData) return;
+    var c = astroData.current || {};
+    var kt = c.wind_speed_10m != null ? Math.round(c.wind_speed_10m) : null;
+    var gust = c.wind_gusts_10m != null ? Math.round(c.wind_gusts_10m) : null;
+    var dir = c.wind_direction_10m != null ? Math.round(c.wind_direction_10m) : null;
+    setAll('jm-wind', kt != null ? String(kt) : '--');
+    setAll('jm-gust', gust != null ? String(gust) : '--');
+    setAll('jm-dir', dir != null ? degToCompass(dir) : '--');
+    setAll('jm-bft', kt != null ? bft(kt/1.94384) : '—');
+    document.querySelectorAll('.jm-needle').forEach(function(el){ el.style.setProperty('--mrot', (dir||0)+'deg'); });
+    var v = diveVerdict(kt, gust);
+    setAll('jm-verdicon', v.ico);
+    setAll('jm-verdict-hd', v.hd);
+    setAll('jm-verdict-sub', v.sub);
+    var hh = astroData.hourly;
+    if(hh && hh.time){
+      var i0 = hourIndexNow(hh.time);
+      var temps = hh.temperature_2m.slice(i0, i0+24).filter(function(x){ return x != null; });
+      var winds = hh.wind_speed_10m.slice(i0, i0+24).filter(function(x){ return x != null; });
+      buildSpark('fm-tempspark', temps);
+      buildSpark('fm-windspark', winds);
+      if(temps.length) setAll('jm-temprange', Math.round(Math.min.apply(null,temps))+'°–'+Math.round(Math.max.apply(null,temps))+'°');
+      if(winds.length) setAll('jm-windrange', Math.round(Math.min.apply(null,winds))+'–'+Math.round(Math.max.apply(null,winds))+' kt');
+    }
+  }
+
+  async function loadAstroMarine(){
+    try{
+      var url = 'https://api.open-meteo.com/v1/forecast?latitude=12.17&longitude=-68.99'
+        + '&current=temperature_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,weather_code'
+        + '&hourly=temperature_2m,wind_speed_10m'
+        + '&minutely_15=precipitation'
+        + '&daily=sunrise,sunset'
+        + '&wind_speed_unit=kn&timezone=auto&forecast_days=2';
+      var r = await fetch(url);
+      if(!r.ok) throw new Error('http '+r.status);
+      var d = await r.json();
+      var dy = d.daily || {};
+      astroData = {
+        current: d.current || {},
+        hourly: d.hourly || null,
+        m15times: d.minutely_15 ? d.minutely_15.time : null,
+        m15precip: d.minutely_15 ? d.minutely_15.precipitation : null,
+        sunrise: (dy.sunrise && dy.sunrise[0]) ? new Date(dy.sunrise[0]) : null,
+        sunset:  (dy.sunset  && dy.sunset[0])  ? new Date(dy.sunset[0])  : null,
+        sunriseNext: (dy.sunrise && dy.sunrise[1]) ? new Date(dy.sunrise[1]) : null,
+        sunriseStr: (dy.sunrise && dy.sunrise[0]) || '',
+        sunsetStr:  (dy.sunset  && dy.sunset[0])  || ''
+      };
+      // Sunrise/sunset chips use the raw local (Bonaire) wall-clock string
+      if(astroData.sunriseStr) setAll('ja-sunrise', astroData.sunriseStr.slice(11,16));
+      if(astroData.sunsetStr)  setAll('ja-sunset',  astroData.sunsetStr.slice(11,16));
+      if(astroData.sunrise && astroData.sunset) setAll('ja-daylen', fmtDayLen(astroData.sunset - astroData.sunrise));
+      renderMarine();
+      updateAstroLive();
+      return true;
+    }catch(e){ return false; }
+  }
+
   setAll('j-place', 'Curaçao');
   setSkyMood(null, null); // set initial sky mood from time of day
   let lastWeatherTs = 0;
@@ -2085,6 +2683,8 @@
     loaderEl.classList.add('active');
     const ok = await loadWeather();
     if(ok) lastDataOkTs = Date.now();
+    // Faces 7 & 8 (Sun/Moon + Marine) pull Bonaire sun/hourly/nowcast data
+    loadAstroMarine();
     // Face 6 shows the user's local location — keep it fresh too when active
     if(typeof index !== 'undefined' && index === 5) loadLocalWeather();
     updateFreshness();
