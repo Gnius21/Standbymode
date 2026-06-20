@@ -1,0 +1,4 @@
+# Local tooling for visual testing (not part of the deployed app)
+node_modules/
+package.json
+package-lock.json
