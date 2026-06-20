@@ -1558,6 +1558,24 @@
     100% { transform: rotate(360deg); }
   }
 
+  /* ---------- Night dimming + warm tint (app-wide) ----------
+     Two full-screen veils whose opacity is driven by JS from sunrise/sunset.
+     nv-warm multiplies an amber over the scene (warms + darkens blues),
+     nv-dark adds a gentle dark wash. Both ease so dusk/dawn fade smoothly. */
+  .nv-warm, .nv-dark {
+    position: fixed;
+    inset: 0;
+    z-index: 9;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 2.5s ease;
+  }
+  .nv-warm { background: #ff7b1e; mix-blend-mode: multiply; }
+  .nv-dark { background: #04050d; }
+  @media (prefers-reduced-motion: reduce) {
+    .nv-warm, .nv-dark { transition: none; }
+  }
+
   /* ---------- Data freshness indicator ---------- */
   .data-fresh {
     position: fixed;
@@ -1632,6 +1650,9 @@
 <body>
   <div class="data-loader" id="data-loader"></div>
   <div class="data-fresh" id="data-fresh" style="opacity:0"><span class="df-dot"></span><span class="df-text"></span></div>
+  <!-- Night mode: warm (multiply) + dark veils that strengthen after sunset -->
+  <div class="nv-warm" id="nv-warm" aria-hidden="true"></div>
+  <div class="nv-dark" id="nv-dark" aria-hidden="true"></div>
   <div class="stage" id="stage">
     <div class="carousel" id="carousel">
 
@@ -2518,8 +2539,42 @@
     return { txt:'Dry · 2h', rain:false };
   }
 
+  // How "night" it is, 0 (full day) .. 1 (deep night), with ~1h dusk/dawn ramps.
+  // 0.5 exactly at sunrise and sunset for a continuous fade.
+  function nightAmount(now, sr, ss){
+    var T = 60*60000;
+    if(now >= sr && now <= ss){
+      var toSunset = ss - now, fromSunrise = now - sr;
+      if(toSunset < T)   return 0.5*(1 - toSunset/T);
+      if(fromSunrise < T) return 0.5*(1 - fromSunrise/T);
+      return 0;
+    }
+    var edge = (now > ss) ? (now - ss) : (sr - now);
+    return edge < T ? (0.5 + 0.5*(edge/T)) : 1;
+  }
+  function applyNightVeil(now){
+    var dark;
+    if(astroData && astroData.sunrise && astroData.sunset){
+      dark = nightAmount(now, astroData.sunrise, astroData.sunset);
+    } else {
+      // Fallback before sun data loads: ramp around 06:00 and 19:00 local
+      var h = now.getHours() + now.getMinutes()/60;
+      if(h >= 7 && h <= 18)      dark = 0;
+      else if(h > 18 && h < 19)  dark = 0.5*(h - 18);
+      else if(h >= 19 && h < 20) dark = 0.5 + 0.5*(h - 19);
+      else if(h > 6 && h < 7)    dark = 0.5*(7 - h);
+      else if(h >= 5 && h < 6)   dark = 0.5 + 0.5*(6 - h);
+      else                       dark = 1;
+    }
+    var warm = document.getElementById('nv-warm');
+    var dk = document.getElementById('nv-dark');
+    if(warm) warm.style.opacity = (dark*0.42).toFixed(3);
+    if(dk)   dk.style.opacity   = (dark*0.28).toFixed(3);
+  }
+
   function updateAstroLive(){
     var now = new Date();
+    applyNightVeil(now);
     // Moon: only rebuild when the day changes (phase moves slowly)
     var dk = now.getFullYear()+'-'+now.getMonth()+'-'+now.getDate();
     if(dk !== lastMoonKey){
