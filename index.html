@@ -1540,6 +1540,26 @@
     background: #000;
     justify-content: center;
     overflow: hidden;
+    cursor: pointer;
+    /* Theme palette vars — overridden per data-theme attribute */
+    --gx-a: #4be3c0; --gx-b: #4aa8ff; --gx-c: #9b7bff;
+    --gx-colon: rgba(155,123,255,0.92);
+    --gx-glow: rgba(74,168,255,0.3);
+  }
+  .f-galaxy[data-theme="amber"] {
+    --gx-a: #ffd166; --gx-b: #ffaa33; --gx-c: #ff7b35;
+    --gx-colon: rgba(255,170,51,0.88);
+    --gx-glow: rgba(255,170,51,0.3);
+  }
+  .f-galaxy[data-theme="rose"] {
+    --gx-a: #ff8fab; --gx-b: #e06bdf; --gx-c: #a855f7;
+    --gx-colon: rgba(224,107,223,0.88);
+    --gx-glow: rgba(224,107,223,0.3);
+  }
+  .f-galaxy[data-theme="white"] {
+    --gx-a: #ffffff; --gx-b: #e0e8f0; --gx-c: #c0ccd8;
+    --gx-colon: rgba(220,228,238,0.7);
+    --gx-glow: rgba(200,220,240,0.2);
   }
   .f-galaxy .fgx-drift {
     display: flex;
@@ -1548,7 +1568,6 @@
     justify-content: center;
     gap: clamp(8px, 2.6cqh, 30px);
     width: 100%;
-    /* Slow drift = AMOLED burn-in protection, just like a real AOD */
     animation: fgx-drift 100s ease-in-out infinite alternate;
   }
   @keyframes fgx-drift {
@@ -1574,18 +1593,20 @@
     line-height: 0.86;
     letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
-    background: linear-gradient(120deg, #4be3c0 0%, #4aa8ff 46%, #9b7bff 100%);
+    background: linear-gradient(120deg, var(--gx-a) 0%, var(--gx-b) 46%, var(--gx-c) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
-    filter: drop-shadow(0 0 24px rgba(74,168,255,0.3));
+    filter: drop-shadow(0 0 24px var(--gx-glow));
+    transition: filter 0.6s ease;
   }
   .f-galaxy .fgx-colon {
-    -webkit-text-fill-color: rgba(155,123,255,0.92);
-    color: rgba(155,123,255,0.92);
+    -webkit-text-fill-color: var(--gx-colon);
+    color: var(--gx-colon);
     margin: 0 0.04em;
     animation: fgx-blink 2s steps(1, end) infinite;
+    transition: color 0.6s ease, -webkit-text-fill-color 0.6s ease;
   }
   @keyframes fgx-blink { 0%, 62% { opacity: 1; } 70%, 100% { opacity: 0.22; } }
   .f-galaxy .fgx-ampm {
@@ -1595,6 +1616,20 @@
     font-weight: 700;
     letter-spacing: 0.1em;
     margin-left: 0.18em;
+  }
+  .f-galaxy .fgx-secbar-wrap {
+    width: min(52cqw, 480px);
+    height: clamp(2px, 0.5cqh, 4px);
+    background: rgba(255,255,255,0.08);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .f-galaxy .fgx-secbar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--gx-a), var(--gx-b));
+    border-radius: 99px;
+    transition: width 0.25s linear;
   }
 
   /* ---------- Dots indicator ---------- */
@@ -1608,7 +1643,10 @@
     gap: clamp(8px, 1.6cqw, 16px);
     z-index: 5;
     pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.8s ease;
   }
+  .dots.hidden { opacity: 0; }
   .dots .dot {
     width: clamp(7px, 1.4cqh, 12px);
     height: clamp(7px, 1.4cqh, 12px);
@@ -2072,12 +2110,13 @@
       </section>
 
       <!-- Face 9: Galaxy AOD (Samsung-style Always-On Display) -->
-      <section class="face f-galaxy">
+      <section class="face f-galaxy" id="face-galaxy">
         <div class="fgx-drift">
           <div class="fgx-clock">
             <span class="j-hh">05</span><span class="fgx-colon">:</span><span class="j-mm">13</span><span class="fgx-ampm j-ampm">AM</span>
           </div>
           <div class="fgx-date"><span class="j-dow">WED</span> &middot; <span class="j-fulldate">June 20, 2026</span></div>
+          <div class="fgx-secbar-wrap"><div class="fgx-secbar" id="fgx-secbar"></div></div>
         </div>
       </section>
 
@@ -2124,6 +2163,10 @@
 
     // Faces 7 & 8: live sun position, countdown, moon (cheap, guarded)
     if(typeof updateAstroLive === 'function') updateAstroLive();
+
+    // Face 9: seconds progress bar
+    var secBar = document.getElementById('fgx-secbar');
+    if(secBar) secBar.style.width = ((s / 59) * 100).toFixed(1) + '%';
   }
   tick(); setInterval(tick, 1000);
 
@@ -3186,6 +3229,35 @@
     }else if(document.exitFullscreen){
       document.exitFullscreen().catch(function(){});
     }
+  }
+
+  // ---------- Dots: auto-hide after 3 s of no interaction ----------
+  var dotsHideTimer = null;
+  function showDots(){
+    dotsEl.classList.remove('hidden');
+    clearTimeout(dotsHideTimer);
+    dotsHideTimer = setTimeout(function(){ dotsEl.classList.add('hidden'); }, 3000);
+  }
+  stage.addEventListener('pointerdown', showDots);
+  showDots(); // start the first timer on load
+
+  // ---------- Galaxy face: tap cycles through 4 colour themes ----------
+  var GX_THEMES = ['aurora', 'amber', 'rose', 'white'];
+  var gxFace = document.getElementById('face-galaxy');
+  var gxThemeIdx = Math.max(0, GX_THEMES.indexOf(localStorage.getItem('gxTheme') || 'aurora'));
+  function applyGxTheme(idx){
+    gxThemeIdx = idx % GX_THEMES.length;
+    var t = GX_THEMES[gxThemeIdx];
+    if(gxFace) gxFace.dataset.theme = t === 'aurora' ? '' : t;
+    localStorage.setItem('gxTheme', t);
+  }
+  applyGxTheme(gxThemeIdx);
+  if(gxFace){
+    gxFace.addEventListener('click', function(ev){
+      // Only act on a true tap (not the end of a swipe) — the swipe handler
+      // already consumes big drags; here we guard against the residual click.
+      if(Math.abs(dragDx) < 8) applyGxTheme(gxThemeIdx + 1);
+    });
   }
 
   // ---------- PWA: service worker with auto-update ----------
