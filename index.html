@@ -1391,6 +1391,10 @@
     stroke: var(--mr-teal);
     stroke-width: 9;
     stroke-linecap: round;
+    /* Start empty so a failed/slow data load never shows a misleading full
+       ring (circumference = 2·π·52 ≈ 326.7); JS overrides once UV data loads. */
+    stroke-dasharray: 327;
+    stroke-dashoffset: 327;
     transition: stroke-dashoffset 0.9s ease, stroke 0.9s ease;
     filter: drop-shadow(0 0 6px currentColor);
   }
