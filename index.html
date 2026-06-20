@@ -1371,38 +1371,28 @@
     gap: clamp(6px, 1.6cqh, 16px);
     min-width: 0;
   }
-  .f-marine .fm-compass {
+  .f-marine .fm-uvring {
     position: relative;
     width: min(62cqh, 32cqw);
     height: min(62cqh, 32cqw);
-    border-radius: 50%;
-    background: radial-gradient(circle at 50% 42%, rgba(20,60,75,0.7), rgba(6,24,32,0.6));
-    border: 1px solid rgba(94,230,200,0.28);
-    box-shadow: inset 0 0 22px rgba(0,0,0,0.6), 0 8px 30px rgba(0,0,0,0.45);
   }
-  .f-marine .fm-cdir {
-    position: absolute;
-    left: 50%; top: 50%;
-    transform: translate(-50%, -50%);
-    color: rgba(190,225,235,0.7);
-    font-weight: 700;
-    font-size: clamp(8px, 2.4cqh, 22px);
+  .f-marine .fm-uvsvg {
+    width: 100%; height: 100%;
+    transform: rotate(-90deg);
+    overflow: visible;
   }
-  .f-marine .fm-cN { top: clamp(5px, 1.6cqh, 14px); }
-  .f-marine .fm-cS { top: auto; bottom: clamp(3px, 1.2cqh, 11px); transform: translate(-50%, 0); }
-  .f-marine .fm-cE { left: auto; right: clamp(5px, 1.6cqh, 14px); transform: translate(0, -50%); color: var(--mr-teal); }
-  .f-marine .fm-cW { left: clamp(5px, 1.6cqh, 14px); transform: translate(0, -50%); }
-  .f-marine .fm-needle {
-    position: absolute;
-    left: 50%; top: 50%;
-    width: clamp(4px, 1.1cqh, 9px);
-    height: 64%;
-    transform-origin: 50% 50%;
-    transform: translate(-50%, -50%) rotate(var(--mrot, 0deg));
-    transition: transform 0.8s ease;
-    background: linear-gradient(180deg, #ff7a7a 0 50%, rgba(255,255,255,0.5) 50% 100%);
-    border-radius: 99px;
-    box-shadow: 0 0 10px rgba(255,122,122,0.6);
+  .f-marine .fm-uvtrack {
+    fill: none;
+    stroke: rgba(120,170,185,0.16);
+    stroke-width: 9;
+  }
+  .f-marine .fm-uvfill {
+    fill: none;
+    stroke: var(--mr-teal);
+    stroke-width: 9;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.9s ease, stroke 0.9s ease;
+    filter: drop-shadow(0 0 6px currentColor);
   }
   .f-marine .fm-center {
     position: absolute;
@@ -1469,6 +1459,45 @@
   .f-marine .fm-verdict-sub {
     font-size: clamp(11px, 3cqh, 28px);
     color: var(--mr-teal);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .f-marine .fm-best {
+    display: flex;
+    align-items: center;
+    gap: clamp(8px, 2cqw, 22px);
+    background: linear-gradient(160deg, rgba(255,180,94,0.16), rgba(255,180,94,0.04));
+    border: 1px solid rgba(255,180,94,0.24);
+    border-radius: clamp(12px, 2.4cqh, 26px);
+    padding: clamp(7px, 1.8cqh, 20px) clamp(12px, 2.4cqw, 28px);
+    min-width: 0;
+  }
+  .f-marine .fm-best-ico { font-size: clamp(22px, 7cqh, 60px); line-height: 1; flex-shrink: 0; }
+  .f-marine .fm-best-txt { display: flex; flex-direction: column; min-width: 0; gap: clamp(1px, 0.3cqh, 3px); }
+  .f-marine .fm-best-lbl {
+    font-size: clamp(9px, 2.3cqh, 19px);
+    color: rgba(255,210,160,0.8);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .f-marine .fm-best-val {
+    font-weight: 800;
+    font-size: clamp(15px, 4.8cqh, 46px);
+    color: #fff;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .f-marine .fm-best-sub {
+    font-size: clamp(10px, 2.6cqh, 22px);
+    color: var(--mr-warm);
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
@@ -1932,32 +1961,39 @@
       <!-- Face 8: Marine / Dive -->
       <section class="face f-marine">
         <div class="fm-dialwrap">
-          <div class="fm-compass">
-            <span class="fm-cdir fm-cN">N</span>
-            <span class="fm-cdir fm-cE">E</span>
-            <span class="fm-cdir fm-cS">S</span>
-            <span class="fm-cdir fm-cW">W</span>
-            <div class="fm-needle jm-needle"></div>
+          <div class="fm-uvring">
+            <svg class="fm-uvsvg" viewBox="0 0 120 120">
+              <circle class="fm-uvtrack" cx="60" cy="60" r="52"/>
+              <circle class="fm-uvfill jm-uvfill" cx="60" cy="60" r="52"/>
+            </svg>
             <div class="fm-center">
-              <span class="fm-wind jm-wind">--</span>
-              <span class="fm-windunit">kt</span>
+              <span class="fm-wind jm-uv">--</span>
+              <span class="fm-windunit">UV INDEX</span>
             </div>
           </div>
-          <div class="fm-bft jm-bft">&mdash;</div>
-          <div class="fm-gust">Gust <span class="jm-gust">--</span> kt &middot; from <span class="jm-dir">--</span></div>
+          <div class="fm-bft jm-uvlevel">&mdash;</div>
+          <div class="fm-gust">Sea <span class="jm-watertemp">--</span>&deg; &middot; feels <span class="jm-feels">--</span>&deg;</div>
         </div>
         <div class="fm-main">
           <div class="fm-verdict">
-            <span class="fm-verdict-ico jm-verdicon">&#x1F93F;</span>
+            <span class="fm-verdict-ico jm-verdicon">&#x1F3D6;&#xFE0F;</span>
             <div class="fm-verdict-txt">
               <span class="fm-verdict-hd jm-verdict-hd">&mdash;</span>
               <span class="fm-verdict-sub jm-verdict-sub">&mdash;</span>
             </div>
           </div>
+          <div class="fm-best">
+            <span class="fm-best-ico">&#x1F551;</span>
+            <div class="fm-best-txt">
+              <span class="fm-best-lbl">Best time to go outside</span>
+              <span class="fm-best-val jm-besttime">&mdash;</span>
+              <span class="fm-best-sub jm-bestsub">&mdash;</span>
+            </div>
+          </div>
           <div class="fm-spark">
-            <div class="fm-spark-hd"><span>&#x1F321;&#xFE0F; Temperature &middot; 24h</span><span class="jm-temprange">--</span></div>
+            <div class="fm-spark-hd"><span>&#x2600;&#xFE0F; UV index &middot; today</span><span class="jm-uvrange">--</span></div>
             <svg class="fm-spark-svg" viewBox="0 0 300 56" preserveAspectRatio="none">
-              <polyline class="fm-spark-line warm" id="fm-tempspark" points=""/>
+              <polyline class="fm-spark-line warm" id="fm-uvspark" points=""/>
             </svg>
           </div>
           <div class="fm-spark">
@@ -2635,38 +2671,118 @@
     }).join(' ');
     el.setAttribute('points', pts);
   }
-  function diveVerdict(kt, gust){
-    if(kt == null) return { ico:'🤿', hd:'No data', sub:'' };
-    if(kt < 8)  return { ico:'🤿', hd:'Great diving', sub:'Calm seas · excellent viz' };
-    if(kt < 16) return { ico:'🤿', hd:'Good for diving', sub:'Leeward side is calm' };
-    if(kt < 22) return { ico:'🌬️', hd:'Breezy', sub:'Stick to the lee shore' };
-    if(kt < 28) return { ico:'🏄', hd:'Windy', sub:'Choppy · windsurf weather' };
-    return { ico:'⚠️', hd:'Very windy', sub:'Rough seas — take care' };
+  // UV index → descriptive level + ring colour
+  function uvLevel(uv){
+    if(uv == null)  return { txt:'No UV data', col:'#5ee6c8' };
+    if(uv < 3)   return { txt:'Low UV — safe', col:'#5ee6c8' };
+    if(uv < 6)   return { txt:'Moderate UV', col:'#ffd84d' };
+    if(uv < 8)   return { txt:'High UV — cover up', col:'#ffa94d' };
+    if(uv < 11)  return { txt:'Very high UV', col:'#ff6b6b' };
+    return { txt:'Extreme UV', col:'#c08bff' };
   }
+
+  // Current swimming / outdoor suitability
+  function outdoorVerdict(uv, kt, feels, rainProb){
+    if(rainProb != null && rainProb >= 60) return { ico:'🌧️', hd:'Rain likely now', sub:'Maybe wait it out' };
+    if(uv != null && uv >= 8)              return { ico:'🧴', hd:'Cover up outside', sub:'Strong sun · sunscreen + shade' };
+    if(kt != null && kt >= 25)             return { ico:'🌬️', hd:'Breezy & choppy', sub:'Windy — sheltered spots best' };
+    if(feels != null && feels >= 34)       return { ico:'🥵', hd:'Hot out there', sub:'Hydrate · keep to the shade' };
+    if(uv != null && uv >= 6)              return { ico:'🏖️', hd:'Great for a swim', sub:'Warm & sunny · use SPF' };
+    if(uv != null && uv >= 3)              return { ico:'🏖️', hd:'Perfect outdoors', sub:'Comfortable · mild sun' };
+    return { ico:'🚶', hd:'Easy outdoors', sub:'Gentle sun · pleasant' };
+  }
+
+  function isoHour(s){ return parseInt(String(s).slice(11,13), 10); }
+  function hourLabel(h){ var ap = h < 12 ? 'AM' : 'PM'; var hh = h % 12; if(hh === 0) hh = 12; return { hh:hh, ap:ap }; }
+  function fmtHourRange(h1, h2){
+    var a = hourLabel(h1), b = hourLabel(h2 % 24);
+    if(a.ap === b.ap) return a.hh + '–' + b.hh + ' ' + a.ap;
+    return a.hh + ' ' + a.ap + '–' + b.hh + ' ' + b.ap;
+  }
+
+  // Score each upcoming daylight hour and return the most pleasant window to be out
+  function bestOutsideWindow(hh, i0){
+    if(!hh || !hh.time || !hh.uv_index) return null;
+    var end = Math.min(hh.time.length, i0 + 24);
+    function feelsAt(i){
+      if(hh.apparent_temperature && hh.apparent_temperature[i] != null) return hh.apparent_temperature[i];
+      if(hh.temperature_2m && hh.temperature_2m[i] != null) return hh.temperature_2m[i];
+      return 28;
+    }
+    function windAt(i){ return (hh.wind_speed_10m && hh.wind_speed_10m[i] != null) ? hh.wind_speed_10m[i] : 0; }
+    function rainAt(i){ return (hh.precipitation_probability && hh.precipitation_probability[i] != null) ? hh.precipitation_probability[i] : 0; }
+    function daylight(i){
+      var uv = hh.uv_index[i]; var h = isoHour(hh.time[i]);
+      return uv != null && uv >= 0.5 && h >= 5 && h <= 19;
+    }
+    function score(i){
+      return hh.uv_index[i] * 1.0 + (rainAt(i)/100)*7 + Math.max(0, windAt(i)-22)*0.35 + Math.abs(feelsAt(i)-28)*0.4;
+    }
+    var best = -1, bestScore = 1e9;
+    for(var i = i0; i < end; i++){
+      if(!daylight(i)) continue;
+      var s = score(i);
+      if(s < bestScore){ bestScore = s; best = i; }
+    }
+    if(best < 0) return null;
+    var thr = bestScore + 2.2, lo = best, hi = best;
+    while(lo-1 >= i0 && (best-(lo-1)) < 3 && daylight(lo-1) && score(lo-1) <= thr) lo--;
+    while(hi+1 < end && ((hi+1)-best) < 3 && daylight(hi+1) && score(hi+1) <= thr) hi++;
+    var uvB = Math.round(hh.uv_index[best]);
+    var feelsB = Math.round(feelsAt(best));
+    var uvTxt = uvB <= 2 ? 'low UV' : (uvB <= 5 ? 'mild UV' : 'UV ' + uvB);
+    return {
+      time: fmtHourRange(isoHour(hh.time[lo]), isoHour(hh.time[hi]) + 1),
+      sub: feelsB + '° feels · ' + uvTxt,
+      isNow: (i0 >= lo && i0 <= hi)
+    };
+  }
+
+  var UV_CIRC = 2 * Math.PI * 52;
 
   function renderMarine(){
     if(!astroData) return;
     var c = astroData.current || {};
+    var uv = c.uv_index != null ? c.uv_index : null;
+    var feels = c.apparent_temperature != null ? Math.round(c.apparent_temperature) : null;
     var kt = c.wind_speed_10m != null ? Math.round(c.wind_speed_10m) : null;
-    var gust = c.wind_gusts_10m != null ? Math.round(c.wind_gusts_10m) : null;
-    var dir = c.wind_direction_10m != null ? Math.round(c.wind_direction_10m) : null;
-    setAll('jm-wind', kt != null ? String(kt) : '--');
-    setAll('jm-gust', gust != null ? String(gust) : '--');
-    setAll('jm-dir', dir != null ? degToCompass(dir) : '--');
-    setAll('jm-bft', kt != null ? bft(kt/1.94384) : '—');
-    document.querySelectorAll('.jm-needle').forEach(function(el){ el.style.setProperty('--mrot', (dir||0)+'deg'); });
-    var v = diveVerdict(kt, gust);
+    var rainProb = c.precipitation_probability != null ? c.precipitation_probability : null;
+
+    setAll('jm-uv', uv != null ? String(Math.round(uv)) : '--');
+    var lv = uvLevel(uv);
+    setAll('jm-uvlevel', lv.txt);
+    setAll('jm-feels', feels != null ? String(feels) : '--');
+    setAll('jm-watertemp', astroData.seaTemp != null ? String(Math.round(astroData.seaTemp)) : '--');
+
+    // UV ring fill (0–12 scale)
+    document.querySelectorAll('.jm-uvfill').forEach(function(el){
+      var frac = uv != null ? Math.min(uv/12, 1) : 0;
+      el.style.strokeDasharray = UV_CIRC.toFixed(1);
+      el.style.strokeDashoffset = (UV_CIRC * (1 - frac)).toFixed(1);
+      el.style.stroke = lv.col;
+    });
+
+    var v = outdoorVerdict(uv, kt, feels, rainProb);
     setAll('jm-verdicon', v.ico);
     setAll('jm-verdict-hd', v.hd);
     setAll('jm-verdict-sub', v.sub);
+
     var hh = astroData.hourly;
     if(hh && hh.time){
       var i0 = hourIndexNow(hh.time);
-      var temps = hh.temperature_2m.slice(i0, i0+24).filter(function(x){ return x != null; });
-      var winds = hh.wind_speed_10m.slice(i0, i0+24).filter(function(x){ return x != null; });
-      buildSpark('fm-tempspark', temps);
+      var bw = bestOutsideWindow(hh, i0);
+      if(bw){
+        setAll('jm-besttime', bw.isNow ? 'Now — ' + bw.time : bw.time);
+        setAll('jm-bestsub', bw.sub);
+      } else {
+        setAll('jm-besttime', 'Tomorrow AM');
+        setAll('jm-bestsub', 'Sun is down for today');
+      }
+      var uvs = (hh.uv_index || []).slice(i0, i0+24).filter(function(x){ return x != null; });
+      var winds = (hh.wind_speed_10m || []).slice(i0, i0+24).filter(function(x){ return x != null; });
+      buildSpark('fm-uvspark', uvs);
       buildSpark('fm-windspark', winds);
-      if(temps.length) setAll('jm-temprange', Math.round(Math.min.apply(null,temps))+'°–'+Math.round(Math.max.apply(null,temps))+'°');
+      if(uvs.length) setAll('jm-uvrange', 'peak ' + Math.round(Math.max.apply(null, uvs)));
       if(winds.length) setAll('jm-windrange', Math.round(Math.min.apply(null,winds))+'–'+Math.round(Math.max.apply(null,winds))+' kt');
     }
   }
@@ -2674,8 +2790,8 @@
   async function loadAstroMarine(){
     try{
       var url = 'https://api.open-meteo.com/v1/forecast?latitude=12.17&longitude=-68.99'
-        + '&current=temperature_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,weather_code'
-        + '&hourly=temperature_2m,wind_speed_10m'
+        + '&current=temperature_2m,apparent_temperature,wind_speed_10m,wind_gusts_10m,wind_direction_10m,weather_code,uv_index,precipitation_probability'
+        + '&hourly=temperature_2m,apparent_temperature,wind_speed_10m,uv_index,precipitation_probability'
         + '&minutely_15=precipitation'
         + '&daily=sunrise,sunset'
         + '&wind_speed_unit=kn&timezone=auto&forecast_days=2';
@@ -2688,6 +2804,7 @@
         hourly: d.hourly || null,
         m15times: d.minutely_15 ? d.minutely_15.time : null,
         m15precip: d.minutely_15 ? d.minutely_15.precipitation : null,
+        seaTemp: (astroData && astroData.seaTemp != null) ? astroData.seaTemp : null,
         sunrise: (dy.sunrise && dy.sunrise[0]) ? new Date(dy.sunrise[0]) : null,
         sunset:  (dy.sunset  && dy.sunset[0])  ? new Date(dy.sunset[0])  : null,
         sunriseNext: (dy.sunrise && dy.sunrise[1]) ? new Date(dy.sunrise[1]) : null,
@@ -2700,8 +2817,25 @@
       if(astroData.sunrise && astroData.sunset) setAll('ja-daylen', fmtDayLen(astroData.sunset - astroData.sunrise));
       renderMarine();
       updateAstroLive();
+      loadSeaTemp();
       return true;
     }catch(e){ return false; }
+  }
+
+  // Sea-surface temperature comes from a separate marine endpoint; failure is silent
+  async function loadSeaTemp(){
+    try{
+      var url = 'https://marine-api.open-meteo.com/v1/marine?latitude=12.17&longitude=-68.99'
+        + '&current=sea_surface_temperature&timezone=auto';
+      var r = await fetch(url);
+      if(!r.ok) return;
+      var d = await r.json();
+      var st = d.current ? d.current.sea_surface_temperature : null;
+      if(st != null && astroData){
+        astroData.seaTemp = st;
+        setAll('jm-watertemp', String(Math.round(st)));
+      }
+    }catch(e){ /* keep the air-temp fallback */ }
   }
 
   setAll('j-place', 'Curaçao');
