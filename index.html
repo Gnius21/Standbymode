@@ -1254,6 +1254,19 @@
       left: 100vw;
       top: 0;
     }
+    /* The stage is rotated 90deg, so each face edge maps to a different
+       physical screen edge. Re-map the safe-area insets accordingly so the
+       notch/status bar (screen top -> face left) and the home indicator
+       (screen bottom -> face right) are cleared, instead of reserving space
+       on the screen's inset-free left/right sides. Without this the clock and
+       tiles slide under the status bar / home indicator on notched iPhones. */
+    .face {
+      padding:
+        calc(env(safe-area-inset-right) + clamp(6px, 2cqh, 20px))
+        calc(env(safe-area-inset-bottom) + clamp(8px, 1.8cqw, 28px))
+        calc(env(safe-area-inset-left) + clamp(6px, 2cqh, 20px))
+        calc(env(safe-area-inset-top) + clamp(8px, 1.8cqw, 28px));
+    }
   }
 </style>
 </head>
