@@ -1556,13 +1556,6 @@
     50%  { transform: translate(1.6%, 0.6%); }
     100% { transform: translate(0.4%, 2.2%); }
   }
-  .f-galaxy .fgx-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: clamp(12px, 4cqw, 56px);
-    width: min(78cqw, 720px);
-  }
   .f-galaxy .fgx-date {
     font-size: clamp(11px, 3cqh, 26px);
     font-weight: 600;
@@ -1573,50 +1566,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .f-galaxy .fgx-batt { display: flex; align-items: center; gap: clamp(5px, 1.4cqw, 12px); flex-shrink: 0; }
-  .f-galaxy .fgx-batt-pct {
-    font-size: clamp(11px, 3cqh, 26px);
-    font-weight: 700;
-    color: rgba(220,228,238,0.85);
-    font-variant-numeric: tabular-nums;
-  }
-  .f-galaxy .fgx-batt-glyph {
-    position: relative;
-    width: clamp(24px, 5.4cqw, 48px);
-    height: clamp(12px, 2.8cqh, 24px);
-    border: 2px solid rgba(220,228,238,0.5);
-    border-radius: 4px;
-    padding: 2px;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-  }
-  .f-galaxy .fgx-batt-glyph::after {
-    content: '';
-    position: absolute;
-    right: -4px; top: 50%;
-    transform: translateY(-50%);
-    width: 3px; height: 40%;
-    background: rgba(220,228,238,0.5);
-    border-radius: 0 2px 2px 0;
-  }
-  .f-galaxy .fgx-batt-fill {
-    height: 100%;
-    width: calc(var(--batt, 1) * 100%);
-    border-radius: 2px;
-    background: linear-gradient(90deg, #4be3c0, #4aa8ff);
-    transition: width 0.6s ease, background 0.6s ease;
-  }
-  .f-galaxy .fgx-batt.low .fgx-batt-fill { background: #ff6b6b; }
-  .f-galaxy .fgx-batt-bolt {
-    position: absolute;
-    left: 50%; top: 50%;
-    transform: translate(-50%, -50%);
-    font-size: clamp(8px, 2cqh, 16px);
-    opacity: 0;
-    text-shadow: 0 0 4px rgba(0,0,0,0.8);
-  }
-  .f-galaxy .fgx-batt.charging .fgx-batt-bolt { opacity: 1; }
   .f-galaxy .fgx-clock {
     display: flex;
     align-items: baseline;
@@ -1646,32 +1595,6 @@
     font-weight: 700;
     letter-spacing: 0.1em;
     margin-left: 0.18em;
-  }
-  .f-galaxy .fgx-weather {
-    display: flex;
-    align-items: center;
-    gap: clamp(6px, 1.6cqw, 16px);
-    font-size: clamp(12px, 3.2cqh, 30px);
-    color: rgba(220,228,238,0.78);
-    font-weight: 500;
-    max-width: 90%;
-    white-space: nowrap;
-    overflow: hidden;
-  }
-  .f-galaxy .fgx-w-ico { font-size: 1.1em; }
-  .f-galaxy .fgx-w-temp { font-weight: 700; color: #fff; }
-  .f-galaxy .fgx-w-cond { color: rgba(220,228,238,0.6); overflow: hidden; text-overflow: ellipsis; }
-  .f-galaxy .fgx-w-sep { width: 1px; height: 1em; background: rgba(220,228,238,0.25); flex-shrink: 0; }
-  .f-galaxy .fgx-w-place { color: rgba(220,228,238,0.6); overflow: hidden; text-overflow: ellipsis; }
-  .f-galaxy .fgx-icons {
-    display: flex;
-    gap: clamp(10px, 3cqw, 32px);
-    margin-top: clamp(2px, 1cqh, 12px);
-  }
-  .f-galaxy .fgx-ic {
-    font-size: clamp(14px, 3.4cqh, 30px);
-    filter: grayscale(1);
-    opacity: 0.42;
   }
 
   /* ---------- Dots indicator ---------- */
@@ -2151,32 +2074,10 @@
       <!-- Face 9: Galaxy AOD (Samsung-style Always-On Display) -->
       <section class="face f-galaxy">
         <div class="fgx-drift">
-          <div class="fgx-top">
-            <div class="fgx-date"><span class="j-dow">WED</span> &middot; <span class="j-fulldate">June 20, 2026</span></div>
-            <div class="fgx-batt jg-batt-wrap">
-              <span class="fgx-batt-pct jg-batt">--</span>
-              <span class="fgx-batt-glyph">
-                <span class="fgx-batt-fill jg-battfill"></span>
-                <span class="fgx-batt-bolt">&#x26A1;</span>
-              </span>
-            </div>
-          </div>
           <div class="fgx-clock">
             <span class="j-hh">05</span><span class="fgx-colon">:</span><span class="j-mm">13</span><span class="fgx-ampm j-ampm">AM</span>
           </div>
-          <div class="fgx-weather">
-            <span class="fgx-w-ico j-wico">&#x26C5;</span>
-            <span class="fgx-w-temp j-temp">--&deg;</span>
-            <span class="fgx-w-cond j-wtext">&mdash;</span>
-            <span class="fgx-w-sep"></span>
-            <span class="fgx-w-place j-place">&mdash;</span>
-          </div>
-          <div class="fgx-icons">
-            <span class="fgx-ic">&#x1F4AC;</span>
-            <span class="fgx-ic">&#x1F4E7;</span>
-            <span class="fgx-ic">&#x1F4DE;</span>
-            <span class="fgx-ic">&#x1F4F7;</span>
-          </div>
+          <div class="fgx-date"><span class="j-dow">WED</span> &middot; <span class="j-fulldate">June 20, 2026</span></div>
         </div>
       </section>
 
@@ -2225,31 +2126,6 @@
     if(typeof updateAstroLive === 'function') updateAstroLive();
   }
   tick(); setInterval(tick, 1000);
-
-  // Galaxy AOD battery indicator. The Battery Status API is unavailable on
-  // iOS Safari, so we degrade to a clean full glyph rather than show nothing.
-  (function(){
-    function paint(b){
-      var lvl = (b && b.level != null) ? b.level : 1;
-      setAll('jg-batt', Math.round(lvl*100) + '%');
-      document.querySelectorAll('.jg-battfill').forEach(function(el){ el.style.setProperty('--batt', lvl.toFixed(2)); });
-      document.querySelectorAll('.jg-batt-wrap').forEach(function(el){
-        el.classList.toggle('charging', !!(b && b.charging));
-        el.classList.toggle('low', lvl <= 0.15 && !(b && b.charging));
-      });
-    }
-    if(navigator.getBattery){
-      navigator.getBattery().then(function(b){
-        paint(b);
-        b.addEventListener('levelchange', function(){ paint(b); });
-        b.addEventListener('chargingchange', function(){ paint(b); });
-      }).catch(function(){ setAll('jg-batt', ''); });
-    } else {
-      // No live battery (iPhone): hide the number, keep a tasteful full glyph.
-      setAll('jg-batt', '');
-      document.querySelectorAll('.jg-battfill').forEach(function(el){ el.style.setProperty('--batt', '1'); });
-    }
-  })();
 
   // Analog dial tick marks
   (function(){
