@@ -2553,11 +2553,8 @@
         setAll('j-temp', feels+'°');
         setAll('j-actualtemp', actualTemp+'°');
         setAll('j-wico', cloudIcon(data.cloud_octa, data.precip_10m));
-        setAll('j-wx3d', skyIcon(data.cloud_octa, data.precip_10m));
         setAll('j-wtext', cloudText(data.cloud_octa, data.precip_10m));
         setSkyMood(data.cloud_octa, data.precip_10m);
-        setAll('j-feelsbig', feels+'°');
-        setAll('j-feelssub', feels>actualTemp ? '+'+Math.round(feels-actualTemp)+'° vs actual · heat stress' : (feels<actualTemp ? Math.round(feels-actualTemp)+'°' : 'Same as actual'));
         setAll('j-wind', windKt!=null ? windKt+' kt' : '--');
         setAll('j-windbft', bft(data.wind_ms));
         setBarAll('j-bwind', windKt!=null ? windKt/60*100 : 0);
@@ -2568,9 +2565,6 @@
         setAll('j-winddeg', data.wind_dir!=null ? Math.round(data.wind_dir)+'° from N' : '');
         document.querySelectorAll('.j-warrow').forEach(function(el){
           el.style.transform='rotate('+(data.wind_dir||0)+'deg)';
-        });
-        document.querySelectorAll('.j-windneedle').forEach(function(el){
-          el.style.setProperty('--nrot', (data.wind_dir||0)+'deg');
         });
         setAll('j-rh', data.rh!=null ? Math.round(data.rh)+'%' : '--%');
         setBarAll('j-brh', data.rh!=null ? data.rh : 0);
@@ -2624,11 +2618,8 @@
         setAll('j-temp', feels+'°');
         setAll('j-actualtemp', actual+'°');
         setAll('j-wico', cloudIcon(cloudOcta, precip));
-        setAll('j-wx3d', fc===0 ? (fnight?'🌙':'☀️') : fc<=3 ? (fnight?'🌤️':'⛅') : wmoIcon(fc));
         setAll('j-wtext', wmoText(fc));
         setSkyMood(cloudOcta, precip);
-        setAll('j-feelsbig', feels+'°');
-        setAll('j-feelssub', feels>actual ? '+'+Math.round(feels-actual)+'° vs actual' : (feels<actual ? Math.round(feels-actual)+'° vs actual' : 'Same as actual'));
         setAll('j-feels', feels!=actual ? 'Feels '+feels+'°' : '');
         setAll('j-wind', windKt!=null ? windKt+' kt' : '--');
         setBarAll('j-bwind', windKt!=null ? windKt/60*100 : 0);
@@ -2638,7 +2629,6 @@
         setAll('j-winddir', wdir!=null ? degToCompass(wdir) : '--');
         setAll('j-winddeg', wdir!=null ? wdir+'° from N' : '');
         document.querySelectorAll('.j-warrow').forEach(function(el){ el.style.transform='rotate('+(wdir||0)+'deg)'; });
-        document.querySelectorAll('.j-windneedle').forEach(function(el){ el.style.setProperty('--nrot',(wdir||0)+'deg'); });
         setAll('j-rh', rh!=null ? rh+'%' : '--%');
         setBarAll('j-brh', rh!=null ? rh : 0);
         setAll('j-dew', dew!=null ? dew+'°' : '--°');
@@ -2760,7 +2750,7 @@
       if(h >= 7 && h <= 18)      dark = 0;
       else if(h > 18 && h < 19)  dark = 0.5*(h - 18);
       else if(h >= 19 && h < 20) dark = 0.5 + 0.5*(h - 19);
-      else if(h > 6 && h < 7)    dark = 0.5*(7 - h);
+      else if(h >= 6 && h < 7)   dark = 0.5*(7 - h);
       else if(h >= 5 && h < 6)   dark = 0.5 + 0.5*(6 - h);
       else                       dark = 1;
     }
