@@ -2166,6 +2166,8 @@
   const handH = document.getElementById('hand-h');
   const handM = document.getElementById('hand-m');
   const handS = document.getElementById('hand-s');
+  const fgxColonEl = document.querySelector('#face-galaxy .fgx-colon');
+  const fgxSecBarEl = document.getElementById('fgx-secbar');
 
   let lastCalKey = '';
 
@@ -2195,20 +2197,18 @@
     if(typeof updateAstroLive === 'function') updateAstroLive();
 
     // Face 9: colon blink synced to clock tick
-    var gxColon = document.querySelector('#face-galaxy .fgx-colon');
-    if(gxColon){
-      gxColon.style.opacity = '1';
-      setTimeout(function(){ if(gxColon) gxColon.style.opacity = '0.18'; }, 680);
+    if(fgxColonEl){
+      fgxColonEl.style.opacity = '1';
+      setTimeout(function(){ fgxColonEl.style.opacity = '0.18'; }, 680);
     }
 
     // Face 9: seconds progress bar, gradient spans full container width
-    var secBar = document.getElementById('fgx-secbar');
-    if(secBar){
-      if(!secBar._gradInit){
-        var ww = (secBar.parentElement || {}).offsetWidth;
-        if(ww){ secBar.style.backgroundSize = ww + 'px 100%'; secBar._gradInit = true; }
+    if(fgxSecBarEl){
+      if(!fgxSecBarEl._gradInit){
+        var ww = (fgxSecBarEl.parentElement || {}).offsetWidth;
+        if(ww){ fgxSecBarEl.style.backgroundSize = ww + 'px 100%'; fgxSecBarEl._gradInit = true; }
       }
-      secBar.style.width = ((s / 59) * 100).toFixed(1) + '%';
+      fgxSecBarEl.style.width = ((s / 59) * 100).toFixed(1) + '%';
     }
   }
   tick(); setInterval(tick, 1000);
@@ -2983,7 +2983,13 @@
       updateAstroLive();
       loadSeaTemp();
       return true;
-    }catch(e){ return false; }
+    }catch(e){
+      // Load failed: drop the skeleton pulse so the face shows its static
+      // "--" placeholders instead of pulsing forever (e.g. while offline).
+      var mEl = document.querySelector('.f-marine');
+      if(mEl) mEl.classList.remove('loading');
+      return false;
+    }
   }
 
   // Sea-surface temperature comes from a separate marine endpoint; failure is silent
@@ -3098,7 +3104,11 @@
     }
   }
   layoutStage();
-  window.addEventListener('resize', layoutStage);
+  window.addEventListener('resize', function(){
+    layoutStage();
+    // Container width changed: let the seconds-bar gradient resize to match.
+    if(fgxSecBarEl) fgxSecBarEl._gradInit = false;
+  });
   window.addEventListener('orientationchange', function(){ setTimeout(layoutStage, 60); });
 
   for(let i=0;i<FACES;i++){
@@ -3311,9 +3321,15 @@
         applyGxTheme(gxThemeIdx + 1);
         var r = document.createElement('div');
         r.className = 'fgx-ripple';
-        var rect = gxFace.getBoundingClientRect();
-        r.style.left = (ev.clientX - rect.left) + 'px';
-        r.style.top = (ev.clientY - rect.top) + 'px';
+        // The stage is rotated 90deg in portrait, so clientX/Y can't be mapped
+        // onto the face's local axes directly — just centre the ripple there.
+        if(stageIsPortrait){
+          r.style.left = '50%'; r.style.top = '50%';
+        } else {
+          var rect = gxFace.getBoundingClientRect();
+          r.style.left = (ev.clientX - rect.left) + 'px';
+          r.style.top = (ev.clientY - rect.top) + 'px';
+        }
         gxFace.appendChild(r);
         setTimeout(function(){ r.remove(); }, 700);
       }
