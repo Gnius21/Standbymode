@@ -1398,6 +1398,22 @@
     transition: stroke-dashoffset 0.9s ease, stroke 0.9s ease;
     filter: drop-shadow(0 0 6px currentColor);
   }
+  @keyframes fm-skeleton-pulse {
+    0%, 100% { opacity: 0.12; }
+    50%       { opacity: 0.32; }
+  }
+  .f-marine.loading .fm-uvtrack {
+    animation: fm-skeleton-pulse 1.6s ease-in-out infinite;
+  }
+  .f-marine.loading .fm-bft,
+  .f-marine.loading .fm-gust {
+    animation: fm-skeleton-pulse 1.6s ease-in-out 0.2s infinite;
+  }
+  .f-marine.loading .fm-verdict,
+  .f-marine.loading .fm-best,
+  .f-marine.loading .fm-spark {
+    animation: fm-skeleton-pulse 1.6s ease-in-out 0.4s infinite;
+  }
   .f-marine .fm-center {
     position: absolute;
     left: 50%; top: 50%;
@@ -1605,10 +1621,8 @@
     -webkit-text-fill-color: var(--gx-colon);
     color: var(--gx-colon);
     margin: 0 0.04em;
-    animation: fgx-blink 2s steps(1, end) infinite;
-    transition: color 0.6s ease, -webkit-text-fill-color 0.6s ease;
+    transition: opacity 0.08s linear, color 0.6s ease, -webkit-text-fill-color 0.6s ease;
   }
-  @keyframes fgx-blink { 0%, 62% { opacity: 1; } 70%, 100% { opacity: 0.22; } }
   .f-galaxy .fgx-ampm {
     -webkit-text-fill-color: rgba(220,228,238,0.6);
     color: rgba(220,228,238,0.6);
@@ -1627,9 +1641,25 @@
   .f-galaxy .fgx-secbar {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, var(--gx-a), var(--gx-b));
+    background: linear-gradient(90deg, var(--gx-a), var(--gx-b), var(--gx-c));
+    background-repeat: no-repeat;
     border-radius: 99px;
     transition: width 0.25s linear;
+  }
+  /* Tap-to-theme ripple */
+  .f-galaxy { position: relative; overflow: hidden; }
+  .fgx-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--gx-b) 0%, transparent 65%);
+    width: 0; height: 0;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: fgx-ripple 0.65s ease-out forwards;
+  }
+  @keyframes fgx-ripple {
+    from { width: 40px; height: 40px; opacity: 0.65; }
+    to   { width: 300px; height: 300px; opacity: 0; }
   }
 
   /* ---------- Dots indicator ---------- */
@@ -2063,7 +2093,7 @@
       </section>
 
       <!-- Face 8: Marine / Dive -->
-      <section class="face f-marine">
+      <section class="face f-marine loading">
         <div class="fm-dialwrap">
           <div class="fm-uvring">
             <svg class="fm-uvsvg" viewBox="0 0 120 120">
@@ -2164,9 +2194,22 @@
     // Faces 7 & 8: live sun position, countdown, moon (cheap, guarded)
     if(typeof updateAstroLive === 'function') updateAstroLive();
 
-    // Face 9: seconds progress bar
+    // Face 9: colon blink synced to clock tick
+    var gxColon = document.querySelector('#face-galaxy .fgx-colon');
+    if(gxColon){
+      gxColon.style.opacity = '1';
+      setTimeout(function(){ if(gxColon) gxColon.style.opacity = '0.18'; }, 680);
+    }
+
+    // Face 9: seconds progress bar, gradient spans full container width
     var secBar = document.getElementById('fgx-secbar');
-    if(secBar) secBar.style.width = ((s / 59) * 100).toFixed(1) + '%';
+    if(secBar){
+      if(!secBar._gradInit){
+        var ww = (secBar.parentElement || {}).offsetWidth;
+        if(ww){ secBar.style.backgroundSize = ww + 'px 100%'; secBar._gradInit = true; }
+      }
+      secBar.style.width = ((s / 59) * 100).toFixed(1) + '%';
+    }
   }
   tick(); setInterval(tick, 1000);
 
@@ -2861,6 +2904,8 @@
 
   function renderMarine(){
     if(!astroData) return;
+    var marineEl = document.querySelector('.f-marine');
+    if(marineEl) marineEl.classList.remove('loading');
     var c = astroData.current || {};
     var uv = c.uv_index != null ? c.uv_index : null;
     var feels = c.apparent_temperature != null ? Math.round(c.apparent_temperature) : null;
@@ -3006,9 +3051,15 @@
   // Instant refresh when the app returns to the foreground (phone
   // unlocked, app switched back) if the data is older than 2 minutes —
   // timers pause while the page is hidden, so this closes the gap.
+  // After 5+ min hidden (proper sleep) snap back to the main clock face.
+  var hiddenAt = 0;
   document.addEventListener('visibilitychange', function(){
-    if(document.visibilityState === 'visible' && Date.now() - lastWeatherTs > 2*60*1000){
-      refreshWeather();
+    if(document.visibilityState === 'hidden'){
+      hiddenAt = Date.now();
+    } else if(document.visibilityState === 'visible'){
+      if(Date.now() - lastWeatherTs > 2*60*1000) refreshWeather();
+      if(hiddenAt && Date.now() - hiddenAt > 5*60*1000) goTo(0);
+      hiddenAt = 0;
     }
   });
   window.addEventListener('pageshow', function(ev){
@@ -3256,7 +3307,16 @@
     gxFace.addEventListener('click', function(ev){
       // Only act on a true tap (not the end of a swipe) — the swipe handler
       // already consumes big drags; here we guard against the residual click.
-      if(Math.abs(dragDx) < 8) applyGxTheme(gxThemeIdx + 1);
+      if(Math.abs(dragDx) < 8){
+        applyGxTheme(gxThemeIdx + 1);
+        var r = document.createElement('div');
+        r.className = 'fgx-ripple';
+        var rect = gxFace.getBoundingClientRect();
+        r.style.left = (ev.clientX - rect.left) + 'px';
+        r.style.top = (ev.clientY - rect.top) + 'px';
+        gxFace.appendChild(r);
+        setTimeout(function(){ r.remove(); }, 700);
+      }
     });
   }
 
