@@ -3094,6 +3094,9 @@
   let stageIsPortrait = false;
   function layoutStage(){
     const w = window.innerWidth, h = window.innerHeight;
+    // Guard against the transitional/zero viewport iOS reports mid-launch — a
+    // later pass picks up the real size once it settles.
+    if(!w || !h) return;
     stageIsPortrait = h > w;
     const s = stage.style;
     if(stageIsPortrait){
@@ -3109,13 +3112,30 @@
       s.transformOrigin = ''; s.transform = '';
     }
   }
-  layoutStage();
-  window.addEventListener('resize', function(){
+  function relayout(){
     layoutStage();
     // Container width changed: let the seconds-bar gradient resize to match.
     if(fgxSecBarEl) fgxSecBarEl._gradInit = false;
+  }
+  // iOS home-screen PWAs frequently report a stale/transitional innerWidth/
+  // innerHeight at first paint, then settle the real viewport WITHOUT firing a
+  // resize event — which left the stage sized to a fraction of the screen,
+  // rotated and stuck in a corner. Re-run the layout across the whole launch
+  // window and on every viewport signal so it always lands full-screen.
+  relayout();
+  requestAnimationFrame(relayout);
+  [80, 200, 400, 800, 1500].forEach(function(ms){ setTimeout(relayout, ms); });
+  window.addEventListener('load', relayout);
+  window.addEventListener('pageshow', relayout);
+  window.addEventListener('resize', relayout);
+  window.addEventListener('orientationchange', function(){ setTimeout(relayout, 60); setTimeout(relayout, 400); });
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible') relayout();
   });
-  window.addEventListener('orientationchange', function(){ setTimeout(layoutStage, 60); });
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', relayout);
+    window.visualViewport.addEventListener('scroll', relayout);
+  }
 
   for(let i=0;i<FACES;i++){
     const d = document.createElement('div');
