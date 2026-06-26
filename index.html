@@ -182,17 +182,21 @@
     margin-top: clamp(10px, 3cqh, 28px);
     display: flex;
     flex-direction: column;
-    gap: clamp(4px, 1.2cqh, 12px);
+    gap: clamp(6px, 1.8cqh, 16px);
   }
   .f-classic .extra-item {
     display: flex;
     align-items: center;
-    gap: 0.4em;
-    color: var(--muted);
-    font-weight: 500;
-    font-size: clamp(15px, 4cqh, 40px);
+    gap: 0.45em;
+    color: rgba(200,215,235,0.78);
+    font-weight: 600;
+    font-size: clamp(17px, 5cqh, 48px);
     white-space: nowrap;
     line-height: 1;
+  }
+  .f-classic .extra-item .extra-ico {
+    font-size: 0.9em;
+    filter: drop-shadow(0 0 6px rgba(109,184,255,0.35));
   }
 
   /* ---------- Face 2: Glass Weather ---------- */
@@ -410,12 +414,14 @@
     width: min(78cqh, 44cqw);
     height: min(78cqh, 44cqw);
     border-radius: 50%;
-    background: radial-gradient(circle at 50% 36%, #232327, #0a0a0b 74%);
+    background: radial-gradient(circle at 50% 36%, #242429, #0a0a0b 74%);
     box-shadow:
-      inset 0 0 0 2px rgba(255,180,94,0.18),
+      inset 0 0 0 2px rgba(255,180,94,0.25),
       inset 0 6px 30px rgba(0,0,0,0.6),
-      inset 0 -2px 20px rgba(255,180,94,0.05),
-      0 12px 50px rgba(0,0,0,0.5);
+      inset 0 -2px 20px rgba(255,180,94,0.06),
+      0 0 0 1px rgba(255,180,94,0.08),
+      0 0 40px rgba(255,180,94,0.12),
+      0 14px 55px rgba(0,0,0,0.55);
   }
   .f-analog .tick {
     position: absolute;
@@ -784,7 +790,8 @@
     width: clamp(2px, 0.55cqh, 5px);
     height: clamp(8px, 2.4cqh, 20px);
     border-radius: 99px;
-    background: rgba(170,180,255,0.65);
+    background: rgba(160,172,255,0.82);
+    box-shadow: 0 0 5px rgba(160,172,255,0.3);
   }
   .f-cal .fc-time {
     font-weight: 700;
@@ -795,7 +802,7 @@
     font-variant-numeric: tabular-nums;
     display: flex;
     align-items: center;
-    filter: drop-shadow(0 4px 24px rgba(150,160,255,0.18));
+    filter: drop-shadow(0 4px 30px rgba(150,160,255,0.32));
   }
   .f-cal .fc-colon {
     margin: 0 0.02em;
@@ -1543,13 +1550,13 @@
   }
   .f-marine .fm-spark-line {
     fill: none;
-    stroke-width: 2.5;
+    stroke-width: 3;
     stroke-linejoin: round;
     stroke-linecap: round;
     vector-effect: non-scaling-stroke;
   }
-  .f-marine .fm-spark-line.warm { stroke: var(--mr-warm); filter: drop-shadow(0 0 5px rgba(255,180,94,0.5)); }
-  .f-marine .fm-spark-line.teal { stroke: var(--mr-teal); filter: drop-shadow(0 0 5px rgba(94,230,200,0.5)); }
+  .f-marine .fm-spark-line.warm { stroke: var(--mr-warm); filter: drop-shadow(0 0 7px rgba(255,180,94,0.65)); }
+  .f-marine .fm-spark-line.teal { stroke: var(--mr-teal); filter: drop-shadow(0 0 7px rgba(94,230,200,0.65)); }
 
   /* ---------- Face 9: Galaxy AOD (Samsung-style Always-On Display) ---------- */
   .f-galaxy {
@@ -1561,6 +1568,15 @@
     --gx-a: #4be3c0; --gx-b: #4aa8ff; --gx-c: #9b7bff;
     --gx-colon: rgba(155,123,255,0.92);
     --gx-glow: rgba(74,168,255,0.3);
+  }
+  /* Ambient glow: soft radial bloom behind the clock, tied to the theme color */
+  .f-galaxy::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 65% at 50% 46%, var(--gx-glow), transparent 70%);
+    pointer-events: none;
+    opacity: 0.9;
   }
   .f-galaxy[data-theme="amber"] {
     --gx-a: #ffd166; --gx-b: #ffaa33; --gx-c: #ff7b35;
@@ -1633,7 +1649,7 @@
   }
   .f-galaxy .fgx-secbar-wrap {
     width: min(52cqw, 480px);
-    height: clamp(2px, 0.5cqh, 4px);
+    height: clamp(3px, 0.7cqh, 6px);
     background: rgba(255,255,255,0.08);
     border-radius: 99px;
     overflow: hidden;
