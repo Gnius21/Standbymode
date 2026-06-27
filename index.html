@@ -3092,20 +3092,48 @@
   // are unreliable on iOS Safari with toolbars) so it lines up with the
   // screen exactly and nothing is clipped at the edges.
   let stageIsPortrait = false;
+  // True when launched from the Home Screen (standalone / fullscreen PWA),
+  // where the app fills the whole device screen.
+  function isStandalone(){
+    return window.navigator.standalone === true ||
+           (window.matchMedia && (matchMedia('(display-mode: standalone)').matches ||
+                                  matchMedia('(display-mode: fullscreen)').matches));
+  }
   function layoutStage(){
-    const w = window.innerWidth, h = window.innerHeight;
+    const iw = window.innerWidth, ih = window.innerHeight;
     // Guard against the transitional/zero viewport iOS reports mid-launch — a
     // later pass picks up the real size once it settles.
-    if(!w || !h) return;
-    stageIsPortrait = h > w;
+    if(!iw || !ih) return;
+    // Orientation from the window ratio. This stays correct even when iOS
+    // mis-reports innerWidth/innerHeight at the wrong scale (both are scaled
+    // together, so their ratio is preserved).
+    stageIsPortrait = ih >= iw;
     const s = stage.style;
     if(stageIsPortrait){
-      s.width = h + 'px';
-      s.height = w + 'px';
+      // Pick the fill dimensions. On a Home Screen PWA, iOS sometimes reports
+      // innerWidth/innerHeight at HALF scale at launch (the visual-viewport
+      // scale, not the layout viewport) — which left the rotated stage sized to
+      // a quarter of the screen until a manual refresh. screen.width/height are
+      // stable device CSS pixels, so use those when running fullscreen. In a
+      // normal browser window we must use the window size (screen = the whole
+      // monitor on desktop, not the window).
+      let longSide, shortSide;
+      if(isStandalone()){
+        longSide  = Math.max(screen.width, screen.height);
+        shortSide = Math.min(screen.width, screen.height);
+      } else {
+        const de = document.documentElement;
+        const cw = Math.max(iw, de.clientWidth || 0);
+        const ch = Math.max(ih, de.clientHeight || 0);
+        longSide = Math.max(cw, ch);
+        shortSide = Math.min(cw, ch);
+      }
+      s.width = longSide + 'px';
+      s.height = shortSide + 'px';
       s.left = '0';
       s.top = '0';
       s.transformOrigin = '0 0';
-      s.transform = 'translateX(' + w + 'px) rotate(90deg)';
+      s.transform = 'translateX(' + shortSide + 'px) rotate(90deg)';
     } else {
       s.width = ''; s.height = '';
       s.left = ''; s.top = '';
