@@ -664,8 +664,10 @@
   .f-weather .fw-tile {
     position: relative;
     min-width: 0;
-    background: linear-gradient(160deg, rgba(255,255,255,0.09), rgba(255,255,255,0.03));
-    border: 1px solid rgba(255,255,255,0.09);
+    background:
+      radial-gradient(ellipse 120% 80% at 50% 0%, rgba(255,255,255,0.10), transparent 70%),
+      linear-gradient(160deg, rgba(255,255,255,0.13), rgba(255,255,255,0.035) 60%);
+    border: 1px solid rgba(255,255,255,0.12);
     border-radius: clamp(8px, 1.4cqw, 16px);
     padding: clamp(6px, 1.7cqh, 15px) clamp(6px, 1.3cqw, 16px);
     display: flex;
@@ -674,7 +676,7 @@
     gap: clamp(3px, 0.7cqh, 7px);
     overflow: hidden;
     box-shadow: 0 clamp(2px, 0.5cqh, 5px) clamp(8px, 2cqh, 18px) rgba(0,0,0,0.30),
-                inset 0 1px 0 rgba(255,255,255,0.07);
+                inset 0 1px 0 rgba(255,255,255,0.10);
     transition: border-color 0.4s;
   }
   /* Colored accent line at top of each tile */
@@ -1212,7 +1214,8 @@
   .f-astro .fa-moondisc {
     width: min(58cqh, 30cqw);
     height: min(58cqh, 30cqw);
-    filter: drop-shadow(0 6px 26px rgba(150,170,255,0.32));
+    filter: drop-shadow(0 6px 26px rgba(150,170,255,0.32))
+            drop-shadow(0 0 34px rgba(205,215,255,0.22));
   }
   .f-astro .fa-moonname {
     font-weight: 700;
@@ -1279,10 +1282,10 @@
   }
   .f-astro .fa-arc-fill {
     fill: none;
-    stroke: var(--au-gold);
-    stroke-width: 3;
+    stroke: url(#fa-arcgrad);
+    stroke-width: 3.5;
     stroke-linecap: round;
-    filter: drop-shadow(0 0 6px rgba(255,200,110,0.6));
+    filter: drop-shadow(0 0 7px rgba(255,200,110,0.7));
     transition: stroke-dashoffset 0.8s ease;
   }
   .f-astro .fa-horizon {
@@ -2089,6 +2092,13 @@
           </div>
           <div class="fa-arcwrap">
             <svg class="fa-arc" viewBox="0 0 200 72" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="fa-arcgrad" x1="0" y1="0" x2="200" y2="0" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stop-color="#ff9d6e"/>
+                  <stop offset="0.5" stop-color="#ffe08a"/>
+                  <stop offset="1" stop-color="#ff8e6e"/>
+                </linearGradient>
+              </defs>
               <path class="fa-arc-track" d="M6,66 A105.17,105.17 0 0,1 194,66"/>
               <path class="fa-arc-fill" id="fa-arcfill" d="M6,66 A105.17,105.17 0 0,1 194,66"/>
             </svg>
