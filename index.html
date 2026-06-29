@@ -89,9 +89,28 @@
   .f-classic .clock {
     flex: 1 1 auto;
     display: flex;
-    align-items: center;
-    justify-content: flex-start;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: clamp(10px, 2.6cqh, 30px);
     overflow: hidden;
+  }
+  /* Live seconds hairline under the clock */
+  .f-classic .cl-secwrap {
+    width: min(34cqw, 480px);
+    max-width: 100%;
+    height: clamp(3px, 0.6cqh, 5px);
+    background: rgba(255,255,255,0.08);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .f-classic .cl-secfill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-soft));
+    border-radius: 99px;
+    box-shadow: 0 0 8px rgba(109,184,255,0.5);
+    transition: width 0.25s linear;
   }
   .f-classic .time {
     font-weight: 700;
@@ -329,6 +348,23 @@
     font-size: clamp(16px,5cqh,56px);
     letter-spacing: 0.03em;
     white-space: nowrap;
+  }
+  /* Live seconds hairline under the clock */
+  .f-glass .fg-secwrap {
+    width: min(44cqw, 460px);
+    max-width: 100%;
+    height: clamp(3px, 0.6cqh, 5px);
+    background: rgba(255,255,255,0.08);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .f-glass .fg-secfill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--fg-violet), var(--fg-purple));
+    border-radius: 99px;
+    box-shadow: 0 0 8px rgba(167,139,250,0.5);
+    transition: width 0.25s linear;
   }
   .f-glass .fg-stats {
     display: grid;
@@ -1754,8 +1790,22 @@
   }
   .nv-warm { background: #ff7b1e; mix-blend-mode: multiply; }
   .nv-dark { background: #04050d; }
+  /* Golden-hour bloom: a warm glow rising from the horizon around sunrise and
+     sunset. Sits below the dimming veils, blends with screen so it lifts warmth
+     into the scene without washing it out. */
+  .nv-gold {
+    position: fixed;
+    inset: 0;
+    z-index: 8;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 4s ease;
+    background: radial-gradient(ellipse 130% 80% at 50% 116%,
+      rgba(255,150,60,0.9), rgba(255,110,40,0.28) 45%, transparent 72%);
+    mix-blend-mode: screen;
+  }
   @media (prefers-reduced-motion: reduce) {
-    .nv-warm, .nv-dark { transition: none; }
+    .nv-warm, .nv-dark, .nv-gold { transition: none; }
   }
 
   /* ---------- Data freshness indicator ---------- */
@@ -1827,12 +1877,34 @@
         calc(env(safe-area-inset-top) + clamp(8px, 1.8cqw, 28px));
     }
   }
+
+  /* Loading shimmer: gently pulse value placeholders until the first weather
+     fetch settles. Only normal-coloured values are targeted — never the
+     gradient-clipped clocks/temps, where opacity makes the text transparent. */
+  @keyframes val-shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.36; } }
+  body.data-loading .fw-tval,
+  body.data-loading .fg-stat-val,
+  body.data-loading .fg-wstrip-temp,
+  body.data-loading .fg-wstrip-cond,
+  body.data-loading .fw-cond,
+  body.data-loading .fa-chip-val,
+  body.data-loading .fa-cd-val,
+  body.data-loading .fn-card-val,
+  body.data-loading .f-classic .temp,
+  body.data-loading .f-classic .extra-item,
+  body.data-loading .f-analog .temp {
+    animation: val-shimmer 1.5s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body.data-loading * { animation: none !important; }
+  }
 </style>
 </head>
-<body>
+<body class="data-loading">
   <div class="data-loader" id="data-loader"></div>
   <div class="data-fresh" id="data-fresh" style="opacity:0"><span class="df-dot"></span><span class="df-text"></span></div>
   <!-- Night mode: warm (multiply) + dark veils that strengthen after sunset -->
+  <div class="nv-gold" id="nv-gold" aria-hidden="true"></div>
   <div class="nv-warm" id="nv-warm" aria-hidden="true"></div>
   <div class="nv-dark" id="nv-dark" aria-hidden="true"></div>
   <div class="stage" id="stage">
@@ -1844,6 +1916,7 @@
           <div class="time">
             <span class="j-hh">5</span><span class="colon">:</span><span class="j-mm">13</span><span class="ampm j-ampm">AM</span>
           </div>
+          <div class="cl-secwrap"><div class="cl-secfill js-secfill"></div></div>
         </div>
         <div class="side">
           <div class="date"><span class="day j-dow">WED</span><span class="j-dom">26</span></div>
@@ -1871,6 +1944,7 @@
         <div class="fg-clock">
           <div class="fg-time"><span class="j-hh">05</span><span class="colon">:</span><span class="j-mm">13</span><span class="fg-ampm j-ampm">AM</span></div>
           <div class="fg-date"><span class="j-dow">WED</span> &middot; <span class="j-fulldate">June 13, 2026</span></div>
+          <div class="fg-secwrap"><div class="fg-secfill js-secfill"></div></div>
         </div>
         <div class="fg-stats">
           <div class="fg-stat s-wind">
@@ -2194,6 +2268,7 @@
   const handS = document.getElementById('hand-s');
   const fgxColonEl = document.querySelector('#face-galaxy .fgx-colon');
   const fgxSecBarEl = document.getElementById('fgx-secbar');
+  const secFills = document.querySelectorAll('.js-secfill');
 
   let lastCalKey = '';
 
@@ -2235,6 +2310,12 @@
         if(ww){ fgxSecBarEl.style.backgroundSize = ww + 'px 100%'; fgxSecBarEl._gradInit = true; }
       }
       fgxSecBarEl.style.width = ((s / 59) * 100).toFixed(1) + '%';
+    }
+
+    // Faces 1 & 2: live seconds hairline under the clock
+    if(secFills.length){
+      var secPct = ((s / 59) * 100).toFixed(1) + '%';
+      for(var fi=0; fi<secFills.length; fi++) secFills[fi].style.width = secPct;
     }
   }
   tick(); setInterval(tick, 1000);
@@ -2784,6 +2865,19 @@
     var dk = document.getElementById('nv-dark');
     if(warm) warm.style.opacity = (dark*0.42).toFixed(3);
     if(dk)   dk.style.opacity   = (dark*0.28).toFixed(3);
+    // Golden-hour bloom near sunrise/sunset (needs real sun times)
+    var gold = document.getElementById('nv-gold');
+    if(gold){
+      var g = (astroData && astroData.sunrise && astroData.sunset)
+        ? goldenAmount(now, astroData.sunrise, astroData.sunset) : 0;
+      gold.style.opacity = (g * 0.22).toFixed(3);
+    }
+  }
+  // 0..1 bloom strength: peaks at sunrise/sunset, fades out within ~45 min.
+  function goldenAmount(now, sr, ss){
+    var W = 45*60000;
+    var d = Math.min(Math.abs(now - sr), Math.abs(now - ss));
+    return d < W ? (1 - d/W) : 0;
   }
 
   function updateAstroLive(){
@@ -3034,6 +3128,15 @@
 
   // Refresh the "updated Xm ago" indicator; turn amber when stale, red when failing
   function updateFreshness(){
+    // Offline is unambiguous — surface it immediately rather than waiting for a
+    // fetch to time out.
+    if(navigator.onLine === false){
+      freshEl.style.opacity = '1';
+      freshEl.classList.add('failed');
+      freshEl.classList.remove('stale');
+      freshTextEl.textContent = 'offline';
+      return;
+    }
     if(lastDataOkTs === 0){
       // Never loaded yet — stay hidden unless the first load has clearly failed
       if(lastWeatherTs !== 0 && Date.now() - lastWeatherTs > 20*1000){
@@ -3058,6 +3161,8 @@
     loaderEl.classList.add('active');
     const ok = await loadWeather();
     if(ok) lastDataOkTs = Date.now();
+    // First fetch settled (success or failure) — stop the placeholder shimmer.
+    document.body.classList.remove('data-loading');
     // Faces 7 & 8 (Sun/Moon + Marine) pull Bonaire sun/hourly/nowcast data
     loadAstroMarine();
     // Face 6 shows the user's local location — keep it fresh too when active
@@ -3069,6 +3174,12 @@
   setInterval(function(){ refreshWeather(); }, 5*60*1000);
   // Keep the relative "X min ago" label current between fetches
   setInterval(updateFreshness, 30*1000);
+  // React immediately to connectivity changes: refetch when back online, flag
+  // offline at once when the connection drops.
+  window.addEventListener('online', function(){ refreshWeather(); });
+  window.addEventListener('offline', updateFreshness);
+  // Safety net: never let the shimmer run forever if the first fetch hangs.
+  setTimeout(function(){ document.body.classList.remove('data-loading'); }, 12000);
 
   // Instant refresh when the app returns to the foreground (phone
   // unlocked, app switched back) if the data is older than 2 minutes —
