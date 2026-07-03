@@ -1850,18 +1850,28 @@
     box-shadow: 0 0 8px rgba(255,107,107,0.7);
   }
 
-  /* Force landscape: when the device is portrait the stage is rotated 90deg.
-     Sizing/positioning is done in JS (layoutStage) using real pixel sizes
-     because iOS Safari's vw/vh do not match the visible viewport. This is a
-     no-JS fallback only. */
+  /* Force landscape: when the device is portrait the stage is rotated 90deg
+     to fill the screen. Sizing is done entirely in CSS with viewport units,
+     which resolve against the layout viewport and recompute on every reflow.
+     This is deliberately NOT done from JS pixel measurements: iOS reports a
+     stale/half-scale innerWidth/innerHeight (and even screen.*) at cold PWA
+     launch and never fires a resize to correct it, so a JS-measured size gets
+     stuck until a manual reload. CSS viewport units don't have that problem.
+     dvh/dvw track the dynamic (toolbar-aware) viewport; vh/vw are the fallback
+     for engines without dynamic units. */
   @media (orientation: portrait) {
     .stage {
       width: 100vh;
       height: 100vw;
+      width: 100dvh;
+      height: 100dvw;
       transform: rotate(90deg);
       transform-origin: top left;
       left: 100vw;
+      left: 100dvw;
       top: 0;
+      right: auto;
+      bottom: auto;
     }
     /* The stage is rotated 90deg, so each face edge maps to a different
        physical screen edge. Re-map the safe-area insets accordingly so the
@@ -3208,82 +3218,36 @@
   const FACES = carousel.children.length;
   let index = Math.min(FACES-1, Math.max(0, parseInt(localStorage.getItem('faceIndex')||'0',10) || 0));
 
-  // Force a landscape stage. In portrait we rotate the stage 90deg, but we
-  // size and position it from real innerWidth/innerHeight (not vw/vh, which
-  // are unreliable on iOS Safari with toolbars) so it lines up with the
-  // screen exactly and nothing is clipped at the edges.
+  // The stage is force-landscape: in portrait it is rotated 90deg and sized to
+  // fill the screen. ALL sizing/rotation now lives in CSS (the
+  // `@media (orientation: portrait)` rule) using viewport units. JS must NOT
+  // set width/height/transform on the stage: iOS reports a stale/half-scale
+  // innerWidth/innerHeight (and screen.*) at cold PWA launch and never fires a
+  // resize to correct it, so any JS-measured size gets stuck until a manual
+  // reload — exactly the "opens tiny in the corner" bug. CSS viewport units
+  // resolve against the layout viewport and self-correct on reflow, so they
+  // don't have that problem. JS only tracks the orientation flag (used by the
+  // swipe axis mapping and the Galaxy ripple).
   let stageIsPortrait = false;
-  // True when launched from the Home Screen (standalone / fullscreen PWA),
-  // where the app fills the whole device screen.
-  function isStandalone(){
-    return window.navigator.standalone === true ||
-           (window.matchMedia && (matchMedia('(display-mode: standalone)').matches ||
-                                  matchMedia('(display-mode: fullscreen)').matches));
-  }
   function layoutStage(){
-    const iw = window.innerWidth, ih = window.innerHeight;
-    // Guard against the transitional/zero viewport iOS reports mid-launch — a
-    // later pass picks up the real size once it settles.
-    if(!iw || !ih) return;
-    // Orientation from the window ratio. This stays correct even when iOS
-    // mis-reports innerWidth/innerHeight at the wrong scale (both are scaled
-    // together, so their ratio is preserved).
-    stageIsPortrait = ih >= iw;
+    stageIsPortrait = (window.matchMedia && matchMedia('(orientation: portrait)').matches)
+                      || window.innerHeight >= window.innerWidth;
+    // Defensive: clear any inline sizing a previous build may have left so the
+    // CSS rule is always the single source of truth.
     const s = stage.style;
-    if(stageIsPortrait){
-      // Pick the fill dimensions. On a Home Screen PWA, iOS sometimes reports
-      // innerWidth/innerHeight at HALF scale at launch (the visual-viewport
-      // scale, not the layout viewport) — which left the rotated stage sized to
-      // a quarter of the screen until a manual refresh. screen.width/height are
-      // stable device CSS pixels, so use those when running fullscreen. In a
-      // normal browser window we must use the window size (screen = the whole
-      // monitor on desktop, not the window).
-      let longSide, shortSide;
-      if(isStandalone()){
-        longSide  = Math.max(screen.width, screen.height);
-        shortSide = Math.min(screen.width, screen.height);
-      } else {
-        const de = document.documentElement;
-        const cw = Math.max(iw, de.clientWidth || 0);
-        const ch = Math.max(ih, de.clientHeight || 0);
-        longSide = Math.max(cw, ch);
-        shortSide = Math.min(cw, ch);
-      }
-      s.width = longSide + 'px';
-      s.height = shortSide + 'px';
-      s.left = '0';
-      s.top = '0';
-      s.transformOrigin = '0 0';
-      s.transform = 'translateX(' + shortSide + 'px) rotate(90deg)';
-    } else {
-      s.width = ''; s.height = '';
-      s.left = ''; s.top = '';
+    if(s.width || s.transform){
+      s.width = ''; s.height = ''; s.left = ''; s.top = '';
       s.transformOrigin = ''; s.transform = '';
     }
-  }
-  function relayout(){
-    layoutStage();
-    // Container width changed: let the seconds-bar gradient resize to match.
+    // Container size may have changed: let the seconds-bar gradient re-fit.
     if(fgxSecBarEl) fgxSecBarEl._gradInit = false;
   }
-  // iOS home-screen PWAs frequently report a stale/transitional innerWidth/
-  // innerHeight at first paint, then settle the real viewport WITHOUT firing a
-  // resize event — which left the stage sized to a fraction of the screen,
-  // rotated and stuck in a corner. Re-run the layout across the whole launch
-  // window and on every viewport signal so it always lands full-screen.
-  relayout();
-  requestAnimationFrame(relayout);
-  [80, 200, 400, 800, 1500].forEach(function(ms){ setTimeout(relayout, ms); });
-  window.addEventListener('load', relayout);
-  window.addEventListener('pageshow', relayout);
-  window.addEventListener('resize', relayout);
-  window.addEventListener('orientationchange', function(){ setTimeout(relayout, 60); setTimeout(relayout, 400); });
-  document.addEventListener('visibilitychange', function(){
-    if(document.visibilityState === 'visible') relayout();
-  });
-  if(window.visualViewport){
-    window.visualViewport.addEventListener('resize', relayout);
-    window.visualViewport.addEventListener('scroll', relayout);
+  layoutStage();
+  window.addEventListener('resize', layoutStage);
+  window.addEventListener('orientationchange', function(){ setTimeout(layoutStage, 60); });
+  if(window.matchMedia){
+    try { matchMedia('(orientation: portrait)').addEventListener('change', layoutStage); }
+    catch(e){ /* older Safari: resize/orientationchange cover it */ }
   }
 
   for(let i=0;i<FACES;i++){
