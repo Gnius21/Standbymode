@@ -479,6 +479,16 @@
     border-radius: 2px;
   }
   .f-analog .tick.major::after { width: 4px; height: 8%; background: #9a9aa0; }
+  .f-analog .num {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    font-weight: 600;
+    font-size: clamp(14px, 5.5cqh, 52px);
+    color: rgba(215,218,225,0.82);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  }
   .f-analog .hand {
     position: absolute;
     left: 50%;
@@ -853,13 +863,26 @@
     align-items: stretch;
     width: clamp(180px, 40cqw, 620px);
   }
+  .f-cal .fc-monthrow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: clamp(8px, 2cqw, 24px);
+    margin-bottom: clamp(8px, 2.2cqh, 22px);
+  }
   .f-cal .fc-month {
     color: var(--cal-red);
     font-weight: 700;
     font-size: clamp(18px, 5.5cqh, 56px);
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    margin-bottom: clamp(8px, 2.2cqh, 22px);
+  }
+  .f-cal .fc-monthsub {
+    color: rgba(170,180,255,0.55);
+    font-weight: 600;
+    font-size: clamp(10px, 3cqh, 30px);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
   }
   .f-cal .fc-grid {
     display: grid;
@@ -1596,6 +1619,11 @@
   }
   .f-marine .fm-spark-line.warm { stroke: var(--mr-warm); filter: drop-shadow(0 0 7px rgba(255,180,94,0.65)); }
   .f-marine .fm-spark-line.teal { stroke: var(--mr-teal); filter: drop-shadow(0 0 7px rgba(94,230,200,0.65)); }
+  .f-marine .fm-spark-area { stroke: none; }
+  .f-marine .fm-spark-area.warm { fill: rgba(255,180,94,0.13); }
+  .f-marine .fm-spark-area.teal { fill: rgba(94,230,200,0.12); }
+  .f-marine .fm-spark-dot.warm { fill: var(--mr-warm); filter: drop-shadow(0 0 6px rgba(255,180,94,0.9)); }
+  .f-marine .fm-spark-dot.teal { fill: var(--mr-teal); filter: drop-shadow(0 0 6px rgba(94,230,200,0.9)); }
 
   /* ---------- Face 9: Galaxy AOD (Samsung-style Always-On Display) ---------- */
   .f-galaxy {
@@ -2092,7 +2120,10 @@
           <div class="fc-time"><span class="j-hh24">17</span><span class="fc-colon">:</span><span class="j-mm">56</span></div>
         </div>
         <div class="fc-right">
-          <div class="fc-month j-cal-month">JANUARY</div>
+          <div class="fc-monthrow">
+            <span class="fc-month j-cal-month">JANUARY</span>
+            <span class="fc-monthsub" id="fc-monthsub"></span>
+          </div>
           <div class="fc-grid" id="fc-grid"></div>
         </div>
       </section>
@@ -2237,13 +2268,17 @@
           <div class="fm-spark">
             <div class="fm-spark-hd"><span>&#x2600;&#xFE0F; UV index &middot; today</span><span class="jm-uvrange">--</span></div>
             <svg class="fm-spark-svg" viewBox="0 0 300 56" preserveAspectRatio="none">
+              <polygon class="fm-spark-area warm" id="fm-uvspark-fill" points=""/>
               <polyline class="fm-spark-line warm" id="fm-uvspark" points=""/>
+              <circle class="fm-spark-dot warm" id="fm-uvspark-dot" r="3.5" cx="-10" cy="-10"/>
             </svg>
           </div>
           <div class="fm-spark">
             <div class="fm-spark-hd"><span>&#x1F4A8; Wind &middot; 24h</span><span class="jm-windrange">--</span></div>
             <svg class="fm-spark-svg" viewBox="0 0 300 56" preserveAspectRatio="none">
+              <polygon class="fm-spark-area teal" id="fm-windspark-fill" points=""/>
               <polyline class="fm-spark-line teal" id="fm-windspark" points=""/>
+              <circle class="fm-spark-dot teal" id="fm-windspark-dot" r="3.5" cx="-10" cy="-10"/>
             </svg>
           </div>
         </div>
@@ -2340,6 +2375,15 @@
       t.style.transform = 'rotate(' + (i * 6) + 'deg)';
       dial.insertBefore(t, dial.firstChild);
     }
+    // Cardinal numerals just inside the tick ring
+    [['12',50,16.5],['3',83.5,50],['6',50,83.5],['9',16.5,50]].forEach(function(n){
+      const d = document.createElement('div');
+      d.className = 'num';
+      d.textContent = n[0];
+      d.style.left = n[1] + '%';
+      d.style.top = n[2] + '%';
+      dial.insertBefore(d, dial.firstChild);
+    });
   })();
 
   // Calendar face: dashed squircle ring of marks around the clock
@@ -2382,6 +2426,12 @@
     const grid = document.getElementById('fc-grid');
     if(!grid) return;
     setAll('j-cal-month', MONTHS[now.getMonth()].toUpperCase());
+    var subEl = document.getElementById('fc-monthsub');
+    if(subEl){
+      var dim = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+      var left = dim - now.getDate();
+      subEl.textContent = 'Day ' + now.getDate() + ' · ' + (left === 0 ? 'last day' : left + ' left');
+    }
     grid.textContent = '';
     const wd = ['M','T','W','T','F','S','S'];
     wd.forEach(function(label, i){
@@ -2940,18 +2990,30 @@
     for(var i=0;i<times.length;i++){ if(new Date(times[i]).getTime() >= now - 3600000) return i; }
     return 0;
   }
-  function buildSpark(elId, vals){
+  function buildSpark(elId, vals, nowIdx){
     var el = document.getElementById(elId);
     if(!el || !vals || vals.length < 2) return;
     var w = 300, h = 56, pad = 5;
     var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
     var range = (max - min) || 1;
-    var pts = vals.map(function(v,i){
-      var x = pad + i/(vals.length-1)*(w - 2*pad);
-      var y = (h - pad) - (v - min)/range*(h - 2*pad);
-      return x.toFixed(1)+','+y.toFixed(1);
-    }).join(' ');
+    var xy = vals.map(function(v,i){
+      return [ pad + i/(vals.length-1)*(w - 2*pad),
+               (h - pad) - (v - min)/range*(h - 2*pad) ];
+    });
+    var pts = xy.map(function(p){ return p[0].toFixed(1)+','+p[1].toFixed(1); }).join(' ');
     el.setAttribute('points', pts);
+    // Soft area fill under the line (close the shape along the bottom edge)
+    var fill = document.getElementById(elId + '-fill');
+    if(fill) fill.setAttribute('points',
+      pts + ' ' + xy[xy.length-1][0].toFixed(1)+','+h + ' ' + xy[0][0].toFixed(1)+','+h);
+    // Glowing marker on the "now" sample (defaults to the first point, since
+    // the series is sliced to start at the current hour)
+    var dot = document.getElementById(elId + '-dot');
+    if(dot){
+      var di = Math.max(0, Math.min(xy.length-1, nowIdx || 0));
+      dot.setAttribute('cx', xy[di][0].toFixed(1));
+      dot.setAttribute('cy', xy[di][1].toFixed(1));
+    }
   }
   // UV index → descriptive level + ring colour
   function uvLevel(uv){
@@ -3257,10 +3319,15 @@
   }
   const dots = Array.from(dotsEl.children);
 
+  // Accent colour of each face, used to tint the active carousel dot
+  const FACE_ACCENTS = ['#6db8ff','#a78bfa','#ffb45e','#5ee6c8','#ff5a6e','#5ea8ff','#ffcf6e','#5ee6c8','#9b7bff'];
   function render(dx){
     carousel.style.transform = 'translateX(calc(' + (-index*100) + '% + ' + (dx||0) + 'px))';
     dots.forEach(function(d,i){
-      d.classList.toggle('active', i===index);
+      const active = i===index;
+      d.classList.toggle('active', active);
+      d.style.background = active ? (FACE_ACCENTS[i] || '#fff') : '';
+      d.style.boxShadow = active ? '0 0 10px ' + (FACE_ACCENTS[i] || '#fff') : '';
     });
   }
 
