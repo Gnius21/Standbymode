@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="StandBy">
@@ -3311,6 +3311,41 @@
     try { matchMedia('(orientation: portrait)').addEventListener('change', layoutStage); }
     catch(e){ /* older Safari: resize/orientationchange cover it */ }
   }
+
+  // ---------- iOS cold-launch viewport recovery ----------
+  // Some iOS builds cold-launch a Home Screen PWA with the LAYOUT viewport at
+  // half size (visualViewport.scale ≈ 2): CSS lays every face out for a
+  // ~406x187 canvas (all clamp() minimums, far too big for it → overflow,
+  // clipped edges) and iOS zooms the result 2x to fill the screen. No resize
+  // ever fires, so nothing self-corrects — but a reload always fixes it. The
+  // user has been doing that reload by hand; do it automatically, once, with
+  // a counter so a persistent mismatch can never cause a reload loop.
+  (function(){
+    var standalone = window.navigator.standalone === true ||
+      (window.matchMedia && (matchMedia('(display-mode: standalone)').matches ||
+                             matchMedia('(display-mode: fullscreen)').matches));
+    if(!standalone) return; // browser tabs zoom legitimately — never touch them
+    function viewportBroken(){
+      var vv = window.visualViewport;
+      if(vv && Math.abs(vv.scale - 1) > 0.15) return true;
+      // Fallback signal: layout viewport far smaller than the physical screen
+      var shortScreen = Math.min(screen.width, screen.height);
+      var shortWin = Math.min(window.innerWidth, window.innerHeight);
+      return shortWin > 0 && shortScreen > 0 && shortWin < shortScreen * 0.7;
+    }
+    function recover(){
+      if(!viewportBroken()){
+        sessionStorage.removeItem('vpReloads'); // healthy — reset the guard
+        return;
+      }
+      var n = parseInt(sessionStorage.getItem('vpReloads') || '0', 10) || 0;
+      if(n >= 2) return; // give up rather than loop forever
+      sessionStorage.setItem('vpReloads', String(n + 1));
+      location.reload();
+    }
+    setTimeout(recover, 250);   // fast path: fix it before the user notices
+    setTimeout(recover, 1200);  // second look once the launch settles
+  })();
 
   for(let i=0;i<FACES;i++){
     const d = document.createElement('div');
