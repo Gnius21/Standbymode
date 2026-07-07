@@ -2304,7 +2304,13 @@
   const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
   function setAll(cls, text){
-    document.querySelectorAll('.' + cls).forEach(function(el){ el.textContent = text; });
+    // Skip identical writes: setting textContent always replaces the text
+    // node, so on a display that ticks every second this avoids pointless
+    // DOM churn for values that only change once a minute (or less).
+    var s = String(text);
+    document.querySelectorAll('.' + cls).forEach(function(el){
+      if(el.textContent !== s) el.textContent = s;
+    });
   }
 
   // ---------- Clock ----------
@@ -2317,20 +2323,27 @@
 
   let lastCalKey = '';
 
+  let lastMinKey = '';
   function tick(){
     const now = new Date();
-    const h12 = (now.getHours() % 12) || 12;
-    setAll('j-hh', String(h12).padStart(2,'0'));
-    setAll('j-hh24', String(now.getHours()).padStart(2,'0'));
-    setAll('j-mm', String(now.getMinutes()).padStart(2,'0'));
-    setAll('j-ampm', now.getHours() < 12 ? 'AM' : 'PM');
-    setAll('j-dow', DAYS[now.getDay()]);
-    setAll('j-dom', now.getDate());
-    setAll('j-fulldate', MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear());
+    // Clock text and date only change once a minute — skip the whole block
+    // (7 querySelectorAll sweeps) on the other 59 ticks.
+    const minKey = now.getHours() + ':' + now.getMinutes() + ':' + now.getDate();
+    if(minKey !== lastMinKey){
+      lastMinKey = minKey;
+      const h12 = (now.getHours() % 12) || 12;
+      setAll('j-hh', String(h12).padStart(2,'0'));
+      setAll('j-hh24', String(now.getHours()).padStart(2,'0'));
+      setAll('j-mm', String(now.getMinutes()).padStart(2,'0'));
+      setAll('j-ampm', now.getHours() < 12 ? 'AM' : 'PM');
+      setAll('j-dow', DAYS[now.getDay()]);
+      setAll('j-dom', now.getDate());
+      setAll('j-fulldate', MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear());
 
-    // Rebuild the calendar only when the date changes
-    const calKey = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate();
-    if(calKey !== lastCalKey){ lastCalKey = calKey; buildCalendar(now); }
+      // Rebuild the calendar only when the date changes
+      const calKey = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate();
+      if(calKey !== lastCalKey){ lastCalKey = calKey; buildCalendar(now); }
+    }
 
     const s = now.getSeconds();
     const m = now.getMinutes() + s / 60;
@@ -2492,6 +2505,11 @@
   // ---------- KNMI Bonaire live scraper (from RWC Caribbean) ----------
   const KNMI_URL = 'https://www.knmidc.org/weather/bonaire/?Current';
 
+  // Remember which proxy worked so each refresh tries it first, and bench
+  // proxies that keep failing instead of burning a 10s timeout on them
+  // every round.
+  var knmiLastGood = -1;
+  var knmiFails = [0, 0, 0, 0];
   async function fetchKnmiPage(){
     const proxies = [
       function(u){ return 'https://api.allorigins.win/raw?url='+encodeURIComponent(u); },
@@ -2499,13 +2517,24 @@
       function(u){ return 'https://r.jina.ai/'+u; },
       function(u){ return u; }
     ];
-    for(var i=0;i<proxies.length;i++){
+    var order = [];
+    if(knmiLastGood >= 0) order.push(knmiLastGood);
+    for(var j=0;j<proxies.length;j++) if(j !== knmiLastGood) order.push(j);
+    // If every proxy is benched, give them all another chance
+    if(order.every(function(i){ return knmiFails[i] >= 3; })) knmiFails = [0,0,0,0];
+    for(var k=0;k<order.length;k++){
+      var i = order[k];
+      if(knmiFails[i] >= 3) continue; // benched for this session
       try{
         var ctrl=new AbortController(), t=setTimeout(function(){ctrl.abort();},10000);
         var r=await fetch(proxies[i](KNMI_URL),{signal:ctrl.signal});
         clearTimeout(t);
-        if(r.ok){var text=await r.text(); if(text&&text.length>500) return text;}
+        if(r.ok){
+          var text=await r.text();
+          if(text&&text.length>500){ knmiLastGood=i; knmiFails[i]=0; return text; }
+        }
       }catch(e){}
+      knmiFails[i]++;
     }
     return null;
   }
@@ -3243,7 +3272,7 @@
     setTimeout(function(){ loaderEl.classList.remove('active'); }, 300);
   }
   refreshWeather();
-  setInterval(function(){ refreshWeather(); }, 5*60*1000);
+  setInterval(function(){ refreshWeather(); }, 10*60*1000);
   // Keep the relative "X min ago" label current between fetches
   setInterval(updateFreshness, 30*1000);
   // React immediately to connectivity changes: refetch when back online, flag
