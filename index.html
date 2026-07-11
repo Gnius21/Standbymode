@@ -1856,7 +1856,7 @@
     gap: clamp(6px, 1.4cqw, 12px);
     margin-bottom: clamp(8px, 2cqh, 18px);
   }
-  .f-life .lf-tab {
+  .f-life .lf-tab, .f-life .lf-rangetab {
     flex: 1 1 0;
     min-width: 0;
     text-align: center;
@@ -1875,7 +1875,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .f-life .lf-tab.active {
+  .f-life .lf-tab.active, .f-life .lf-rangetab.active {
     background: linear-gradient(160deg, rgba(94,230,200,0.28), rgba(94,230,200,0.08));
     border-color: rgba(94,230,200,0.4);
     color: var(--lf-ink);
@@ -2182,6 +2182,81 @@
   .f-life .lf-tl-item.done { border-left-color: var(--lf-teal); color: var(--lf-teal); }
   .f-life .lf-tl-item.upcoming { border-left-color: var(--lf-blue); color: var(--lf-blue); }
   .f-life .lf-tl-item.missed { border-left-color: var(--lf-red); color: var(--lf-red); opacity: 0.75; }
+
+  /* ---------- Stats tab ---------- */
+  .f-life .lf-stats-daily {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    gap: clamp(6px, 1.4cqw, 14px);
+    margin-bottom: clamp(8px, 1.8cqh, 16px);
+  }
+  .f-life .lf-stat-chip {
+    background: var(--lf-card);
+    border: 1px solid var(--lf-cardborder);
+    border-radius: clamp(8px, 1.6cqh, 16px);
+    padding: clamp(6px, 1.4cqh, 12px) clamp(6px, 1.2cqw, 12px);
+    text-align: center;
+  }
+  .f-life .lf-stats-toggle {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 6px;
+    width: clamp(140px, 24cqw, 220px);
+    margin-bottom: clamp(6px, 1.4cqh, 12px);
+  }
+  .f-life .lf-rangetab { padding: clamp(4px, 1cqh, 8px) clamp(4px, 1cqw, 8px); font-size: clamp(8px, 1.8cqh, 14px); }
+  .f-life .lf-stats-charts {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: clamp(6px, 1.4cqw, 14px);
+    margin-bottom: clamp(8px, 1.8cqh, 16px);
+  }
+  .f-life .lf-chart-card {
+    background: var(--lf-card);
+    border: 1px solid var(--lf-cardborder);
+    border-radius: clamp(8px, 1.6cqh, 16px);
+    padding: clamp(6px, 1.4cqh, 12px);
+    min-width: 0;
+  }
+  .f-life .fm-spark-svg { width: 100%; height: clamp(24px, 6cqh, 50px); overflow: visible; margin-top: 4px; }
+  .f-life .fm-spark-line { fill: none; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+  .f-life .fm-spark-line.warm { stroke: var(--lf-warm); filter: drop-shadow(0 0 6px rgba(255,180,94,0.6)); }
+  .f-life .fm-spark-line.teal { stroke: var(--lf-teal); filter: drop-shadow(0 0 6px rgba(94,230,200,0.6)); }
+  .f-life .fm-spark-area { stroke: none; }
+  .f-life .fm-spark-area.warm { fill: rgba(255,180,94,0.13); }
+  .f-life .fm-spark-area.teal { fill: rgba(94,230,200,0.12); }
+  .f-life .fm-spark-dot.warm { fill: var(--lf-warm); filter: drop-shadow(0 0 5px rgba(255,180,94,0.8)); }
+  .f-life .fm-spark-dot.teal { fill: var(--lf-teal); filter: drop-shadow(0 0 5px rgba(94,230,200,0.8)); }
+  .f-life .lf-cal-wrap { flex: 1 1 auto; min-height: 0; overflow: hidden; }
+  .f-life .lf-cal-month {
+    font-size: clamp(9px, 2.2cqh, 18px);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--lf-muted);
+    margin-bottom: clamp(4px, 1cqh, 8px);
+  }
+  .f-life .lf-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: clamp(2px, 0.6cqh, 6px);
+  }
+  .f-life .lf-cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: clamp(4px, 1cqh, 8px);
+    font-size: clamp(7px, 1.7cqh, 14px);
+    font-weight: 600;
+    color: var(--lf-muted);
+    background: rgba(255,255,255,0.04);
+  }
+  .f-life .lf-cal-day.complete { background: rgba(94,230,200,0.32); color: #eafff8; font-weight: 800; }
+  .f-life .lf-cal-day.today { box-shadow: inset 0 0 0 2px var(--lf-warm); }
+  .f-life .lf-cal-day.blank { background: transparent; }
 
   /* ---------- Dots indicator ---------- */
   .dots {
@@ -2889,7 +2964,48 @@
         <div class="lf-view" id="lf-view-timeline"></div>
 
         <!-- Stats (populated in a later stage) -->
-        <div class="lf-view" id="lf-view-stats"></div>
+        <div class="lf-view" id="lf-view-stats">
+          <div class="lf-stats-daily" id="lf-stats-daily">
+            <div class="lf-stat-chip"><div class="lf-card-hd">Water today</div><div class="lf-card-val blue" id="lf-st-water">0%</div></div>
+            <div class="lf-stat-chip"><div class="lf-card-hd">Bathroom</div><div class="lf-card-val" id="lf-st-bath">0</div></div>
+            <div class="lf-stat-chip"><div class="lf-card-hd">Fasted today</div><div class="lf-card-val teal" id="lf-st-fasted">0h</div></div>
+            <div class="lf-stat-chip"><div class="lf-card-hd">Streak</div><div class="lf-card-val warm" id="lf-st-streak">0</div></div>
+          </div>
+          <div class="lf-stats-toggle">
+            <div class="lf-rangetab active" data-lfrange="7">Week</div>
+            <div class="lf-rangetab" data-lfrange="30">Month</div>
+          </div>
+          <div class="lf-stats-charts" id="lf-stats-charts">
+            <div class="lf-chart-card">
+              <div class="lf-card-hd">&#x1F4A7; Water</div>
+              <svg class="fm-spark-svg" viewBox="0 0 300 56" preserveAspectRatio="none">
+                <polygon class="fm-spark-area teal" id="lf-chart-water-fill" points=""/>
+                <polyline class="fm-spark-line teal" id="lf-chart-water" points=""/>
+                <circle class="fm-spark-dot teal" id="lf-chart-water-dot" r="3.5" cx="-10" cy="-10"/>
+              </svg>
+            </div>
+            <div class="lf-chart-card">
+              <div class="lf-card-hd">&#x1F6BD; Bathroom</div>
+              <svg class="fm-spark-svg" viewBox="0 0 300 56" preserveAspectRatio="none">
+                <polygon class="fm-spark-area warm" id="lf-chart-bath-fill" points=""/>
+                <polyline class="fm-spark-line warm" id="lf-chart-bath" points=""/>
+                <circle class="fm-spark-dot warm" id="lf-chart-bath-dot" r="3.5" cx="-10" cy="-10"/>
+              </svg>
+            </div>
+            <div class="lf-chart-card">
+              <div class="lf-card-hd">&#x23F1;&#xFE0F; Fasting hours</div>
+              <svg class="fm-spark-svg" viewBox="0 0 300 56" preserveAspectRatio="none">
+                <polygon class="fm-spark-area teal" id="lf-chart-fast-fill" points=""/>
+                <polyline class="fm-spark-line teal" id="lf-chart-fast" points=""/>
+                <circle class="fm-spark-dot teal" id="lf-chart-fast-dot" r="3.5" cx="-10" cy="-10"/>
+              </svg>
+            </div>
+          </div>
+          <div class="lf-cal-wrap">
+            <div class="lf-cal-month" id="lf-cal-month">&mdash;</div>
+            <div class="lf-cal-grid" id="lf-cal-grid"></div>
+          </div>
+        </div>
 
         <!-- Settings (populated in a later stage) -->
         <div class="lf-view" id="lf-view-settings"></div>
@@ -4159,7 +4275,7 @@
   // on the same area, so it stays inside the normal capture/drag pipeline —
   // see the tap-vs-drag branch in endDrag() below, which routes a genuine
   // tap on that face to the theme cycler instead of a blanket exclusion.
-  var STAGE_TAP_TARGETS = '#face-life .lf-tab, #face-life .lf-wsbtn, #face-life .lf-card, #face-life .lf-rem-btn, #face-life input, #face-life select, #face-life button';
+  var STAGE_TAP_TARGETS = '#face-life .lf-tab, #face-life .lf-rangetab, #face-life .lf-wsbtn, #face-life .lf-card, #face-life .lf-rem-btn, #face-life input, #face-life select, #face-life button';
   let dragStart = null, dragDx = 0, dragT = 0, dragStartTarget = null;
   stage.addEventListener('pointerdown', function(ev){
     if(ev.target.closest && ev.target.closest(STAGE_TAP_TARGETS)) return;
@@ -4472,6 +4588,7 @@
           // Lazy-render tabs backed by an IndexedDB query only when opened,
           // rather than keeping them constantly in sync in the background.
           if(name === 'timeline' && typeof renderTimeline === 'function') renderTimeline();
+          if(name === 'stats' && typeof renderStats === 'function') renderStats();
         });
       });
     }
@@ -4789,11 +4906,129 @@
       });
     }
 
+    // ---------- Stats tab: daily/weekly/monthly aggregates, streaks, calendar ----------
+    // Sequential pairing of fastStart/fastEnd within a slice of events —
+    // shared by the daily card, the weekly/monthly chart, and the streak
+    // and calendar computations, so "how much was fasted" is defined once.
+    function fastedStatsFor(events){
+      var transitions = events.filter(function(e){ return e.type==='fastStart' || e.type==='fastEnd'; })
+        .sort(function(a,b){ return a.ts - b.ts; });
+      var openStart = null, totalMs = 0, completed = false;
+      transitions.forEach(function(e){
+        if(e.type === 'fastStart') openStart = e.ts;
+        else if(e.type === 'fastEnd' && openStart != null){ totalMs += (e.ts - openStart); openStart = null; completed = true; }
+      });
+      return { fastedMs: totalMs, completed: completed };
+    }
+    function dayStatsFor(events){
+      var f = fastedStatsFor(events);
+      return {
+        waterCount: events.filter(function(e){ return e.type==='water' && !e.skipped; }).length,
+        bathCount:  events.filter(function(e){ return e.type==='bath'  && !e.skipped; }).length,
+        fastedHours: f.fastedMs / 3600000,
+        completedFast: f.completed
+      };
+    }
+    // Fetches everything once for the requested day-count and slices it
+    // client-side into per-day buckets, rather than issuing one IndexedDB
+    // query per day.
+    function bucketedEvents(days){
+      var todayStart = startOfToday();
+      var rangeStart = todayStart - (days-1)*86400000;
+      return getEventsInRange(rangeStart, Date.now() + 1).then(function(events){
+        var buckets = [];
+        for(var i=days-1;i>=0;i--){
+          var dStart = todayStart - i*86400000, dEnd = dStart + 86400000;
+          buckets.push({
+            start: dStart,
+            events: events.filter(function(e){ return e.ts >= dStart && e.ts < dEnd; })
+          });
+        }
+        return buckets;
+      });
+    }
+    function computeStreak(buckets){
+      var streak = 0;
+      for(var i=buckets.length-1;i>=0;i--){
+        var completed = dayStatsFor(buckets[i].events).completedFast;
+        if(completed) streak++;
+        else if(i === buckets.length-1) continue; // today not finished yet — doesn't break the streak
+        else break;
+      }
+      return streak;
+    }
+    function renderDailyStats(buckets){
+      var today = dayStatsFor(buckets[buckets.length-1].events);
+      var pct = Math.min(100, Math.round((today.waterCount * S.waterPortionMl / S.waterGoalMl) * 100));
+      var elWater = document.getElementById('lf-st-water'); if(elWater) elWater.textContent = pct + '%';
+      var elBath = document.getElementById('lf-st-bath'); if(elBath) elBath.textContent = String(today.bathCount);
+      var elFasted = document.getElementById('lf-st-fasted'); if(elFasted) elFasted.textContent = today.fastedHours.toFixed(1) + 'h';
+      var streak = computeStreak(buckets);
+      var elStreak = document.getElementById('lf-st-streak'); if(elStreak) elStreak.textContent = String(streak);
+      var homeStreak = document.getElementById('lf-streak-val'); if(homeStreak) homeStreak.textContent = String(streak);
+    }
+    function renderCharts(buckets){
+      var waterVals = buckets.map(function(b){ return dayStatsFor(b.events).waterCount * S.waterPortionMl / 1000; });
+      var bathVals  = buckets.map(function(b){ return dayStatsFor(b.events).bathCount; });
+      var fastVals  = buckets.map(function(b){ return dayStatsFor(b.events).fastedHours; });
+      buildSpark('lf-chart-water', waterVals, waterVals.length-1);
+      buildSpark('lf-chart-bath', bathVals, bathVals.length-1);
+      buildSpark('lf-chart-fast', fastVals, fastVals.length-1);
+    }
+    var lfStatsRange = 7;
+    function renderStats(){
+      var view = document.getElementById('lf-view-stats');
+      if(!view) return;
+      // Always look back 42 days so the streak/calendar are accurate
+      // regardless of whether the Week or Month chart range is selected;
+      // only the charts themselves slice down to the chosen range.
+      bucketedEvents(42).then(function(all){
+        renderDailyStats(all);
+        renderCharts(all.slice(all.length - lfStatsRange));
+        renderCalendar(all);
+      });
+    }
+    function initStatsToggle(){
+      var toggles = faceEl ? faceEl.querySelectorAll('.lf-rangetab') : [];
+      toggles.forEach(function(t){
+        t.addEventListener('click', function(){
+          toggles.forEach(function(x){ x.classList.toggle('active', x === t); });
+          lfStatsRange = parseInt(t.dataset.lfrange, 10) || 7;
+          renderStats();
+        });
+      });
+    }
+    // Calendar tints each day of the current month by whether that day's
+    // fast completed (fastEnd logged) — the same unambiguous signal used
+    // for the streak, reused here so both numbers agree with each other.
+    function renderCalendar(last42Buckets){
+      var grid = document.getElementById('lf-cal-grid');
+      var monthEl = document.getElementById('lf-cal-month');
+      if(!grid) return;
+      var byDay = {};
+      last42Buckets.forEach(function(b){ byDay[b.start] = dayStatsFor(b.events).completedFast; });
+      var now = new Date();
+      if(monthEl) monthEl.textContent = now.toLocaleDateString([], {month:'long', year:'numeric'});
+      var year = now.getFullYear(), month = now.getMonth(), today = now.getDate();
+      var daysInMonth = new Date(year, month+1, 0).getDate();
+      var firstDow = (new Date(year, month, 1).getDay() + 6) % 7; // Monday-first
+      var html = '';
+      for(var b=0;b<firstDow;b++) html += '<div class="lf-cal-day blank"></div>';
+      for(var d=1;d<=daysInMonth;d++){
+        var dStart = new Date(year, month, d, 0,0,0,0).getTime();
+        var complete = byDay[dStart] === true;
+        var cls = 'lf-cal-day' + (complete ? ' complete' : '') + (d === today ? ' today' : '');
+        html += '<div class="' + cls + '">' + d + '</div>';
+      }
+      grid.innerHTML = html;
+    }
+
     function init(){
       if(!faceEl) return;
       initTabs();
       initButtons();
       initReminderButtons();
+      initStatsToggle();
       updateGreeting();
       updateStatusPill();
       updateFastingRing();
@@ -4820,7 +5055,8 @@
       fastingCompute: fastingCompute, updateFastingRing: updateFastingRing,
       checkReminders: checkReminders, refreshTodayTotals: refreshTodayTotals,
       startReminders: startReminders, stopReminders: stopReminders,
-      buildTodaySchedule: buildTodaySchedule, renderTimeline: renderTimeline
+      buildTodaySchedule: buildTodaySchedule, renderTimeline: renderTimeline,
+      renderStats: renderStats, bucketedEvents: bucketedEvents, computeStreak: computeStreak
     };
   })();
 </script>
