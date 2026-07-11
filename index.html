@@ -2258,6 +2258,82 @@
   .f-life .lf-cal-day.today { box-shadow: inset 0 0 0 2px var(--lf-warm); }
   .f-life .lf-cal-day.blank { background: transparent; }
 
+  /* ---------- Settings tab ---------- */
+  .f-life .lf-settings-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(4px, 1cqh, 10px);
+    padding-right: 4px;
+  }
+  .f-life .lf-set-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: clamp(8px, 1.8cqw, 16px);
+    background: var(--lf-card);
+    border: 1px solid var(--lf-cardborder);
+    border-radius: clamp(8px, 1.4cqh, 14px);
+    padding: clamp(6px, 1.4cqh, 12px) clamp(8px, 1.6cqw, 16px);
+  }
+  .f-life .lf-set-lbl { font-size: clamp(9px, 2.1cqh, 16px); font-weight: 600; color: var(--lf-ink); }
+  .f-life .lf-set-input {
+    font: inherit;
+    font-size: clamp(9px, 2.1cqh, 16px);
+    font-weight: 700;
+    color: var(--lf-teal);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--lf-cardborder);
+    border-radius: 8px;
+    padding: clamp(3px, 0.8cqh, 7px) clamp(6px, 1.2cqw, 10px);
+    text-align: right;
+    -webkit-appearance: none;
+  }
+  .f-life .lf-set-input.lf-set-num { width: clamp(48px, 9cqw, 80px); }
+  .f-life .lf-set-unit { font-size: clamp(8px, 1.8cqh, 14px); color: var(--lf-muted); margin-left: -8px; }
+  .f-life .lf-notif-toggle {
+    flex: 0 0 auto;
+    width: clamp(36px, 7cqw, 52px);
+    height: clamp(20px, 4cqh, 28px);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    position: relative;
+    cursor: pointer;
+    transition: background 0.25s ease;
+  }
+  .f-life .lf-notif-toggle.on { background: linear-gradient(160deg, rgba(94,230,200,0.7), rgba(94,230,200,0.4)); }
+  .f-life .lf-notif-knob {
+    position: absolute;
+    top: 2px; left: 2px;
+    width: calc(100% - 4px); /* overridden below via aspect */
+    height: calc(100% - 4px);
+    aspect-ratio: 1;
+    width: auto;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    transition: transform 0.25s ease;
+  }
+  .f-life .lf-notif-toggle.on .lf-notif-knob { transform: translateX(calc(clamp(36px, 7cqw, 52px) - clamp(20px, 4cqh, 28px))); }
+  .f-life .lf-themerow { display: flex; gap: 6px; }
+  .f-life .lf-themebtn {
+    padding: clamp(4px, 1cqh, 8px) clamp(8px, 1.6cqw, 14px);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--lf-cardborder);
+    color: var(--lf-muted);
+    font-size: clamp(8px, 1.8cqh, 14px);
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .f-life .lf-themebtn.active {
+    background: linear-gradient(160deg, rgba(94,230,200,0.32), rgba(94,230,200,0.1));
+    border-color: rgba(94,230,200,0.45);
+    color: var(--lf-ink);
+  }
+
   /* ---------- Dots indicator ---------- */
   .dots {
     position: absolute;
@@ -3008,7 +3084,30 @@
         </div>
 
         <!-- Settings (populated in a later stage) -->
-        <div class="lf-view" id="lf-view-settings"></div>
+        <div class="lf-view" id="lf-view-settings">
+          <div class="lf-settings-list">
+            <div class="lf-set-row"><span class="lf-set-lbl">Wake time</span><input type="time" id="lf-set-wakeTime" class="lf-set-input"></div>
+            <div class="lf-set-row"><span class="lf-set-lbl">Sleep time</span><input type="time" id="lf-set-sleepTime" class="lf-set-input"></div>
+            <div class="lf-set-row"><span class="lf-set-lbl">Eating window opens</span><input type="time" id="lf-set-eatStart" class="lf-set-input"></div>
+            <div class="lf-set-row"><span class="lf-set-lbl">Eating window closes</span><input type="time" id="lf-set-eatEnd" class="lf-set-input"></div>
+            <div class="lf-set-row"><span class="lf-set-lbl">Water reminder every</span><input type="number" min="10" max="240" id="lf-set-waterIntervalMin" class="lf-set-input lf-set-num"><span class="lf-set-unit">min</span></div>
+            <div class="lf-set-row"><span class="lf-set-lbl">Water goal</span><input type="number" min="0.5" max="10" step="0.1" id="lf-set-waterGoalL" class="lf-set-input lf-set-num"><span class="lf-set-unit">L</span></div>
+            <div class="lf-set-row"><span class="lf-set-lbl">Water portion / tap</span><input type="number" min="50" max="1000" step="50" id="lf-set-waterPortionMl" class="lf-set-input lf-set-num"><span class="lf-set-unit">mL</span></div>
+            <div class="lf-set-row"><span class="lf-set-lbl">Bathroom reminder every</span><input type="number" min="10" max="240" id="lf-set-bathIntervalMin" class="lf-set-input lf-set-num"><span class="lf-set-unit">min</span></div>
+            <div class="lf-set-row">
+              <span class="lf-set-lbl">Notifications</span>
+              <div class="lf-notif-toggle" id="lf-set-notifications"><span class="lf-notif-knob"></span></div>
+            </div>
+            <div class="lf-set-row">
+              <span class="lf-set-lbl">Theme</span>
+              <div class="lf-themerow" id="lf-set-theme">
+                <div class="lf-themebtn" data-theme="dark">Dark</div>
+                <div class="lf-themebtn" data-theme="light">Light</div>
+                <div class="lf-themebtn" data-theme="auto">Auto</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
     </div>
@@ -4275,7 +4374,7 @@
   // on the same area, so it stays inside the normal capture/drag pipeline —
   // see the tap-vs-drag branch in endDrag() below, which routes a genuine
   // tap on that face to the theme cycler instead of a blanket exclusion.
-  var STAGE_TAP_TARGETS = '#face-life .lf-tab, #face-life .lf-rangetab, #face-life .lf-wsbtn, #face-life .lf-card, #face-life .lf-rem-btn, #face-life input, #face-life select, #face-life button';
+  var STAGE_TAP_TARGETS = '#face-life .lf-tab, #face-life .lf-rangetab, #face-life .lf-wsbtn, #face-life .lf-card, #face-life .lf-rem-btn, #face-life .lf-notif-toggle, #face-life .lf-themebtn, #face-life input, #face-life select, #face-life button';
   let dragStart = null, dragDx = 0, dragT = 0, dragStartTarget = null;
   stage.addEventListener('pointerdown', function(ev){
     if(ev.target.closest && ev.target.closest(STAGE_TAP_TARGETS)) return;
@@ -5023,12 +5122,72 @@
       grid.innerHTML = html;
     }
 
+    // ---------- Settings tab ----------
+    function populateSettingsUI(){
+      ['wakeTime','sleepTime','eatStart','eatEnd','waterIntervalMin','waterPortionMl','bathIntervalMin'].forEach(function(key){
+        var el = document.getElementById('lf-set-' + key);
+        if(el) el.value = S[key];
+      });
+      var goalEl = document.getElementById('lf-set-waterGoalL');
+      if(goalEl) goalEl.value = (S.waterGoalMl/1000).toFixed(1);
+      var notifEl = document.getElementById('lf-set-notifications');
+      if(notifEl) notifEl.classList.toggle('on', !!S.notifications);
+      var themeRow = document.getElementById('lf-set-theme');
+      if(themeRow) themeRow.querySelectorAll('.lf-themebtn').forEach(function(b){
+        b.classList.toggle('active', b.dataset.theme === S.theme);
+      });
+    }
+    function initSettingsUI(){
+      populateSettingsUI();
+      ['wakeTime','sleepTime','eatStart','eatEnd'].forEach(function(key){
+        var el = document.getElementById('lf-set-' + key);
+        if(el) el.addEventListener('change', function(){
+          if(el.value) S[key] = el.value;
+          saveSettings();
+          updateFastingRing();
+        });
+      });
+      ['waterIntervalMin','waterPortionMl','bathIntervalMin'].forEach(function(key){
+        var el = document.getElementById('lf-set-' + key);
+        if(el) el.addEventListener('change', function(){
+          var v = parseFloat(el.value);
+          if(!isNaN(v) && v > 0) S[key] = v;
+          saveSettings();
+          updateNextReminderCard();
+        });
+      });
+      var goalEl = document.getElementById('lf-set-waterGoalL');
+      if(goalEl) goalEl.addEventListener('change', function(){
+        var v = parseFloat(goalEl.value);
+        if(!isNaN(v) && v > 0) S.waterGoalMl = Math.round(v*1000);
+        saveSettings();
+        refreshTodayTotals();
+      });
+      var notifEl = document.getElementById('lf-set-notifications');
+      if(notifEl) notifEl.addEventListener('click', function(){
+        S.notifications = !S.notifications;
+        saveSettings();
+        populateSettingsUI();
+        if(S.notifications) requestNotifyPermission();
+      });
+      var themeRow = document.getElementById('lf-set-theme');
+      if(themeRow) themeRow.querySelectorAll('.lf-themebtn').forEach(function(b){
+        b.addEventListener('click', function(){
+          S.theme = b.dataset.theme;
+          saveSettings();
+          populateSettingsUI();
+          if(faceEl) faceEl.dataset.theme = S.theme;
+        });
+      });
+    }
+
     function init(){
       if(!faceEl) return;
       initTabs();
       initButtons();
       initReminderButtons();
       initStatsToggle();
+      initSettingsUI();
       updateGreeting();
       updateStatusPill();
       updateFastingRing();
