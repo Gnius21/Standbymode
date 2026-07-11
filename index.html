@@ -2064,6 +2064,45 @@
     margin-top: clamp(2px, 0.6cqh, 6px);
   }
 
+  /* Fasting card: ring gauge + text side by side. Reuses the exact
+     stroke-dasharray/dashoffset ring technique built for the Marine face's
+     UV ring (.fm-uvring/.fm-uvfill), recolored via --lf-teal/--lf-warm so
+     eating vs. fasting reads the same way that face's UV levels do. */
+  .f-life .lf-card-fastwrap {
+    flex-direction: row;
+    align-items: center;
+    gap: clamp(10px, 2.4cqw, 22px);
+    justify-content: flex-start;
+  }
+  .f-life .lf-fastring {
+    position: relative;
+    flex: 0 0 auto;
+    width: clamp(46px, 11cqh, 96px);
+    height: clamp(46px, 11cqh, 96px);
+  }
+  .f-life .lf-fastsvg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+  .f-life .lf-fasttrack { fill: none; stroke: rgba(255,255,255,0.14); stroke-width: 9; }
+  .f-life .lf-fastfill {
+    fill: none;
+    stroke: var(--lf-teal);
+    stroke-width: 9;
+    stroke-linecap: round;
+    /* Start empty so a not-yet-computed state never shows a misleading full
+       ring (circumference = 2·π·52 ≈ 326.7); JS sets the real progress. */
+    stroke-dasharray: 327;
+    stroke-dashoffset: 327;
+    transition: stroke-dashoffset 0.9s ease, stroke 0.9s ease;
+    filter: drop-shadow(0 0 6px currentColor);
+  }
+  .f-life .lf-fastcenter {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: clamp(16px, 4.4cqh, 38px);
+    line-height: 1;
+  }
+  .f-life .lf-fasttxt { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+
   /* ---------- Dots indicator ---------- */
   .dots {
     position: absolute;
@@ -2706,10 +2745,22 @@
               <div class="lf-notice">Reminders work best while StandBy stays open</div>
             </div>
             <div class="lf-cards" id="lf-cards">
-              <div class="lf-card" id="lf-card-fast">
-                <div class="lf-card-hd">&#x23F1;&#xFE0F; Fasting</div>
-                <div class="lf-card-val teal" id="lf-fast-state">&mdash;</div>
-                <div class="lf-card-sub" id="lf-fast-sub">&mdash;</div>
+              <div class="lf-card wide lf-card-fastwrap" id="lf-card-fast">
+                <div class="lf-fastring">
+                  <svg class="lf-fastsvg" viewBox="0 0 120 120">
+                    <circle class="lf-fasttrack" cx="60" cy="60" r="52"/>
+                    <circle class="lf-fastfill" id="lf-fastfill" cx="60" cy="60" r="52"/>
+                  </svg>
+                  <div class="lf-fastcenter">
+                    <span class="lf-fasticon" id="lf-fasticon">&#x1F37D;&#xFE0F;</span>
+                  </div>
+                </div>
+                <div class="lf-fasttxt">
+                  <div class="lf-card-hd">&#x23F1;&#xFE0F; Fasting</div>
+                  <div class="lf-card-val teal" id="lf-fast-state">&mdash;</div>
+                  <div class="lf-card-sub" id="lf-fast-sub">&mdash;</div>
+                  <div class="lf-card-sub" id="lf-fast-remain">&mdash;</div>
+                </div>
               </div>
               <div class="lf-card" id="lf-card-water">
                 <div class="lf-card-hd">&#x1F4A7; Water</div>
@@ -4382,12 +4433,87 @@
       if(btnSleep) btnSleep.addEventListener('click', goSleep);
     }
 
+    // ---------- Fasting engine ----------
+    // Reuses the Marine face's UV-ring SVG technique (stroke-dasharray/
+    // dashoffset on a circle of the same radius) so the visual language
+    // matches exactly, per the reference screenshot.
+    var LF_FAST_CIRC = 2 * Math.PI * 52;
+    function timeStrParts(t){ var p = String(t).split(':'); return [parseInt(p[0],10)||0, parseInt(p[1],10)||0]; }
+    function dateAt(base, hh, mm){
+      var d = new Date(base);
+      d.setHours(hh, mm, 0, 0);
+      return d;
+    }
+    // Finds the eating/fasting window that brackets `now` by scanning eat-
+    // start/eat-end boundaries across yesterday/today/tomorrow. Handles both
+    // a same-day eating window (the spec default, 11:00-19:00) and a window
+    // that wraps past midnight, with one shared code path.
+    function fastingCompute(now){
+      var es = timeStrParts(S.eatStart), ee = timeStrParts(S.eatEnd);
+      var pts = [];
+      [-1,0,1].forEach(function(dayOff){
+        var base = new Date(now.getTime() + dayOff*86400000);
+        pts.push({ t: dateAt(base, es[0], es[1]), type: 'start' });
+        pts.push({ t: dateAt(base, ee[0], ee[1]), type: 'end' });
+      });
+      pts.sort(function(a,b){ return a.t - b.t; });
+      var winStart = null, winEnd = null, eating = false;
+      for(var i=0;i<pts.length-1;i++){
+        if(now >= pts[i].t && now < pts[i+1].t){
+          winStart = pts[i].t; winEnd = pts[i+1].t;
+          eating = pts[i].type === 'start';
+          break;
+        }
+      }
+      if(!winStart){ winStart = now; winEnd = new Date(now.getTime()+3600000); eating = false; }
+      var totalMs = winEnd - winStart;
+      var progress = totalMs > 0 ? Math.min(1, Math.max(0, (now-winStart)/totalMs)) : 0;
+      return { eating: eating, winStart: winStart, winEnd: winEnd, progress: progress, remainMs: winEnd-now };
+    }
+    function fmtHM(ms){
+      var m = Math.max(0, Math.round(ms/60000));
+      var h = Math.floor(m/60);
+      return h > 0 ? h+'h '+(m%60)+'m' : m+'m';
+    }
+    var lastFastingEating = null; // null until first computed, so the very first tick never logs a false transition
+    function updateFastingRing(){
+      if(!faceEl) return;
+      var now = new Date();
+      var f = fastingCompute(now);
+      // Log a history event only on a genuine state change, not every tick
+      if(lastFastingEating !== null && lastFastingEating !== f.eating){
+        logEvent(f.eating ? 'fastEnd' : 'fastStart');
+      }
+      lastFastingEating = f.eating;
+
+      var fill = document.getElementById('lf-fastfill');
+      var stateEl = document.getElementById('lf-fast-state');
+      var subEl = document.getElementById('lf-fast-sub');
+      var remainEl = document.getElementById('lf-fast-remain');
+      var iconEl = document.getElementById('lf-fasticon');
+      var col = f.eating ? 'var(--lf-teal)' : 'var(--lf-warm)';
+      if(fill){
+        fill.style.strokeDasharray = LF_FAST_CIRC.toFixed(1);
+        fill.style.strokeDashoffset = (LF_FAST_CIRC * (1 - f.progress)).toFixed(1);
+        fill.style.stroke = col;
+      }
+      if(stateEl){
+        stateEl.textContent = f.eating ? 'Eating' : 'Fasting';
+        stateEl.style.color = col;
+      }
+      if(subEl) subEl.textContent = (f.eating ? 'Window closes ' : 'Eating opens ') + f.winEnd.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+      if(remainEl) remainEl.textContent = fmtHM(f.remainMs) + ' remaining';
+      if(iconEl) iconEl.textContent = f.eating ? '\u{1F37D}\u{FE0F}' : '⏳';
+    }
+    setInterval(updateFastingRing, 1000);
+
     function init(){
       if(!faceEl) return;
       initTabs();
       initButtons();
       updateGreeting();
       updateStatusPill();
+      updateFastingRing();
       // Theme attribute reflects saved settings immediately
       faceEl.dataset.theme = S.theme;
     }
@@ -4404,7 +4530,8 @@
     return {
       S: S, saveSettings: saveSettings, logEvent: logEvent,
       getEventsInRange: getEventsInRange, openDb: openDb,
-      updateStatusPill: updateStatusPill
+      updateStatusPill: updateStatusPill,
+      fastingCompute: fastingCompute, updateFastingRing: updateFastingRing
     };
   })();
 </script>
