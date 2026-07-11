@@ -1063,6 +1063,35 @@
     text-overflow: ellipsis;
     max-width: 100%;
   }
+  /* "Near you" badge: distinguishes this live-location face from the
+     fixed-Bonaire faces (Astro/Marine) at a glance. */
+  .f-night .fn-nearyou {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35em;
+    margin-top: clamp(4px, 1.2cqh, 10px);
+    font-size: clamp(9px, 2.2cqh, 20px);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(190,200,240,0.6);
+  }
+  .f-night .fn-neardot {
+    width: clamp(5px, 1cqh, 8px);
+    height: clamp(5px, 1cqh, 8px);
+    border-radius: 50%;
+    background: var(--nt-blue);
+    box-shadow: 0 0 6px var(--nt-blue);
+    animation: fn-neardot-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes fn-neardot-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.35; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .f-night .fn-neardot { animation: none; }
+  }
   .f-night .fn-temp {
     font-weight: 300;
     font-size: clamp(54px, 22cqh, 220px);
@@ -1094,7 +1123,9 @@
   .f-night .fn-card {
     position: relative;
     min-width: 0;
-    background: linear-gradient(160deg, rgba(140,160,230,0.16), rgba(90,110,190,0.06));
+    background:
+      radial-gradient(ellipse 120% 70% at 50% 0%, rgba(200,210,255,0.14), transparent 70%),
+      linear-gradient(160deg, rgba(140,160,230,0.16), rgba(90,110,190,0.06));
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
     border: 1px solid rgba(170,190,255,0.16);
@@ -1395,6 +1426,20 @@
     align-items: center;
     gap: clamp(2px, 0.5cqh, 5px);
     text-align: center;
+    transition: background 0.8s ease, border-color 0.8s ease, box-shadow 0.8s ease;
+  }
+  /* Golden hour is currently happening at this chip's event — highlight it */
+  .f-astro .fa-chip.golden-now {
+    background: linear-gradient(160deg, rgba(255,180,110,0.28), rgba(255,140,70,0.08));
+    border-color: rgba(255,190,120,0.5);
+    animation: fa-chip-goldpulse 2.6s ease-in-out infinite;
+  }
+  @keyframes fa-chip-goldpulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(255,180,110,0); }
+    50%      { box-shadow: 0 0 18px rgba(255,180,110,0.45); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .f-astro .fa-chip.golden-now { animation: none; }
   }
   .f-astro .fa-chip-ico { font-size: clamp(14px, 3.4cqh, 30px); line-height: 1; }
   .f-astro .fa-chip-val {
@@ -1583,6 +1628,14 @@
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
+  }
+  .f-marine .fm-best-spark {
+    margin-top: clamp(2px, 0.6cqh, 6px);
+    width: 100%;
+  }
+  .f-marine .fm-best-spark .fm-spark-svg {
+    height: clamp(12px, 3.6cqh, 28px);
+    overflow: visible;
   }
   .f-marine .fm-best-sub {
     font-size: clamp(10px, 2.6cqh, 22px);
@@ -1878,6 +1931,59 @@
     box-shadow: 0 0 8px rgba(255,107,107,0.7);
   }
 
+  /* ---------- Install nudge (shown only in Safari, not installed) ---------- */
+  .install-nudge {
+    position: fixed;
+    left: 50%;
+    bottom: calc(env(safe-area-inset-bottom) + clamp(10px, 3cqh, 26px));
+    transform: translateX(-50%) translateY(0);
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: clamp(8px, 2cqw, 16px);
+    max-width: min(92vw, 640px);
+    background: linear-gradient(160deg, rgba(30,34,50,0.92), rgba(14,16,26,0.92));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 999px;
+    padding: clamp(8px, 1.8cqh, 14px) clamp(10px, 2.4cqw, 22px);
+    box-shadow: 0 10px 34px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.10);
+    color: #fff;
+    font-size: clamp(11px, 2.6cqh, 18px);
+    font-weight: 500;
+    line-height: 1.3;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .install-nudge.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+  .install-nudge .in-ico {
+    font-size: 1.4em;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 8px rgba(94,168,255,0.5));
+  }
+  .install-nudge .in-txt { flex: 1 1 auto; min-width: 0; }
+  .install-nudge .in-txt b { color: #6db8ff; }
+  .install-nudge .in-close {
+    flex-shrink: 0;
+    width: clamp(20px, 4cqh, 30px);
+    height: clamp(20px, 4cqh, 30px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.10);
+    color: rgba(255,255,255,0.7);
+    font-size: clamp(12px, 2.6cqh, 18px);
+    line-height: 1;
+    cursor: pointer;
+  }
+
   /* Force landscape: when the device is portrait the stage is rotated 90deg
      to fill the screen. Sizing is done entirely in CSS with viewport units,
      which resolve against the layout viewport and recompute on every reflow.
@@ -1945,6 +2051,11 @@
   <div class="nv-gold" id="nv-gold" aria-hidden="true"></div>
   <div class="nv-warm" id="nv-warm" aria-hidden="true"></div>
   <div class="nv-dark" id="nv-dark" aria-hidden="true"></div>
+  <div class="install-nudge" id="install-nudge">
+    <span class="in-ico">&#x1F4F2;</span>
+    <span class="in-txt">Tap <b>Share</b> &rarr; <b>Add to Home Screen</b> for full-screen StandBy mode</span>
+    <span class="in-close" id="install-nudge-close">&#x2715;</span>
+  </div>
   <div class="stage" id="stage">
     <div class="carousel" id="carousel">
 
@@ -2134,6 +2245,7 @@
         <div class="fn-hero">
           <div class="fn-ico jn-ico">&#x1F319;</div>
           <div class="fn-city jn-city">BONAIRE</div>
+          <div class="fn-nearyou"><span class="fn-neardot"></span>Near you</div>
           <div class="fn-temp jn-temp">--&deg;</div>
           <div class="fn-cond jn-cond">Mostly Clear</div>
           <div class="fn-datetime">
@@ -2225,8 +2337,8 @@
             <span class="fa-cd-val ja-countdown">--</span>
           </div>
           <div class="fa-chips">
-            <div class="fa-chip"><span class="fa-chip-ico">&#x1F305;</span><span class="fa-chip-val ja-sunrise">--:--</span><span class="fa-chip-lbl">Sunrise</span></div>
-            <div class="fa-chip"><span class="fa-chip-ico">&#x1F307;</span><span class="fa-chip-val ja-sunset">--:--</span><span class="fa-chip-lbl">Sunset</span></div>
+            <div class="fa-chip" id="fa-chip-sunrise"><span class="fa-chip-ico">&#x1F305;</span><span class="fa-chip-val ja-sunrise">--:--</span><span class="fa-chip-lbl">Sunrise</span></div>
+            <div class="fa-chip" id="fa-chip-sunset"><span class="fa-chip-ico">&#x1F307;</span><span class="fa-chip-val ja-sunset">--:--</span><span class="fa-chip-lbl">Sunset</span></div>
             <div class="fa-chip"><span class="fa-chip-ico">&#x23F3;</span><span class="fa-chip-val ja-daylen">--</span><span class="fa-chip-lbl">Daylight</span></div>
             <div class="fa-chip"><span class="fa-chip-ico ja-nowico">&#x1F327;&#xFE0F;</span><span class="fa-chip-val ja-nowcast">--</span><span class="fa-chip-lbl">Nowcast</span></div>
           </div>
@@ -2263,6 +2375,13 @@
               <span class="fm-best-lbl">Best time to go outside</span>
               <span class="fm-best-val jm-besttime">&mdash;</span>
               <span class="fm-best-sub jm-bestsub">&mdash;</span>
+              <div class="fm-best-spark">
+                <svg class="fm-spark-svg" viewBox="0 0 300 56" preserveAspectRatio="none">
+                  <polygon class="fm-spark-area warm" id="fm-bestspark-fill" points=""/>
+                  <polyline class="fm-spark-line warm" id="fm-bestspark" points=""/>
+                  <circle class="fm-spark-dot warm" id="fm-bestspark-dot" r="4" cx="-10" cy="-10"/>
+                </svg>
+              </div>
             </div>
           </div>
           <div class="fm-spark">
@@ -3008,6 +3127,14 @@
     else { nextEv = srNext || sr; lbl = 'Sunrise in'; }
     setAll('ja-nextlbl', lbl);
     setAll('ja-countdown', fmtDur(nextEv - now));
+    // Pulse whichever chip (sunrise/sunset) golden hour is currently near —
+    // reuses the same 45-min window as the ambient golden-hour bloom.
+    var sunriseChip = document.getElementById('fa-chip-sunrise');
+    var sunsetChip = document.getElementById('fa-chip-sunset');
+    var nearSunrise = goldenAmount(now, sr, sr) > 0; // distance to sr only
+    var nearSunset = goldenAmount(now, ss, ss) > 0;  // distance to ss only
+    if(sunriseChip) sunriseChip.classList.toggle('golden-now', nearSunrise);
+    if(sunsetChip)  sunsetChip.classList.toggle('golden-now', nearSunset);
     // Rain nowcast
     var nc = rainNowcast();
     setAll('ja-nowcast', nc.txt);
@@ -3111,6 +3238,30 @@
     };
   }
 
+  // Comfort curve across the daylight hours ahead, for the "best time to go
+  // outside" sparkline. Higher = more comfortable; mirrors the scoring in
+  // bestOutsideWindow() (lower score = better) so the two stay consistent,
+  // but is kept as a small standalone pass rather than refactoring that
+  // function's private helpers.
+  function bestWindowComfort(hh, i0){
+    if(!hh || !hh.time || !hh.uv_index) return null;
+    var end = Math.min(hh.time.length, i0 + 24);
+    var vals = [], peakIdx = 0, peakVal = -Infinity;
+    for(var i = i0; i < end; i++){
+      var uv = hh.uv_index[i]; var h = isoHour(hh.time[i]);
+      if(uv == null || uv < 0.5 || h < 5 || h > 19) continue;
+      var feels = (hh.apparent_temperature && hh.apparent_temperature[i] != null) ? hh.apparent_temperature[i]
+                 : (hh.temperature_2m && hh.temperature_2m[i] != null) ? hh.temperature_2m[i] : 28;
+      var wind = (hh.wind_speed_10m && hh.wind_speed_10m[i] != null) ? hh.wind_speed_10m[i] : 0;
+      var rain = (hh.precipitation_probability && hh.precipitation_probability[i] != null) ? hh.precipitation_probability[i] : 0;
+      var score = uv * 1.0 + (rain/100)*7 + Math.max(0, wind-22)*0.35 + Math.abs(feels-28)*0.4;
+      var comfort = -score; // invert: the sparkline should peak at the best time
+      if(comfort > peakVal){ peakVal = comfort; peakIdx = vals.length; }
+      vals.push(comfort);
+    }
+    return vals.length >= 2 ? { vals: vals, peakIdx: peakIdx } : null;
+  }
+
   var UV_CIRC = 2 * Math.PI * 52;
 
   function renderMarine(){
@@ -3153,6 +3304,8 @@
         setAll('jm-besttime', 'Tomorrow AM');
         setAll('jm-bestsub', 'Sun is down for today');
       }
+      var comfort = bestWindowComfort(hh, i0);
+      if(comfort) buildSpark('fm-bestspark', comfort.vals, comfort.peakIdx);
       var uvs = (hh.uv_index || []).slice(i0, i0+24).filter(function(x){ return x != null; });
       var winds = (hh.wind_speed_10m || []).slice(i0, i0+24).filter(function(x){ return x != null; });
       buildSpark('fm-uvspark', uvs);
@@ -3654,6 +3807,65 @@
       if(document.visibilityState === 'visible' && wakeLock === null) acquire();
     });
     window.addEventListener('focus', function(){ if(wakeLock === null) acquire(); });
+  })();
+
+  // ---------- Install nudge: teach Add to Home Screen when running in a
+  // plain Safari/browser tab (not installed). A StandBy clock only makes
+  // sense full-screen, so this is worth surfacing once per visit — but
+  // never re-shown once dismissed, and never shown at all once installed. ----------
+  (function(){
+    var standalone = window.navigator.standalone === true ||
+      (window.matchMedia && (matchMedia('(display-mode: standalone)').matches ||
+                             matchMedia('(display-mode: fullscreen)').matches));
+    if(standalone) return;
+    if(localStorage.getItem('installNudgeDismissed') === '1') return;
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if(!isIOS) return; // "Share -> Add to Home Screen" wording is iOS/Safari-specific
+    var nudge = document.getElementById('install-nudge');
+    var closeBtn = document.getElementById('install-nudge-close');
+    if(!nudge) return;
+    setTimeout(function(){ nudge.classList.add('show'); }, 1800);
+    function dismiss(){
+      nudge.classList.remove('show');
+      localStorage.setItem('installNudgeDismissed', '1');
+    }
+    if(closeBtn) closeBtn.addEventListener('click', dismiss);
+    // A tap anywhere else on the nudge also counts as "seen" once shown
+    nudge.addEventListener('click', function(ev){ if(ev.target === closeBtn) return; });
+  })();
+
+  // ---------- First-launch swipe hint: nudge the carousel a few px and back
+  // once, so new users discover the faces are swipeable. Shown after the
+  // clock has settled in, only ever once per browser. ----------
+  (function(){
+    if(localStorage.getItem('hasSwipedOnce') === '1') return;
+    var shown = false;
+    function markSwiped(){
+      if(localStorage.getItem('hasSwipedOnce') !== '1'){
+        localStorage.setItem('hasSwipedOnce', '1');
+      }
+    }
+    // Any real drag/keyboard navigation counts as discovery — cancel the hint
+    stage.addEventListener('pointerdown', markSwiped, { once: true });
+    document.addEventListener('keydown', function(ev){
+      if(ev.key === 'ArrowLeft' || ev.key === 'ArrowRight') markSwiped();
+    });
+    setTimeout(function(){
+      if(shown || localStorage.getItem('hasSwipedOnce') === '1') return;
+      shown = true;
+      var was = carousel.style.transition;
+      carousel.style.transition = 'transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1)';
+      render(-46);
+      setTimeout(function(){
+        render(14);
+        setTimeout(function(){
+          render(0);
+          carousel.style.transition = was;
+          markSwiped();
+        }, 380);
+      }, 420);
+    }, 2600);
   })();
 </script>
 </body>
