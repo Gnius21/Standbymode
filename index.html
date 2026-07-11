@@ -2103,6 +2103,53 @@
   }
   .f-life .lf-fasttxt { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 
+  /* Reminder overlay: shows regardless of which internal tab is active */
+  .f-life { position: relative; }
+  .f-life .lf-reminder {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(8px, 2.4cqh, 20px);
+    transform: translateX(-50%) translateY(12px);
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    gap: clamp(6px, 1.6cqw, 14px);
+    max-width: min(94%, 640px);
+    background: linear-gradient(160deg, rgba(20,50,55,0.94), rgba(8,26,32,0.94));
+    border: 1px solid rgba(94,230,200,0.35);
+    border-radius: 999px;
+    padding: clamp(6px, 1.4cqh, 12px) clamp(8px, 1.8cqw, 18px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+    font-size: clamp(9px, 2.1cqh, 16px);
+    font-weight: 600;
+    color: var(--lf-ink);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    white-space: nowrap;
+  }
+  .f-life .lf-reminder.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+  .f-life .lf-rem-ico { font-size: 1.3em; flex-shrink: 0; }
+  .f-life .lf-rem-txt { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .f-life .lf-rem-btn {
+    flex-shrink: 0;
+    padding: clamp(4px, 1cqh, 8px) clamp(8px, 1.8cqw, 16px);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    color: var(--lf-muted);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.92em;
+  }
+  .f-life .lf-rem-btn.primary {
+    background: linear-gradient(160deg, rgba(94,230,200,0.4), rgba(94,230,200,0.15));
+    color: #eafff8;
+  }
+
   /* ---------- Dots indicator ---------- */
   .dots {
     position: absolute;
@@ -2726,6 +2773,16 @@
           <div class="lf-tab" data-lftab="timeline">Timeline</div>
           <div class="lf-tab" data-lftab="stats">Stats</div>
           <div class="lf-tab" data-lftab="settings">Settings</div>
+        </div>
+
+        <!-- Reminder overlay: shows above whichever tab is active, since a
+             water/bathroom reminder can become due while on Timeline/Stats/
+             Settings, not just Home. -->
+        <div class="lf-reminder" id="lf-reminder">
+          <span class="lf-rem-ico" id="lf-rem-ico">&#x1F4A7;</span>
+          <span class="lf-rem-txt" id="lf-rem-txt">Time to drink water</span>
+          <span class="lf-rem-btn primary" id="lf-rem-done">&#x2713; Done</span>
+          <span class="lf-rem-btn" id="lf-rem-skip">Skip</span>
         </div>
 
         <!-- Home -->
@@ -4069,7 +4126,7 @@
   // on the same area, so it stays inside the normal capture/drag pipeline —
   // see the tap-vs-drag branch in endDrag() below, which routes a genuine
   // tap on that face to the theme cycler instead of a blanket exclusion.
-  var STAGE_TAP_TARGETS = '#face-life .lf-tab, #face-life .lf-wsbtn, #face-life .lf-card, #face-life input, #face-life select, #face-life button';
+  var STAGE_TAP_TARGETS = '#face-life .lf-tab, #face-life .lf-wsbtn, #face-life .lf-card, #face-life .lf-rem-btn, #face-life input, #face-life select, #face-life button';
   let dragStart = null, dragDx = 0, dragT = 0, dragStartTarget = null;
   stage.addEventListener('pointerdown', function(ev){
     if(ev.target.closest && ev.target.closest(STAGE_TAP_TARGETS)) return;
@@ -4297,7 +4354,9 @@
       theme: 'dark',       // 'dark' | 'light' | 'auto'
       awake: false,
       lastWakeTs: 0,
-      lastSleepTs: 0
+      lastSleepTs: 0,
+      nextWaterDueTs: 0,
+      nextBathDueTs: 0
     };
     function loadSettings(){
       try{
@@ -4507,13 +4566,144 @@
     }
     setInterval(updateFastingRing, 1000);
 
+    // ---------- Water / Bathroom reminders ----------
+    var REM_META = {
+      water: { ico: '\u{1F4A7}', txt: 'Time to drink water.', intervalKey: 'waterIntervalMin', snoozeKey: 'waterSkipSnoozeMin', dueKey: 'nextWaterDueTs', doneLabel: '✓ Drank' },
+      bath:  { ico: '\u{1F6BD}', txt: 'Bathroom Break', intervalKey: 'bathIntervalMin', snoozeKey: 'bathSkipSnoozeMin', dueKey: 'nextBathDueTs', doneLabel: 'Done' }
+    };
+    var remQueue = [];
+    var remActive = null;
+    var remCheckTimer = null;
+
+    function scheduleNext(type, minutesOverride){
+      var meta = REM_META[type];
+      var mins = minutesOverride != null ? minutesOverride : S[meta.intervalKey];
+      S[meta.dueKey] = Date.now() + mins*60000;
+      saveSettings();
+    }
+    function notify(title, body){
+      if(!S.notifications || !('Notification' in window) || Notification.permission !== 'granted') return;
+      try{ new Notification(title, { body: body, tag: 'standby-life-' + title }); }catch(e){}
+    }
+    function showReminder(type){
+      var meta = REM_META[type];
+      remActive = type;
+      var el = document.getElementById('lf-reminder');
+      var icoEl = document.getElementById('lf-rem-ico');
+      var txtEl = document.getElementById('lf-rem-txt');
+      var doneBtn = document.getElementById('lf-rem-done');
+      if(icoEl) icoEl.textContent = meta.ico;
+      if(txtEl) txtEl.textContent = meta.txt;
+      if(doneBtn) doneBtn.textContent = meta.doneLabel;
+      if(el) el.classList.add('show');
+      notify(meta.ico + ' ' + meta.txt, 'Tap in StandBy to log it');
+    }
+    // Dismiss the active card and, after a short beat, reveal the next
+    // queued reminder (if any) so two reminders due at once don't overlap.
+    function hideReminderAndAdvance(){
+      var el = document.getElementById('lf-reminder');
+      if(el) el.classList.remove('show');
+      remActive = null;
+      if(remQueue.length){
+        var next = remQueue.shift();
+        setTimeout(function(){ showReminder(next); }, 500);
+      }
+    }
+    function resolveReminder(action){
+      if(!remActive) return;
+      var type = remActive;
+      var meta = REM_META[type];
+      logEvent(type, { skipped: action === 'skip' });
+      scheduleNext(type, action === 'skip' ? S[meta.snoozeKey] : null);
+      hideReminderAndAdvance();
+      refreshTodayTotals();
+    }
+    function initReminderButtons(){
+      var doneBtn = document.getElementById('lf-rem-done');
+      var skipBtn = document.getElementById('lf-rem-skip');
+      if(doneBtn) doneBtn.addEventListener('click', function(){ resolveReminder('done'); });
+      if(skipBtn) skipBtn.addEventListener('click', function(){ resolveReminder('skip'); });
+    }
+    function checkReminders(){
+      if(S.awake && document.visibilityState === 'visible'){
+        var now = Date.now();
+        ['water','bath'].forEach(function(type){
+          var meta = REM_META[type];
+          if(S[meta.dueKey] && now >= S[meta.dueKey] && remActive !== type && remQueue.indexOf(type) === -1){
+            // Clear immediately so this due reminder isn't re-queued every
+            // tick until the user actually resolves it.
+            S[meta.dueKey] = 0;
+            saveSettings();
+            if(remActive === null) showReminder(type); else remQueue.push(type);
+          }
+        });
+      }
+      updateNextReminderCard();
+    }
+    function startReminders(){
+      // A fresh wake (nothing scheduled yet) starts the clock now; waking
+      // again after a reload with reminders already scheduled just resumes
+      // from the persisted due timestamps.
+      if(!S.nextWaterDueTs) scheduleNext('water');
+      if(!S.nextBathDueTs) scheduleNext('bath');
+      if(remCheckTimer) clearInterval(remCheckTimer);
+      remCheckTimer = setInterval(checkReminders, 60000);
+      checkReminders(); // catch anything already overdue right away
+      refreshTodayTotals();
+    }
+    function stopReminders(){
+      if(remCheckTimer){ clearInterval(remCheckTimer); remCheckTimer = null; }
+      var el = document.getElementById('lf-reminder');
+      if(el) el.classList.remove('show');
+      remActive = null;
+      remQueue = [];
+      updateNextReminderCard();
+    }
+    document.addEventListener('visibilitychange', function(){
+      if(document.visibilityState === 'visible' && S.awake) checkReminders();
+    });
+
+    // ---------- Today's totals (water / bathroom dashboard cards) ----------
+    function startOfToday(){ var d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+    function refreshTodayTotals(){
+      getEventsInRange(startOfToday(), Date.now()).then(function(events){
+        var waterTaps = events.filter(function(e){ return e.type === 'water' && !e.skipped; }).length;
+        var bathVisits = events.filter(function(e){ return e.type === 'bath' && !e.skipped; }).length;
+        var mlDrunk = waterTaps * S.waterPortionMl;
+        var pct = Math.min(100, Math.round((mlDrunk / S.waterGoalMl) * 100));
+        var wv = document.getElementById('lf-water-val'); if(wv) wv.textContent = pct + '%';
+        var ws = document.getElementById('lf-water-sub');
+        if(ws) ws.textContent = (mlDrunk/1000).toFixed(1) + ' / ' + (S.waterGoalMl/1000).toFixed(1) + ' L';
+        var bv = document.getElementById('lf-bath-val'); if(bv) bv.textContent = String(bathVisits);
+      });
+      updateNextReminderCard();
+    }
+    function updateNextReminderCard(){
+      var nv = document.getElementById('lf-next-val');
+      var ns = document.getElementById('lf-next-sub');
+      if(!nv || !ns) return;
+      if(!S.awake){ nv.textContent = '—'; ns.textContent = 'Resumes when you wake'; return; }
+      var candidates = [];
+      if(S.nextWaterDueTs) candidates.push({ type:'Water', ts:S.nextWaterDueTs });
+      if(S.nextBathDueTs) candidates.push({ type:'Bathroom', ts:S.nextBathDueTs });
+      if(!candidates.length){ nv.textContent = '—'; ns.textContent = 'Scheduling…'; return; }
+      candidates.sort(function(a,b){ return a.ts - b.ts; });
+      var mins = Math.max(0, Math.round((candidates[0].ts - Date.now())/60000));
+      nv.textContent = candidates[0].type;
+      ns.textContent = mins <= 0 ? 'Due now' : ('in ' + mins + ' min');
+    }
+
     function init(){
       if(!faceEl) return;
       initTabs();
       initButtons();
+      initReminderButtons();
       updateGreeting();
       updateStatusPill();
       updateFastingRing();
+      refreshTodayTotals();
+      // Resume reminder scheduling across a page reload if still awake
+      if(S.awake) startReminders();
       // Theme attribute reflects saved settings immediately
       faceEl.dataset.theme = S.theme;
     }
@@ -4531,7 +4721,9 @@
       S: S, saveSettings: saveSettings, logEvent: logEvent,
       getEventsInRange: getEventsInRange, openDb: openDb,
       updateStatusPill: updateStatusPill,
-      fastingCompute: fastingCompute, updateFastingRing: updateFastingRing
+      fastingCompute: fastingCompute, updateFastingRing: updateFastingRing,
+      checkReminders: checkReminders, refreshTodayTotals: refreshTodayTotals,
+      startReminders: startReminders, stopReminders: stopReminders
     };
   })();
 </script>
