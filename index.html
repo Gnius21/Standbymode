@@ -1798,6 +1798,272 @@
     to   { width: 300px; height: 300px; opacity: 0; }
   }
 
+  /* ---------- Face 10: Life (Smart Daily Dashboard & Health Assistant) ---------- */
+  .f-life {
+    --lf-teal: #5ee6c8;
+    --lf-warm: #ffb45e;
+    --lf-blue: #5ea8ff;
+    --lf-red: #ff6b7a;
+    --lf-bg1: #04121a;
+    --lf-bg2: #06202b;
+    --lf-bg3: #07303c;
+    --lf-ink: #eef6f3;
+    --lf-muted: rgba(200,220,225,0.62);
+    --lf-card: linear-gradient(160deg, rgba(255,255,255,0.09), rgba(255,255,255,0.03));
+    --lf-cardborder: rgba(255,255,255,0.10);
+    min-width: 0;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0;
+    background:
+      radial-gradient(ellipse 55% 60% at 18% 40%, rgba(94,230,200,0.10), transparent 62%),
+      radial-gradient(ellipse 55% 55% at 88% 85%, rgba(94,168,255,0.10), transparent 60%),
+      linear-gradient(165deg, var(--lf-bg1) 0%, var(--lf-bg2) 55%, var(--lf-bg3) 100%);
+    overflow: hidden;
+    color: var(--lf-ink);
+    transition: background 0.6s ease, color 0.6s ease;
+  }
+  /* Light theme override — scoped only to this face; the rest of the app
+     stays intentionally always-dark. */
+  .f-life[data-theme="light"] {
+    --lf-ink: #16323a;
+    --lf-muted: rgba(20,50,58,0.62);
+    --lf-card: linear-gradient(160deg, rgba(10,40,45,0.06), rgba(10,40,45,0.02));
+    --lf-cardborder: rgba(10,40,45,0.12);
+    background:
+      radial-gradient(ellipse 55% 60% at 18% 40%, rgba(94,230,200,0.16), transparent 62%),
+      radial-gradient(ellipse 55% 55% at 88% 85%, rgba(94,168,255,0.14), transparent 60%),
+      linear-gradient(165deg, #eaf7f4 0%, #dcf0ea 55%, #cfe9e2 100%);
+  }
+  @media (prefers-color-scheme: light) {
+    .f-life[data-theme="auto"] {
+      --lf-ink: #16323a;
+      --lf-muted: rgba(20,50,58,0.62);
+      --lf-card: linear-gradient(160deg, rgba(10,40,45,0.06), rgba(10,40,45,0.02));
+      --lf-cardborder: rgba(10,40,45,0.12);
+      background:
+        radial-gradient(ellipse 55% 60% at 18% 40%, rgba(94,230,200,0.16), transparent 62%),
+        radial-gradient(ellipse 55% 55% at 88% 85%, rgba(94,168,255,0.14), transparent 60%),
+        linear-gradient(165deg, #eaf7f4 0%, #dcf0ea 55%, #cfe9e2 100%);
+    }
+  }
+
+  /* Tab strip */
+  .f-life .lf-tabs {
+    flex: 0 0 auto;
+    display: flex;
+    gap: clamp(6px, 1.4cqw, 12px);
+    margin-bottom: clamp(8px, 2cqh, 18px);
+  }
+  .f-life .lf-tab {
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: center;
+    background: var(--lf-card);
+    border: 1px solid var(--lf-cardborder);
+    border-radius: 999px;
+    padding: clamp(6px, 1.4cqh, 12px) clamp(4px, 1cqw, 10px);
+    font-size: clamp(9px, 2.2cqh, 18px);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--lf-muted);
+    cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .f-life .lf-tab.active {
+    background: linear-gradient(160deg, rgba(94,230,200,0.28), rgba(94,230,200,0.08));
+    border-color: rgba(94,230,200,0.4);
+    color: var(--lf-ink);
+  }
+
+  /* Sub-views */
+  .f-life .lf-view {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: none;
+    overflow: hidden;
+  }
+  .f-life .lf-view.active { display: flex; flex-direction: column; min-height: 0; }
+
+  /* ---- Home sub-view ---- */
+  .f-life .lf-home {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 34%) minmax(0, 1fr);
+    gap: clamp(10px, 2.4cqw, 26px);
+    overflow: hidden;
+  }
+  .f-life .lf-homeleft {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(6px, 1.4cqh, 14px);
+    min-width: 0;
+    min-height: 0;
+  }
+  .f-life .lf-greeting {
+    font-size: clamp(10px, 2.4cqh, 20px);
+    font-weight: 600;
+    color: var(--lf-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .f-life .lf-clock {
+    font-weight: 800;
+    font-size: clamp(30px, 11cqh, 96px);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--lf-ink);
+    text-shadow: 0 2px 14px rgba(0,0,0,0.35);
+  }
+  .f-life .lf-date {
+    font-size: clamp(9px, 2cqh, 17px);
+    color: var(--lf-muted);
+    font-weight: 500;
+  }
+  /* Wake/Sleep pill buttons */
+  .f-life .lf-wsrow {
+    display: flex;
+    gap: clamp(6px, 1.4cqw, 12px);
+    width: 100%;
+    margin-top: clamp(4px, 1cqh, 10px);
+  }
+  .f-life .lf-wsbtn {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    background: var(--lf-card);
+    border: 1px solid var(--lf-cardborder);
+    border-radius: clamp(12px, 2.2cqh, 22px);
+    padding: clamp(6px, 1.6cqh, 14px) clamp(4px, 1cqw, 8px);
+    font-size: clamp(8px, 2cqh, 16px);
+    font-weight: 700;
+    color: var(--lf-muted);
+    cursor: pointer;
+    transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.15s ease;
+  }
+  .f-life .lf-wsbtn .lf-wsico { font-size: clamp(16px, 5cqh, 36px); line-height: 1; }
+  .f-life .lf-wsbtn:active { transform: scale(0.96); }
+  .f-life .lf-wsbtn.on.awake {
+    background: linear-gradient(160deg, rgba(255,180,94,0.32), rgba(255,180,94,0.08));
+    border-color: rgba(255,180,94,0.5);
+    color: var(--lf-ink);
+  }
+  .f-life .lf-wsbtn.on.sleep {
+    background: linear-gradient(160deg, rgba(94,168,255,0.32), rgba(94,168,255,0.08));
+    border-color: rgba(94,168,255,0.5);
+    color: var(--lf-ink);
+  }
+  /* Status pill under the clock: Awake/Sleeping */
+  .f-life .lf-statuspill {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    font-size: clamp(8px, 2cqh, 16px);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--lf-muted);
+  }
+  .f-life .lf-statusdot {
+    width: clamp(5px, 1cqh, 8px);
+    height: clamp(5px, 1cqh, 8px);
+    border-radius: 50%;
+    background: var(--lf-muted);
+  }
+  .f-life .lf-statuspill.awake .lf-statusdot {
+    background: var(--lf-warm);
+    box-shadow: 0 0 6px var(--lf-warm);
+    animation: lf-statuspulse 2.4s ease-in-out infinite;
+  }
+  .f-life .lf-statuspill.sleep .lf-statusdot {
+    background: var(--lf-blue);
+    box-shadow: 0 0 6px var(--lf-blue);
+  }
+  @keyframes lf-statuspulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.35; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .f-life .lf-statuspill.awake .lf-statusdot { animation: none; }
+  }
+
+  /* Status card grid (right column of Home) */
+  .f-life .lf-cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    gap: clamp(6px, 1.4cqw, 14px);
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .f-life .lf-card {
+    position: relative;
+    min-width: 0;
+    background:
+      radial-gradient(ellipse 120% 80% at 50% 0%, rgba(255,255,255,0.10), transparent 70%),
+      var(--lf-card);
+    border: 1px solid var(--lf-cardborder);
+    border-radius: clamp(10px, 1.8cqh, 20px);
+    padding: clamp(6px, 1.5cqh, 14px) clamp(6px, 1.2cqw, 14px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(2px, 0.6cqh, 6px);
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .f-life .lf-card-hd {
+    font-size: clamp(7px, 1.8cqh, 15px);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--lf-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .f-life .lf-card-val {
+    font-size: clamp(13px, 4.4cqh, 38px);
+    font-weight: 800;
+    color: var(--lf-ink);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .f-life .lf-card-val.teal { color: var(--lf-teal); }
+  .f-life .lf-card-val.warm { color: var(--lf-warm); }
+  .f-life .lf-card-val.blue { color: var(--lf-blue); }
+  .f-life .lf-card-sub {
+    font-size: clamp(7px, 1.7cqh, 14px);
+    color: var(--lf-muted);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .f-life .lf-card.wide { grid-column: span 3; }
+  .f-life .lf-notice {
+    font-size: clamp(7px, 1.6cqh, 13px);
+    color: var(--lf-muted);
+    opacity: 0.75;
+    text-align: center;
+    margin-top: clamp(2px, 0.6cqh, 6px);
+  }
+
   /* ---------- Dots indicator ---------- */
   .dots {
     position: absolute;
@@ -2412,6 +2678,80 @@
           <div class="fgx-date"><span class="j-dow">WED</span> &middot; <span class="j-fulldate">June 20, 2026</span></div>
           <div class="fgx-secbar-wrap"><div class="fgx-secbar" id="fgx-secbar"></div></div>
         </div>
+      </section>
+
+      <!-- Face 10: Life (Smart Daily Dashboard & Health Assistant) -->
+      <section class="face f-life" id="face-life" data-theme="dark">
+        <div class="lf-tabs">
+          <div class="lf-tab active" data-lftab="home">Home</div>
+          <div class="lf-tab" data-lftab="timeline">Timeline</div>
+          <div class="lf-tab" data-lftab="stats">Stats</div>
+          <div class="lf-tab" data-lftab="settings">Settings</div>
+        </div>
+
+        <!-- Home -->
+        <div class="lf-view active" id="lf-view-home">
+          <div class="lf-home">
+            <div class="lf-homeleft">
+              <div class="lf-greeting" id="lf-greeting">Good Morning</div>
+              <div class="lf-clock"><span class="j-hh">--</span>:<span class="j-mm">--</span></div>
+              <div class="lf-date"><span class="j-dow">---</span> &middot; <span class="j-fulldate">---</span></div>
+              <div class="lf-statuspill sleep" id="lf-statuspill">
+                <span class="lf-statusdot"></span><span id="lf-statustxt">Sleeping</span>
+              </div>
+              <div class="lf-wsrow">
+                <div class="lf-wsbtn on awake" id="lf-btn-awake"><span class="lf-wsico">&#x1F31E;</span>I'm Awake</div>
+                <div class="lf-wsbtn" id="lf-btn-sleep"><span class="lf-wsico">&#x1F319;</span>I'm Sleeping</div>
+              </div>
+              <div class="lf-notice">Reminders work best while StandBy stays open</div>
+            </div>
+            <div class="lf-cards" id="lf-cards">
+              <div class="lf-card" id="lf-card-fast">
+                <div class="lf-card-hd">&#x23F1;&#xFE0F; Fasting</div>
+                <div class="lf-card-val teal" id="lf-fast-state">&mdash;</div>
+                <div class="lf-card-sub" id="lf-fast-sub">&mdash;</div>
+              </div>
+              <div class="lf-card" id="lf-card-water">
+                <div class="lf-card-hd">&#x1F4A7; Water</div>
+                <div class="lf-card-val blue" id="lf-water-val">0%</div>
+                <div class="lf-card-sub" id="lf-water-sub">0 / 3.0 L</div>
+              </div>
+              <div class="lf-card" id="lf-card-bath">
+                <div class="lf-card-hd">&#x1F6BD; Bathroom</div>
+                <div class="lf-card-val" id="lf-bath-val">0</div>
+                <div class="lf-card-sub" id="lf-bath-sub">visits today</div>
+              </div>
+              <div class="lf-card" id="lf-card-next">
+                <div class="lf-card-hd">&#x23F0; Next reminder</div>
+                <div class="lf-card-val warm" id="lf-next-val">&mdash;</div>
+                <div class="lf-card-sub" id="lf-next-sub">&mdash;</div>
+              </div>
+              <div class="lf-card" id="lf-card-streak">
+                <div class="lf-card-hd">&#x1F525; Streak</div>
+                <div class="lf-card-val warm" id="lf-streak-val">0</div>
+                <div class="lf-card-sub">days fasting goal met</div>
+              </div>
+              <div class="lf-card" id="lf-card-mood">
+                <div class="lf-card-hd">&#x1F642; Mood</div>
+                <div class="lf-card-val" id="lf-mood-val">&mdash;</div>
+                <div class="lf-card-sub">tap to log today</div>
+              </div>
+              <div class="lf-card wide" id="lf-card-conditions">
+                <div class="lf-card-hd">&#x1F30A; Conditions (Bonaire)</div>
+                <div class="lf-card-val" id="lf-cond-val" style="font-size:clamp(11px,3cqh,22px)">&mdash;</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline (populated in a later stage) -->
+        <div class="lf-view" id="lf-view-timeline"></div>
+
+        <!-- Stats (populated in a later stage) -->
+        <div class="lf-view" id="lf-view-stats"></div>
+
+        <!-- Settings (populated in a later stage) -->
+        <div class="lf-view" id="lf-view-settings"></div>
       </section>
 
     </div>
@@ -3668,11 +4008,24 @@
     return stageIsPortrait ? ev.clientY : ev.clientX;
   }
 
-  let dragStart = null, dragDx = 0, dragT = 0;
+  // Small, specific interactive controls must receive their own native tap/
+  // click instead of being swallowed by the stage's swipe gesture.
+  // setPointerCapture() below retargets pointerup (and the click synthesized
+  // from it) to the stage itself, so these never see a real click unless
+  // their pointerdown is excluded here first. This deliberately does NOT
+  // include #face-galaxy: that face wants its ENTIRE surface to remain
+  // swipeable (drag-to-change-face) while ALSO supporting tap-to-cycle-theme
+  // on the same area, so it stays inside the normal capture/drag pipeline —
+  // see the tap-vs-drag branch in endDrag() below, which routes a genuine
+  // tap on that face to the theme cycler instead of a blanket exclusion.
+  var STAGE_TAP_TARGETS = '#face-life .lf-tab, #face-life .lf-wsbtn, #face-life .lf-card, #face-life input, #face-life select, #face-life button';
+  let dragStart = null, dragDx = 0, dragT = 0, dragStartTarget = null;
   stage.addEventListener('pointerdown', function(ev){
+    if(ev.target.closest && ev.target.closest(STAGE_TAP_TARGETS)) return;
     dragStart = axisPos(ev);
     dragDx = 0;
     dragT = Date.now();
+    dragStartTarget = ev.target;
     carousel.classList.add('dragging');
     stage.setPointerCapture(ev.pointerId);
   });
@@ -3683,7 +4036,7 @@
     if((index===0 && dragDx>0) || (index===FACES-1 && dragDx<0)) dragDx *= 0.35;
     render(dragDx);
   });
-  function endDrag(){
+  function endDrag(ev){
     if(dragStart === null) return;
     carousel.classList.remove('dragging');
     const dt = Date.now() - dragT;
@@ -3692,12 +4045,19 @@
     if(Math.abs(dragDx) > w*0.18 || fling){
       goTo(index + (dragDx < 0 ? 1 : -1));
     }else if(Math.abs(dragDx) < 8 && dt < 350){
-      toggleFullscreen();
+      // A genuine tap (not a drag). Route it to whichever face-specific tap
+      // behavior owns this spot, falling back to the stage-wide fullscreen
+      // toggle everywhere else.
+      if(dragStartTarget && dragStartTarget.closest && dragStartTarget.closest('#face-galaxy')){
+        if(typeof cycleGxTheme === 'function') cycleGxTheme(ev);
+      } else {
+        toggleFullscreen();
+      }
       render(0);
     }else{
       render(0);
     }
-    dragStart = null; dragDx = 0;
+    dragStart = null; dragDx = 0; dragStartTarget = null;
   }
   stage.addEventListener('pointerup', endDrag);
   stage.addEventListener('pointercancel', endDrag);
@@ -3736,27 +4096,25 @@
     localStorage.setItem('gxTheme', t);
   }
   applyGxTheme(gxThemeIdx);
-  if(gxFace){
-    gxFace.addEventListener('click', function(ev){
-      // Only act on a true tap (not the end of a swipe) — the swipe handler
-      // already consumes big drags; here we guard against the residual click.
-      if(Math.abs(dragDx) < 8){
-        applyGxTheme(gxThemeIdx + 1);
-        var r = document.createElement('div');
-        r.className = 'fgx-ripple';
-        // The stage is rotated 90deg in portrait, so clientX/Y can't be mapped
-        // onto the face's local axes directly — just centre the ripple there.
-        if(stageIsPortrait){
-          r.style.left = '50%'; r.style.top = '50%';
-        } else {
-          var rect = gxFace.getBoundingClientRect();
-          r.style.left = (ev.clientX - rect.left) + 'px';
-          r.style.top = (ev.clientY - rect.top) + 'px';
-        }
-        gxFace.appendChild(r);
-        setTimeout(function(){ r.remove(); }, 700);
-      }
-    });
+  // Called from endDrag() when a genuine tap (not a drag) lands on the
+  // Galaxy face — see the STAGE_TAP_TARGETS comment above for why this
+  // face can't simply opt out of the stage's pointer-capture pipeline.
+  function cycleGxTheme(ev){
+    if(!gxFace) return;
+    applyGxTheme(gxThemeIdx + 1);
+    var r = document.createElement('div');
+    r.className = 'fgx-ripple';
+    // The stage is rotated 90deg in portrait, so clientX/Y can't be mapped
+    // onto the face's local axes directly — just centre the ripple there.
+    if(stageIsPortrait || !ev){
+      r.style.left = '50%'; r.style.top = '50%';
+    } else {
+      var rect = gxFace.getBoundingClientRect();
+      r.style.left = (ev.clientX - rect.left) + 'px';
+      r.style.top = (ev.clientY - rect.top) + 'px';
+    }
+    gxFace.appendChild(r);
+    setTimeout(function(){ r.remove(); }, 700);
   }
 
   // ---------- PWA: service worker with auto-update ----------
@@ -3866,6 +4224,188 @@
         }, 380);
       }, 420);
     }, 2600);
+  })();
+
+  // ======================================================================
+  // Face 10: Life — Smart Daily Dashboard & Health Assistant
+  // ======================================================================
+  var Life = (function(){
+    // ---------- Settings (localStorage, matches app-wide convention) ----------
+    var DEFAULTS = {
+      wakeTime: '07:00',
+      sleepTime: '23:00',
+      eatStart: '11:00',
+      eatEnd: '19:00',
+      waterIntervalMin: 60,
+      waterGoalMl: 3000,
+      waterPortionMl: 250,
+      waterSkipSnoozeMin: 15,
+      bathIntervalMin: 60,
+      bathSkipSnoozeMin: 10,
+      notifications: true,
+      theme: 'dark',       // 'dark' | 'light' | 'auto'
+      awake: false,
+      lastWakeTs: 0,
+      lastSleepTs: 0
+    };
+    function loadSettings(){
+      try{
+        var raw = localStorage.getItem('lifeSettings');
+        var parsed = raw ? JSON.parse(raw) : {};
+        var out = {};
+        for(var k in DEFAULTS) out[k] = (parsed[k] !== undefined) ? parsed[k] : DEFAULTS[k];
+        return out;
+      }catch(e){ return Object.assign({}, DEFAULTS); }
+    }
+    var S = loadSettings();
+    function saveSettings(){ localStorage.setItem('lifeSettings', JSON.stringify(S)); }
+
+    // ---------- IndexedDB event log ----------
+    // One generic store keyed by autoIncrement id, indexed by type+ts, so
+    // every stats view (daily/weekly/monthly, streaks, calendar) is just a
+    // filter+aggregate over the same log rather than needing separate
+    // stores per feature.
+    var dbPromise = null;
+    function openDb(){
+      if(dbPromise) return dbPromise;
+      dbPromise = new Promise(function(resolve, reject){
+        if(!('indexedDB' in window)){ reject(new Error('no indexedDB')); return; }
+        var req = indexedDB.open('standby-life', 1);
+        req.onupgradeneeded = function(){
+          var db = req.result;
+          if(!db.objectStoreNames.contains('events')){
+            var store = db.createObjectStore('events', { keyPath: 'id', autoIncrement: true });
+            store.createIndex('type', 'type', { unique: false });
+            store.createIndex('ts', 'ts', { unique: false });
+          }
+        };
+        req.onsuccess = function(){ resolve(req.result); };
+        req.onerror = function(){ reject(req.error); };
+      });
+      return dbPromise;
+    }
+    function logEvent(type, extra){
+      return openDb().then(function(db){
+        return new Promise(function(resolve, reject){
+          var tx = db.transaction('events', 'readwrite');
+          var rec = Object.assign({ type: type, ts: Date.now() }, extra || {});
+          tx.objectStore('events').add(rec);
+          tx.oncomplete = function(){ resolve(rec); };
+          tx.onerror = function(){ reject(tx.error); };
+        });
+      }).catch(function(e){ /* IndexedDB unavailable (private mode, etc.) — degrade silently */ });
+    }
+    function getEventsInRange(startTs, endTs, type){
+      return openDb().then(function(db){
+        return new Promise(function(resolve, reject){
+          var tx = db.transaction('events', 'readonly');
+          var idx = tx.objectStore('events').index('ts');
+          var range = IDBKeyRange.bound(startTs, endTs);
+          var out = [];
+          idx.openCursor(range).onsuccess = function(ev){
+            var cur = ev.target.result;
+            if(cur){
+              if(!type || cur.value.type === type) out.push(cur.value);
+              cur.continue();
+            } else resolve(out);
+          };
+          tx.onerror = function(){ reject(tx.error); };
+        });
+      }).catch(function(){ return []; });
+    }
+
+    // ---------- Tab switching ----------
+    var faceEl = document.getElementById('face-life');
+    function initTabs(){
+      if(!faceEl) return;
+      var tabs = faceEl.querySelectorAll('.lf-tab');
+      tabs.forEach(function(tab){
+        tab.addEventListener('click', function(){
+          var name = tab.dataset.lftab;
+          tabs.forEach(function(t){ t.classList.toggle('active', t === tab); });
+          faceEl.querySelectorAll('.lf-view').forEach(function(v){
+            v.classList.toggle('active', v.id === 'lf-view-' + name);
+          });
+        });
+      });
+    }
+
+    // ---------- Greeting + status pill ----------
+    function updateGreeting(){
+      var h = new Date().getHours();
+      var g = h < 12 ? 'Good Morning' : (h < 18 ? 'Good Afternoon' : 'Good Evening');
+      var el = document.getElementById('lf-greeting');
+      if(el && el.textContent !== g) el.textContent = g;
+    }
+    function updateStatusPill(){
+      var pill = document.getElementById('lf-statuspill');
+      var txt = document.getElementById('lf-statustxt');
+      var btnAwake = document.getElementById('lf-btn-awake');
+      var btnSleep = document.getElementById('lf-btn-sleep');
+      if(!pill) return;
+      pill.classList.toggle('awake', S.awake);
+      pill.classList.toggle('sleep', !S.awake);
+      if(txt) txt.textContent = S.awake ? 'Awake' : 'Sleeping';
+      if(btnAwake) btnAwake.classList.toggle('on', S.awake);
+      if(btnSleep) btnSleep.classList.toggle('on', !S.awake);
+    }
+
+    // ---------- Wake / Sleep buttons ----------
+    function requestNotifyPermission(){
+      if(!S.notifications) return;
+      if(!('Notification' in window)) return;
+      if(Notification.permission === 'default') Notification.requestPermission();
+    }
+    function goAwake(){
+      if(S.awake) return;
+      S.awake = true;
+      S.lastWakeTs = Date.now();
+      saveSettings();
+      logEvent('wake');
+      updateStatusPill();
+      requestNotifyPermission();
+      if(typeof startReminders === 'function') startReminders();
+    }
+    function goSleep(){
+      if(!S.awake) return;
+      S.awake = false;
+      S.lastSleepTs = Date.now();
+      saveSettings();
+      logEvent('sleep');
+      updateStatusPill();
+      if(typeof stopReminders === 'function') stopReminders();
+    }
+    function initButtons(){
+      var btnAwake = document.getElementById('lf-btn-awake');
+      var btnSleep = document.getElementById('lf-btn-sleep');
+      if(btnAwake) btnAwake.addEventListener('click', goAwake);
+      if(btnSleep) btnSleep.addEventListener('click', goSleep);
+    }
+
+    function init(){
+      if(!faceEl) return;
+      initTabs();
+      initButtons();
+      updateGreeting();
+      updateStatusPill();
+      // Theme attribute reflects saved settings immediately
+      faceEl.dataset.theme = S.theme;
+    }
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+    // Greeting only needs to re-check once a minute — piggyback on the
+    // existing tick() cadence via a cheap interval rather than adding a
+    // second global 1s ticker.
+    setInterval(updateGreeting, 30000);
+
+    return {
+      S: S, saveSettings: saveSettings, logEvent: logEvent,
+      getEventsInRange: getEventsInRange, openDb: openDb,
+      updateStatusPill: updateStatusPill
+    };
   })();
 </script>
 </body>
