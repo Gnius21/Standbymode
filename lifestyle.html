@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lifestyle">
+<meta name="theme-color" content="#04121a">
+<link rel="manifest" href="lifestyle.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Lifestyle</title>
+<!--
+  ============================================================================
+  LIFESTYLE — standalone Smart Daily Dashboard & Health Assistant
+  ============================================================================
+  This is the FULL, portrait-native app, meant to be continued in its own
+  session. The StandBy "Life" face (index.html) is a scaled-down copy of this
+  same model, embedded rotated inside the clock carousel.
+
+  Shared design so the two stay compatible:
+    • Settings  -> localStorage key "lifeSettings" (one JSON blob)
+    • History   -> IndexedDB db "standby-life", store "events"
+                   { id (auto), type, ts, ...extra }
+                   types: wake sleep water bath fastStart fastEnd mood
+    • Push      -> ntfy.sh delayed publishing (no backend of our own)
+
+  HOW TO EXTEND (each is an isolated add-on over the same event log):
+    • Weight tracker  -> log {type:'weight', value} ; chart from getRange
+    • Notes           -> log {type:'note', text} one-per-day upsert
+    • Medication      -> settings list of meds -> scheduleDayNtfy() entries
+    • Checklist       -> settings list of tasks -> render on Home, log 'task'
+    • CSV export      -> getRange(0, now) -> rows.join -> Blob download
+  Search "TODO:EXTEND" for the seams.
+  ============================================================================
+-->
+<style>
+  :root{
+    --teal:#5ee6c8; --warm:#ffb45e; --blue:#5ea8ff; --red:#ff6b7a;
+    --ink:#eef6f3; --muted:rgba(200,220,225,0.62);
+    --card:linear-gradient(160deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03));
+    --border:rgba(255,255,255,0.10);
+    --bg1:#04121a; --bg2:#06202b; --bg3:#07303c;
+  }
+  :root[data-theme="light"]{
+    --ink:#16323a; --muted:rgba(20,50,58,0.62);
+    --card:linear-gradient(160deg,rgba(10,40,45,0.06),rgba(10,40,45,0.02));
+    --border:rgba(10,40,45,0.12);
+    --bg1:#eaf7f4; --bg2:#dcf0ea; --bg3:#cfe9e2;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,"SF Pro Display","Helvetica Neue",system-ui,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 10%,rgba(94,230,200,0.12),transparent 60%),
+      radial-gradient(ellipse 60% 50% at 90% 90%,rgba(94,168,255,0.10),transparent 60%),
+      linear-gradient(170deg,var(--bg1),var(--bg2) 55%,var(--bg3));
+    -webkit-user-select:none;user-select:none;overflow:hidden;
+  }
+  .app{
+    max-width:520px;margin:0 auto;height:100%;display:flex;flex-direction:column;
+    padding:calc(env(safe-area-inset-top) + 12px) 14px 0;
+  }
+  .views{flex:1 1 auto;min-height:0;overflow-y:auto;padding-bottom:88px;-webkit-overflow-scrolling:touch}
+  .view{display:none;flex-direction:column;gap:12px}
+  .view.active{display:flex}
+  h1{font-size:22px;font-weight:800;letter-spacing:-0.02em}
+  .sub{color:var(--muted);font-size:13px;font-weight:500}
+  .card{
+    background:radial-gradient(ellipse 120% 70% at 50% 0%,rgba(255,255,255,0.08),transparent 70%),var(--card);
+    border:1px solid var(--border);border-radius:20px;padding:16px;
+    box-shadow:0 6px 22px rgba(0,0,0,0.22),inset 0 1px 0 rgba(255,255,255,0.07);
+  }
+  .card-hd{font-size:12px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:var(--muted)}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .big{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+  .teal{color:var(--teal)} .warm{color:var(--warm)} .blue{color:var(--blue)}
+  .btn{
+    border:1px solid var(--border);background:var(--card);color:var(--ink);
+    border-radius:16px;padding:14px;font-size:15px;font-weight:700;text-align:center;cursor:pointer;
+    transition:transform .12s ease,border-color .2s ease;
+  }
+  .btn:active{transform:scale(.97)}
+  .btn.primary{background:linear-gradient(160deg,rgba(94,230,200,0.5),rgba(94,230,200,0.2));border-color:rgba(94,230,200,0.5)}
+  .btn.warm{background:linear-gradient(160deg,rgba(255,180,94,0.45),rgba(255,180,94,0.15));border-color:rgba(255,180,94,0.5)}
+  .tappable{cursor:pointer}
+  .tappable:active{transform:scale(.98);border-color:rgba(94,230,200,0.5)}
+  .hint{font-size:11px;font-weight:700;color:var(--teal);margin-top:8px}
+  /* Fasting ring */
+  .ring-wrap{display:flex;align-items:center;gap:16px}
+  .ring{position:relative;width:92px;height:92px;flex:0 0 auto}
+  .ring svg{width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+  .ring .track{fill:none;stroke:rgba(255,255,255,0.14);stroke-width:9}
+  .ring .fill{fill:none;stroke:var(--teal);stroke-width:9;stroke-linecap:round;stroke-dasharray:327;stroke-dashoffset:327;transition:stroke-dashoffset .9s ease,stroke .9s ease;filter:drop-shadow(0 0 6px currentColor)}
+  .ring .ico{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px}
+  /* mood */
+  .mood{display:flex;justify-content:space-between;font-size:30px}
+  .mood span{opacity:.4;filter:grayscale(.6);cursor:pointer;transition:.2s}
+  .mood span.sel{opacity:1;filter:none;transform:scale(1.18)}
+  /* timeline */
+  .tl{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-left:3px solid rgba(255,255,255,0.2);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:600}
+  .tl .t{min-width:64px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .tl.done{border-left-color:var(--teal);color:var(--teal)}
+  .tl.up{border-left-color:var(--blue);color:var(--blue)}
+  .tl.miss{border-left-color:var(--red);color:var(--red);opacity:.75}
+  /* settings inputs */
+  .set{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px}
+  .set input{font:inherit;font-weight:700;color:var(--teal);background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:7px 10px;text-align:right;-webkit-appearance:none}
+  .set input[type=number]{width:80px}
+  .toggle{width:52px;height:30px;border-radius:99px;background:rgba(255,255,255,0.14);position:relative;cursor:pointer;transition:.25s}
+  .toggle.on{background:linear-gradient(160deg,rgba(94,230,200,0.75),rgba(94,230,200,0.4))}
+  .toggle b{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.25s}
+  .toggle.on b{transform:translateX(22px)}
+  .seg{display:flex;gap:6px}
+  .seg .btn{padding:8px 12px;font-size:13px}
+  .seg .btn.active{background:linear-gradient(160deg,rgba(94,230,200,0.32),rgba(94,230,200,0.1));border-color:rgba(94,230,200,0.45)}
+  /* bottom nav */
+  .nav{
+    position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;
+    display:flex;background:rgba(6,26,32,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border-top:1px solid var(--border);padding:8px 8px calc(env(safe-area-inset-bottom) + 8px);
+  }
+  :root[data-theme="light"] .nav{background:rgba(230,245,240,0.92)}
+  .nav .tab{flex:1;text-align:center;padding:8px 4px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer}
+  .nav .tab .i{font-size:20px;display:block}
+  .nav .tab.active{color:var(--teal)}
+  /* reminder banner */
+  .rem{
+    position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:96px;z-index:20;
+    display:flex;align-items:center;gap:12px;max-width:92%;
+    background:linear-gradient(160deg,rgba(20,50,55,0.96),rgba(8,26,32,0.96));border:1px solid rgba(94,230,200,0.4);
+    border-radius:99px;padding:10px 14px;box-shadow:0 12px 34px rgba(0,0,0,0.5);
+    opacity:0;pointer-events:none;transition:.35s;white-space:nowrap;font-weight:700;
+  }
+  .rem.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+  .rem .b{padding:8px 16px;border-radius:99px;background:rgba(255,255,255,0.12);cursor:pointer;font-weight:800}
+  .rem .b.primary{background:linear-gradient(160deg,rgba(94,230,200,0.55),rgba(94,230,200,0.25))}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="views" id="views">
+
+    <!-- HOME -->
+    <section class="view active" id="v-home">
+      <div class="row"><div><h1 id="greeting">Good day</h1><div class="sub" id="today">—</div></div>
+        <div class="sub" id="status">😴 Sleeping</div></div>
+      <div class="grid2">
+        <div class="btn warm" id="btn-awake">🌞<br>I'm Awake</div>
+        <div class="btn" id="btn-sleep">🌙<br>I'm Sleeping</div>
+      </div>
+      <div class="card">
+        <div class="ring-wrap">
+          <div class="ring"><svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="52"/><circle class="fill" id="fastfill" cx="60" cy="60" r="52"/></svg><div class="ico" id="fasticon">🍽️</div></div>
+          <div><div class="card-hd">Fasting</div><div class="big teal" id="fast-state">—</div><div class="sub" id="fast-sub">—</div><div class="sub" id="fast-remain">—</div></div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card tappable" id="card-water"><div class="card-hd">💧 Water</div><div class="big blue" id="water-val">0%</div><div class="sub" id="water-sub">0 / 3.0 L</div><div class="hint">+ Tap to log a glass</div></div>
+        <div class="card tappable" id="card-bath"><div class="card-hd">🚽 Bathroom</div><div class="big" id="bath-val">0</div><div class="sub">visits today</div><div class="hint" style="color:var(--warm)">+ Tap to log a visit</div></div>
+      </div>
+      <div class="card"><div class="card-hd">🌊 Bonaire · outdoors &amp; swim</div><div style="font-size:18px;font-weight:700;margin-top:4px" id="cond-val">Loading…</div><div class="sub teal" style="margin-top:4px" id="cond-best">—</div></div>
+      <div class="card"><div class="card-hd">🙂 Mood today</div><div class="mood" id="mood">
+        <span data-m="1">😞</span><span data-m="2">🙁</span><span data-m="3">😐</span><span data-m="4">🙂</span><span data-m="5">😄</span></div></div>
+    </section>
+
+    <!-- TIMELINE -->
+    <section class="view" id="v-timeline"><h1>Today</h1><div id="tl-list"></div></section>
+
+    <!-- STATS -->
+    <section class="view" id="v-stats">
+      <h1>Stats</h1>
+      <div class="grid2">
+        <div class="card"><div class="card-hd">Water</div><div class="big blue" id="s-water">0%</div></div>
+        <div class="card"><div class="card-hd">Bathroom</div><div class="big" id="s-bath">0</div></div>
+        <div class="card"><div class="card-hd">Fasted</div><div class="big teal" id="s-fast">0h</div></div>
+        <div class="card"><div class="card-hd">🔥 Streak</div><div class="big warm" id="s-streak">0</div></div>
+      </div>
+      <div class="card"><div class="card-hd">Last 7 days · water glasses</div><svg viewBox="0 0 300 60" preserveAspectRatio="none" style="width:100%;height:60px;margin-top:6px"><polyline id="chart" fill="none" stroke="var(--teal)" stroke-width="2.5" vector-effect="non-scaling-stroke" points=""/></svg></div>
+      <!-- TODO:EXTEND weight chart, notes history, checklist, CSV export button here -->
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="view" id="v-settings">
+      <h1>Settings</h1>
+      <div class="set"><span>Wake time</span><input type="time" id="set-wakeTime"></div>
+      <div class="set"><span>Sleep time</span><input type="time" id="set-sleepTime"></div>
+      <div class="set"><span>Eating opens</span><input type="time" id="set-eatStart"></div>
+      <div class="set"><span>Eating closes</span><input type="time" id="set-eatEnd"></div>
+      <div class="set"><span>Water every (min)</span><input type="number" min="10" max="240" id="set-waterIntervalMin"></div>
+      <div class="set"><span>Water goal (L)</span><input type="number" min="0.5" max="10" step="0.1" id="set-waterGoalL"></div>
+      <div class="set"><span>Glass size (mL)</span><input type="number" min="50" max="1000" step="50" id="set-waterPortionMl"></div>
+      <div class="set"><span>Bathroom every (min)</span><input type="number" min="10" max="240" id="set-bathIntervalMin"></div>
+      <div class="set"><span>Theme</span><div class="seg" id="set-theme"><div class="btn" data-t="dark">Dark</div><div class="btn" data-t="light">Light</div><div class="btn" data-t="auto">Auto</div></div></div>
+      <div class="card-hd" style="margin-top:8px;color:var(--teal)">Push reminders (ntfy.sh)</div>
+      <div class="set"><span>Push via ntfy</span><div class="toggle" id="set-ntfy"><b></b></div></div>
+      <div class="set"><span>Topic</span><input type="text" id="set-ntfyTopic" spellcheck="false" autocapitalize="off" style="width:150px;text-align:left"></div>
+      <div class="sub" style="padding:0 4px">Install the free <b>ntfy</b> app, subscribe to the topic (or tap Subscribe). Reminders push even when this app is closed.</div>
+      <div class="grid2"><div class="btn" id="ntfy-sub">Subscribe</div><div class="btn" id="ntfy-test">Send test</div></div>
+      <div class="sub" id="ntfy-status" style="text-align:center;min-height:1em"></div>
+    </section>
+  </div>
+</div>
+
+<div class="rem" id="rem"><span id="rem-ico">💧</span><span id="rem-txt">Time to drink water</span><span class="b primary" id="rem-done">Done</span><span class="b" id="rem-skip">Skip</span></div>
+
+<div class="nav" id="nav">
+  <div class="tab active" data-v="home"><span class="i">🏠</span>Home</div>
+  <div class="tab" data-v="timeline"><span class="i">📋</span>Timeline</div>
+  <div class="tab" data-v="stats"><span class="i">📊</span>Stats</div>
+  <div class="tab" data-v="settings"><span class="i">⚙️</span>Settings</div>
+</div>
+
+<script>
+// ======================= SETTINGS (localStorage) =======================
+var DEFAULTS={wakeTime:'07:00',sleepTime:'23:00',eatStart:'11:00',eatEnd:'19:00',
+  waterIntervalMin:60,waterGoalMl:3000,waterPortionMl:250,waterSkipSnoozeMin:15,
+  bathIntervalMin:60,bathSkipSnoozeMin:10,theme:'dark',awake:false,
+  nextWaterDueTs:0,nextBathDueTs:0,ntfyEnabled:false,ntfyTopic:'',ntfyServer:'https://ntfy.sh',ntfyScheduledDate:''};
+function load(){try{var p=JSON.parse(localStorage.getItem('lifeSettings')||'{}');var o={};for(var k in DEFAULTS)o[k]=p[k]!==undefined?p[k]:DEFAULTS[k];return o;}catch(e){return Object.assign({},DEFAULTS);}}
+var S=load();
+function save(){localStorage.setItem('lifeSettings',JSON.stringify(S));}
+if(!S.ntfyTopic){S.ntfyTopic='standby-'+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,6);save();}
+
+// ======================= IndexedDB event log =======================
+var dbP=null;
+function db(){if(dbP)return dbP;dbP=new Promise(function(res,rej){var r=indexedDB.open('standby-life',1);
+  r.onupgradeneeded=function(){var d=r.result;if(!d.objectStoreNames.contains('events')){var s=d.createObjectStore('events',{keyPath:'id',autoIncrement:true});s.createIndex('type','type');s.createIndex('ts','ts');}};
+  r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)};});return dbP;}
+function log(type,extra){return db().then(function(d){return new Promise(function(res,rej){var tx=d.transaction('events','readwrite');tx.objectStore('events').add(Object.assign({type:type,ts:Date.now()},extra||{}));tx.oncomplete=res;tx.onerror=function(){rej(tx.error)};});}).catch(function(){});}
+function range(a,b,type){return db().then(function(d){return new Promise(function(res,rej){var tx=d.transaction('events','readonly'),out=[];tx.objectStore('events').index('ts').openCursor(IDBKeyRange.bound(a,b)).onsuccess=function(e){var c=e.target.result;if(c){if(!type||c.value.type===type)out.push(c.value);c.continue();}else res(out);};tx.onerror=function(){rej(tx.error)};});}).catch(function(){return[];});}
+function todayStart(){var d=new Date();d.setHours(0,0,0,0);return d.getTime();}
+function upsertToday(type,fields){return range(todayStart(),Date.now()+1,type).then(function(evs){return db().then(function(d){return new Promise(function(res){var tx=d.transaction('events','readwrite'),st=tx.objectStore('events');if(evs[0]){Object.assign(evs[0],fields,{ts:Date.now()});st.put(evs[0]);}else st.add(Object.assign({type:type,ts:Date.now()},fields));tx.oncomplete=res;});});});}
+
+// ======================= helpers =======================
+var $=function(id){return document.getElementById(id);};
+function hm(t){var p=String(t).split(':');return[parseInt(p[0],10)||0,parseInt(p[1],10)||0];}
+function at(base,h,m){var d=new Date(base);d.setHours(h,m,0,0);return d;}
+function fmtHM(ms){var m=Math.max(0,Math.round(ms/60000)),h=Math.floor(m/60);return h>0?h+'h '+(m%60)+'m':m+'m';}
+
+// ======================= fasting =======================
+var CIRC=2*Math.PI*52;
+function fasting(now){var es=hm(S.eatStart),ee=hm(S.eatEnd),pts=[];
+  [-1,0,1].forEach(function(off){var b=new Date(now.getTime()+off*864e5);pts.push({t:at(b,es[0],es[1]),type:'start'});pts.push({t:at(b,ee[0],ee[1]),type:'end'});});
+  pts.sort(function(a,b){return a.t-b.t});var ws=null,we=null,eat=false;
+  for(var i=0;i<pts.length-1;i++){if(now>=pts[i].t&&now<pts[i+1].t){ws=pts[i].t;we=pts[i+1].t;eat=pts[i].type==='start';break;}}
+  if(!ws){ws=now;we=new Date(now.getTime()+36e5);eat=false;}
+  var total=we-ws,prog=total>0?Math.min(1,Math.max(0,(now-ws)/total)):0;
+  return{eating:eat,winEnd:we,progress:prog,remainMs:we-now};}
+var lastEat=null;
+function drawFast(){var now=new Date(),f=fasting(now);
+  if(lastEat!==null&&lastEat!==f.eating)log(f.eating?'fastEnd':'fastStart');lastEat=f.eating;
+  var col=f.eating?'var(--teal)':'var(--warm)';
+  $('fastfill').style.strokeDashoffset=(CIRC*(1-f.progress)).toFixed(1);$('fastfill').style.stroke=col;
+  $('fast-state').textContent=f.eating?'Eating':'Fasting';$('fast-state').style.color=col;
+  $('fast-sub').textContent=(f.eating?'Window closes ':'Eating opens ')+f.winEnd.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  $('fast-remain').textContent=fmtHM(f.remainMs)+' remaining';$('fasticon').textContent=f.eating?'🍽️':'⏳';}
+
+// ======================= reminders (local) =======================
+var META={water:{ico:'💧',txt:'Time to drink water',iv:'waterIntervalMin',sn:'waterSkipSnoozeMin',due:'nextWaterDueTs'},
+          bath:{ico:'🚽',txt:'Bathroom break',iv:'bathIntervalMin',sn:'bathSkipSnoozeMin',due:'nextBathDueTs'}};
+var remActive=null,remQ=[],remTimer=null;
+function schedNext(type,min){S[META[type].due]=Date.now()+(min!=null?min:S[META[type].iv])*60000;save();}
+function notify(title,body){if(!('Notification'in window)||Notification.permission!=='granted')return;
+  var o={body:body,icon:'apple-touch-icon.png',tag:'life'};
+  if(navigator.serviceWorker&&navigator.serviceWorker.ready)navigator.serviceWorker.ready.then(function(r){return r.showNotification(title,o);}).catch(function(){try{new Notification(title,o);}catch(e){}});
+  else try{new Notification(title,o);}catch(e){}}
+function showRem(type){remActive=type;var m=META[type];$('rem-ico').textContent=m.ico;$('rem-txt').textContent=m.txt;$('rem').classList.add('show');notify(m.ico+' '+m.txt,'Log it in Lifestyle');}
+function hideRem(){$('rem').classList.remove('show');remActive=null;if(remQ.length){var n=remQ.shift();setTimeout(function(){showRem(n);},500);}}
+function resolve(action){if(!remActive)return;var t=remActive;log(t,{skipped:action==='skip'});schedNext(t,action==='skip'?S[META[t].sn]:null);hideRem();refreshTotals();}
+function quickLog(type){if(remActive===type){resolve('done');return;}var i=remQ.indexOf(type);if(i>=0)remQ.splice(i,1);log(type,{skipped:false});schedNext(type);refreshTotals();}
+function checkRem(){if(S.awake&&document.visibilityState==='visible'){var now=Date.now();['water','bath'].forEach(function(t){var m=META[t];if(S[m.due]&&now>=S[m.due]&&remActive!==t&&remQ.indexOf(t)<0){S[m.due]=0;save();if(remActive===null)showRem(t);else remQ.push(t);}});}}
+function startRem(){if(!S.nextWaterDueTs)schedNext('water');if(!S.nextBathDueTs)schedNext('bath');if(remTimer)clearInterval(remTimer);remTimer=setInterval(checkRem,60000);checkRem();}
+function stopRem(){if(remTimer)clearInterval(remTimer);remTimer=null;$('rem').classList.remove('show');remActive=null;remQ=[];}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&S.awake)checkRem();});
+
+// ======================= ntfy push (delayed) =======================
+function ntfy(msg,title,delaySec,tags){if(!S.ntfyEnabled||!S.ntfyTopic)return Promise.resolve(false);
+  var h={Title:title||'Lifestyle'};if(tags)h.Tags=tags;if(delaySec&&delaySec>5)h.Delay=Math.round(delaySec)+'s';
+  return fetch((S.ntfyServer||'https://ntfy.sh')+'/'+encodeURIComponent(S.ntfyTopic),{method:'POST',body:msg,headers:h}).then(function(r){return r.ok;}).catch(function(){return false;});}
+function schedDayNtfy(){if(!S.ntfyEnabled||!S.ntfyTopic)return;var key=new Date().toDateString();if(S.ntfyScheduledDate===key)return;
+  var now=Date.now(),sp=hm(S.sleepTime),sleepT=at(new Date(),sp[0],sp[1]).getTime();if(sleepT<=now)sleepT+=864e5;var horizon=Math.min(sleepT,now+3*864e5);
+  for(var t=now+S.waterIntervalMin*60000;t<horizon;t+=S.waterIntervalMin*60000)ntfy('Time to drink water','💧 Water',(t-now)/1000,'droplet');
+  for(var b=now+S.bathIntervalMin*60000;b<horizon;b+=S.bathIntervalMin*60000)ntfy('Bathroom break','🚽 Bathroom',(b-now)/1000,'toilet');
+  S.ntfyScheduledDate=key;save();}
+
+// ======================= wake / sleep =======================
+function updStatus(){$('status').textContent=(S.awake?'🌞 Awake':'😴 Sleeping');
+  $('btn-awake').style.borderColor=S.awake?'rgba(255,180,94,0.6)':'';$('btn-sleep').style.borderColor=S.awake?'':'rgba(94,168,255,0.6)';}
+function awake(){if(S.awake)return;S.awake=true;save();log('wake');updStatus();
+  if('Notification'in window&&Notification.permission==='default')Notification.requestPermission();
+  startRem();schedDayNtfy();}
+function sleep(){if(!S.awake)return;S.awake=false;S.ntfyScheduledDate='';save();log('sleep');updStatus();stopRem();}
+
+// ======================= today totals =======================
+function refreshTotals(){range(todayStart(),Date.now()).then(function(ev){
+  var w=ev.filter(function(e){return e.type==='water'&&!e.skipped;}).length;
+  var b=ev.filter(function(e){return e.type==='bath'&&!e.skipped;}).length;
+  var ml=w*S.waterPortionMl,pct=Math.min(100,Math.round(ml/S.waterGoalMl*100));
+  $('water-val').textContent=pct+'%';$('water-sub').textContent=(ml/1000).toFixed(1)+' / '+(S.waterGoalMl/1000).toFixed(1)+' L';
+  $('bath-val').textContent=b;});}
+
+// ======================= conditions (Open-Meteo, live) =======================
+// Standalone app fetches its own weather (the face reuses StandBy's global).
+function loadConditions(){
+  var url='https://api.open-meteo.com/v1/forecast?latitude=12.15&longitude=-68.28&current=apparent_temperature,wind_speed_10m,uv_index&hourly=uv_index,wind_speed_10m,apparent_temperature,precipitation_probability&wind_speed_unit=kn&timezone=auto&forecast_days=2';
+  fetch(url).then(function(r){return r.json();}).then(function(d){
+    var c=d.current||{},uv=Math.round(c.uv_index),kt=Math.round(c.wind_speed_10m),feels=Math.round(c.apparent_temperature);
+    $('cond-val').textContent='UV '+uv+' · '+kt+' kt wind · Feels '+feels+'°';
+    // best daylight hour ahead (lowest "discomfort" score) — same idea as the face
+    var hh=d.hourly;if(hh&&hh.time){var now=Date.now(),best=-1,bs=1e9;
+      for(var i=0;i<hh.time.length;i++){var t=new Date(hh.time[i]).getTime();if(t<now-36e5)continue;var h=new Date(hh.time[i]).getHours();var u=hh.uv_index[i];if(u==null||u<0.5||h<5||h>19)continue;
+        var sc=u+ (hh.precipitation_probability[i]||0)/100*7 + Math.max(0,(hh.wind_speed_10m[i]||0)-22)*0.35 + Math.abs((hh.apparent_temperature[i]||28)-28)*0.4;
+        if(sc<bs){bs=sc;best=i;}}
+      if(best>=0){var bh=new Date(hh.time[best]).getHours(),verdict=hh.uv_index[best]>=6?'🏖️ Sunny — SPF up':'🚶 Comfortable';$('cond-best').textContent=verdict+' · best around '+((bh%12)||12)+(bh<12?' AM':' PM');}
+    }
+  }).catch(function(){$('cond-val').textContent='Weather unavailable offline';});
+}
+
+// ======================= mood =======================
+var MOOD={1:'😞',2:'🙁',3:'😐',4:'🙂',5:'😄'};
+function initMood(){$('mood').querySelectorAll('span').forEach(function(el){el.addEventListener('click',function(){var v=+el.dataset.m;upsertToday('mood',{value:v}).then(function(){markMood(v);});});});
+  range(todayStart(),Date.now()+1,'mood').then(function(e){if(e[0])markMood(e[0].value);});}
+function markMood(v){$('mood').querySelectorAll('span').forEach(function(el){el.classList.toggle('sel',+el.dataset.m===v);});}
+
+// ======================= timeline =======================
+function schedule(){var items=[],wp=hm(S.wakeTime),sp=hm(S.sleepTime),wake=at(new Date(),wp[0],wp[1]).getTime(),sl=at(new Date(),sp[0],sp[1]).getTime();if(sl<=wake)sl+=864e5;
+  items.push({label:'Wake Up',time:new Date(wake),type:'wake',ico:'🌞'});
+  for(var t=wake+S.waterIntervalMin*60000;t<sl;t+=S.waterIntervalMin*60000)items.push({label:'Drink Water',time:new Date(t),type:'water',ico:'💧'});
+  for(var b=wake+S.bathIntervalMin*60000;b<sl;b+=S.bathIntervalMin*60000)items.push({label:'Bathroom',time:new Date(b),type:'bath',ico:'🚽'});
+  var es=hm(S.eatStart),ee=hm(S.eatEnd),spx=hm(S.sleepTime);
+  items.push({label:'Eating Window Opens',time:at(new Date(),es[0],es[1]),type:'fastEnd',ico:'🍽️'});
+  items.push({label:'Fasting Begins',time:at(new Date(),ee[0],ee[1]),type:'fastStart',ico:'⛔'});
+  items.push({label:'Sleep',time:at(new Date(),spx[0],spx[1]),type:'sleep',ico:'🌙'});
+  items.sort(function(a,b){return a.time-b.time;});return items;}
+function renderTimeline(){range(todayStart(),todayStart()+864e5).then(function(ev){var by={};ev.forEach(function(e){(by[e.type]=by[e.type]||[]).push(e);});
+  var used={},now=Date.now();$('tl-list').innerHTML=schedule().map(function(it){var arr=by[it.type]||[],i=used[it.type]||0,st;
+    if(arr[i]){st='done';used[it.type]=i+1;}else if(it.time.getTime()>now)st='up';else st='miss';
+    return '<div class="tl '+st+'" style="margin-bottom:8px"><span class="t">'+it.time.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</span><span>'+it.ico+'</span><span style="flex:1">'+it.label+'</span></div>';}).join('');});}
+
+// ======================= stats =======================
+function dayStat(ev){var tr=ev.filter(function(e){return e.type==='fastStart'||e.type==='fastEnd';}).sort(function(a,b){return a.ts-b.ts;}),open=null,ms=0,done=false;
+  tr.forEach(function(e){if(e.type==='fastStart')open=e.ts;else if(open!=null){ms+=e.ts-open;open=null;done=true;}});
+  return{water:ev.filter(function(e){return e.type==='water'&&!e.skipped;}).length,bath:ev.filter(function(e){return e.type==='bath'&&!e.skipped;}).length,fastedH:ms/36e5,done:done};}
+function buckets(days){var t0=todayStart(),start=t0-(days-1)*864e5;return range(start,Date.now()+1).then(function(ev){var out=[];for(var i=days-1;i>=0;i--){var ds=t0-i*864e5;out.push({start:ds,ev:ev.filter(function(e){return e.ts>=ds&&e.ts<ds+864e5;})});}return out;});}
+function renderStats(){buckets(7).then(function(bk){var today=dayStat(bk[bk.length-1].ev);
+  $('s-water').textContent=Math.min(100,Math.round(today.water*S.waterPortionMl/S.waterGoalMl*100))+'%';
+  $('s-bath').textContent=today.bath;$('s-fast').textContent=today.fastedH.toFixed(1)+'h';
+  var streak=0;for(var i=bk.length-1;i>=0;i--){if(dayStat(bk[i].ev).done)streak++;else if(i===bk.length-1)continue;else break;}$('s-streak').textContent=streak;
+  var vals=bk.map(function(b){return dayStat(b.ev).water;}),max=Math.max.apply(null,vals.concat([1])),pts=vals.map(function(v,i){return (5+i/(vals.length-1)*290).toFixed(1)+','+(55-v/max*50).toFixed(1);}).join(' ');
+  $('chart').setAttribute('points',pts);});}
+
+// ======================= settings UI =======================
+function fillSettings(){['wakeTime','sleepTime','eatStart','eatEnd','waterIntervalMin','waterPortionMl','bathIntervalMin'].forEach(function(k){var e=$('set-'+k);if(e)e.value=S[k];});
+  $('set-waterGoalL').value=(S.waterGoalMl/1000).toFixed(1);
+  $('set-ntfy').classList.toggle('on',!!S.ntfyEnabled);var tp=$('set-ntfyTopic');if(document.activeElement!==tp)tp.value=S.ntfyTopic;
+  $('set-theme').querySelectorAll('.btn').forEach(function(b){b.classList.toggle('active',b.dataset.t===S.theme);});}
+function initSettings(){fillSettings();
+  ['wakeTime','sleepTime','eatStart','eatEnd'].forEach(function(k){$('set-'+k).addEventListener('change',function(){if(this.value)S[k]=this.value;save();drawFast();});});
+  ['waterIntervalMin','waterPortionMl','bathIntervalMin'].forEach(function(k){$('set-'+k).addEventListener('change',function(){var v=+this.value;if(v>0)S[k]=v;save();});});
+  $('set-waterGoalL').addEventListener('change',function(){var v=parseFloat(this.value);if(v>0)S.waterGoalMl=Math.round(v*1000);save();refreshTotals();});
+  $('set-theme').querySelectorAll('.btn').forEach(function(b){b.addEventListener('click',function(){S.theme=b.dataset.t;save();fillSettings();applyTheme();});});
+  $('set-ntfy').addEventListener('click',function(){S.ntfyEnabled=!S.ntfyEnabled;S.ntfyScheduledDate='';save();fillSettings();if(S.ntfyEnabled&&S.awake)schedDayNtfy();});
+  $('set-ntfyTopic').addEventListener('change',function(){var v=(this.value||'').trim().replace(/[^a-zA-Z0-9_\-]/g,'');if(v){S.ntfyTopic=v;S.ntfyScheduledDate='';save();fillSettings();}});
+  $('ntfy-sub').addEventListener('click',function(){window.open((S.ntfyServer||'https://ntfy.sh')+'/'+encodeURIComponent(S.ntfyTopic),'_blank');});
+  $('ntfy-test').addEventListener('click',function(){if(!S.ntfyTopic){$('ntfy-status').textContent='No topic';return;}$('ntfy-status').textContent='Sending…';var was=S.ntfyEnabled;S.ntfyEnabled=true;ntfy('Lifestyle test notification ✅','🔔 Test',0,'bell').then(function(ok){S.ntfyEnabled=was;$('ntfy-status').textContent=ok?'Sent — check ntfy app':'Failed to reach ntfy.sh';});});}
+
+function applyTheme(){var t=S.theme;if(t==='auto')t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.setAttribute('data-theme',t);}
+
+// ======================= nav + boot =======================
+function initNav(){document.querySelectorAll('#nav .tab').forEach(function(tab){tab.addEventListener('click',function(){var v=tab.dataset.v;
+  document.querySelectorAll('#nav .tab').forEach(function(t){t.classList.toggle('active',t===tab);});
+  document.querySelectorAll('.view').forEach(function(vw){vw.classList.toggle('active',vw.id==='v-'+v);});
+  if(v==='timeline')renderTimeline();if(v==='stats')renderStats();});});}
+function tick(){var now=new Date();$('greeting').textContent=now.getHours()<12?'Good Morning':now.getHours()<18?'Good Afternoon':'Good Evening';
+  $('today').textContent=now.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});drawFast();}
+function boot(){
+  applyTheme();updStatus();initNav();initMood();initSettings();refreshTotals();
+  $('btn-awake').addEventListener('click',awake);$('btn-sleep').addEventListener('click',sleep);
+  $('card-water').addEventListener('click',function(){quickLog('water');});
+  $('card-bath').addEventListener('click',function(){quickLog('bath');});
+  $('rem-done').addEventListener('click',function(){resolve('done');});
+  $('rem-skip').addEventListener('click',function(){resolve('skip');});
+  if(S.awake)startRem();
+  tick();setInterval(tick,1000);loadConditions();setInterval(loadConditions,10*60000);
+  if('serviceWorker'in navigator)navigator.serviceWorker.register('lifestyle-sw.js').catch(function(){});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+</script>
+</body>
+</html>
