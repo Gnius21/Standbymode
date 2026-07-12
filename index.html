@@ -2137,18 +2137,37 @@
   .f-life .lf-rem-txt { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .f-life .lf-rem-btn {
     flex-shrink: 0;
-    padding: clamp(4px, 1cqh, 8px) clamp(8px, 1.8cqw, 16px);
+    /* Roomier hit area — the reminder pill is rotated to a thin strip in
+       portrait, so give the buttons as much tappable size as possible. */
+    padding: clamp(7px, 1.8cqh, 13px) clamp(12px, 2.6cqw, 22px);
     border-radius: 999px;
-    background: rgba(255,255,255,0.08);
-    color: var(--lf-muted);
+    background: rgba(255,255,255,0.12);
+    color: var(--lf-ink);
     cursor: pointer;
     font-weight: 700;
-    font-size: 0.92em;
+    font-size: 0.98em;
   }
+  .f-life .lf-rem-btn:active { transform: scale(0.94); }
   .f-life .lf-rem-btn.primary {
-    background: linear-gradient(160deg, rgba(94,230,200,0.4), rgba(94,230,200,0.15));
+    background: linear-gradient(160deg, rgba(94,230,200,0.55), rgba(94,230,200,0.25));
     color: #eafff8;
   }
+
+  /* Tappable dashboard cards (Water / Bathroom quick-log) */
+  .f-life .lf-tappable { cursor: pointer; transition: transform 0.12s ease, border-color 0.25s ease; }
+  .f-life .lf-tappable:active { transform: scale(0.97); border-color: rgba(94,230,200,0.5); }
+  .f-life .lf-tap-hint {
+    margin-top: auto;
+    font-size: clamp(6px, 1.5cqh, 12px);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--lf-teal);
+    opacity: 0.85;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .f-life #lf-card-bath .lf-tap-hint { color: var(--lf-warm); }
 
   /* ---------- Timeline tab ---------- */
   .f-life .lf-tl-list {
@@ -3041,15 +3060,17 @@
                   <div class="lf-card-sub" id="lf-fast-remain">&mdash;</div>
                 </div>
               </div>
-              <div class="lf-card" id="lf-card-water">
+              <div class="lf-card lf-tappable" id="lf-card-water" role="button" tabindex="0">
                 <div class="lf-card-hd">&#x1F4A7; Water</div>
                 <div class="lf-card-val blue" id="lf-water-val">0%</div>
                 <div class="lf-card-sub" id="lf-water-sub">0 / 3.0 L</div>
+                <div class="lf-tap-hint">+ Tap to log a glass</div>
               </div>
-              <div class="lf-card" id="lf-card-bath">
+              <div class="lf-card lf-tappable" id="lf-card-bath" role="button" tabindex="0">
                 <div class="lf-card-hd">&#x1F6BD; Bathroom</div>
                 <div class="lf-card-val" id="lf-bath-val">0</div>
                 <div class="lf-card-sub" id="lf-bath-sub">visits today</div>
+                <div class="lf-tap-hint">+ Tap to log a visit</div>
               </div>
               <div class="lf-card" id="lf-card-next">
                 <div class="lf-card-hd">&#x23F0; Next reminder</div>
@@ -4879,7 +4900,20 @@
     }
     function notify(title, body){
       if(!S.notifications || !('Notification' in window) || Notification.permission !== 'granted') return;
-      try{ new Notification(title, { body: body, tag: 'standby-life-' + title }); }catch(e){}
+      // iOS Safari (even installed PWAs) does NOT support the `new Notification()`
+      // constructor — it only shows notifications via the service worker's
+      // showNotification(). Prefer that path everywhere and fall back to the
+      // constructor only on desktop browsers without an active SW.
+      var opts = { body: body, tag: 'standby-life', icon: './icon-192.png', badge: './icon-192.png', renotify: true };
+      if('serviceWorker' in navigator && navigator.serviceWorker.ready){
+        navigator.serviceWorker.ready.then(function(reg){
+          return reg.showNotification(title, opts);
+        }).catch(function(){
+          try{ new Notification(title, opts); }catch(e){}
+        });
+      } else {
+        try{ new Notification(title, opts); }catch(e){}
+      }
     }
     function showReminder(type){
       var meta = REM_META[type];
@@ -4914,11 +4948,31 @@
       hideReminderAndAdvance();
       refreshTodayTotals();
     }
+    // Log a water glass / bathroom visit directly from the dashboard card —
+    // a large, always-visible target that works in any orientation, unlike
+    // the transient reminder pill (which becomes a thin sliver when the
+    // stage is rotated 90deg in portrait). If a reminder of this type is
+    // currently showing, this doubles as its "Done".
+    function quickLog(type){
+      if(remActive === type){ resolveReminder('done'); return; }
+      var qi = remQueue.indexOf(type);
+      if(qi >= 0) remQueue.splice(qi, 1);
+      logEvent(type, { skipped: false });
+      scheduleNext(type);            // reset this reminder's interval from now
+      refreshTodayTotals();
+      // Quick affordance flash on the card
+      var card = document.getElementById(type === 'water' ? 'lf-card-water' : 'lf-card-bath');
+      if(card){ card.style.borderColor = 'rgba(94,230,200,0.7)'; setTimeout(function(){ card.style.borderColor = ''; }, 300); }
+    }
     function initReminderButtons(){
       var doneBtn = document.getElementById('lf-rem-done');
       var skipBtn = document.getElementById('lf-rem-skip');
       if(doneBtn) doneBtn.addEventListener('click', function(){ resolveReminder('done'); });
       if(skipBtn) skipBtn.addEventListener('click', function(){ resolveReminder('skip'); });
+      var waterCard = document.getElementById('lf-card-water');
+      var bathCard = document.getElementById('lf-card-bath');
+      if(waterCard) waterCard.addEventListener('click', function(){ quickLog('water'); });
+      if(bathCard) bathCard.addEventListener('click', function(){ quickLog('bath'); });
     }
     function checkReminders(){
       if(S.awake && document.visibilityState === 'visible'){

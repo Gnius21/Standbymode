@@ -5,7 +5,7 @@
    requests (weather APIs, CORS proxies) are passed through untouched so
    live data is never staled. */
 
-const CACHE = 'standby-v55';
+const CACHE = 'standby-v56';
 const ASSETS = [
   './',
   './index.html',
@@ -30,6 +30,17 @@ self.addEventListener('activate', function(e){
       return Promise.all(keys.filter(function(k){ return k !== CACHE; })
         .map(function(k){ return caches.delete(k); }));
     }).then(function(){ return self.clients.claim(); })
+  );
+});
+
+// Tapping a Life reminder notification focuses the app (or opens it).
+self.addEventListener('notificationclick', function(e){
+  e.notification.close();
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(list){
+      for(var i=0;i<list.length;i++){ if('focus' in list[i]) return list[i].focus(); }
+      if(self.clients.openWindow) return self.clients.openWindow('./index.html');
+    })
   );
 });
 
