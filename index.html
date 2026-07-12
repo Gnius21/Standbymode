@@ -4989,6 +4989,32 @@
       ns.textContent = mins <= 0 ? 'Due now' : ('in ' + mins + ' min');
     }
 
+    // ---------- Live KNMI conditions card ----------
+    // Reads the app-wide `astroData` global that the Marine/Astro faces
+    // already populate every 10 minutes (loadWeather()/loadAstroMarine(),
+    // defined earlier in this same script) — this never issues its own
+    // fetch, so the card costs zero extra network/battery.
+    function updateConditionsCard(){
+      var el = document.getElementById('lf-cond-val');
+      if(!el) return;
+      if(typeof astroData === 'undefined' || !astroData || !astroData.current){
+        el.textContent = 'Loading…';
+        return;
+      }
+      var c = astroData.current;
+      var uv = c.uv_index != null ? Math.round(c.uv_index) : null;
+      var feels = c.apparent_temperature != null ? Math.round(c.apparent_temperature) : null;
+      var kt = c.wind_speed_10m != null ? Math.round(c.wind_speed_10m) : null;
+      var sea = astroData.seaTemp != null ? Math.round(astroData.seaTemp) : null;
+      var parts = [];
+      if(uv != null) parts.push('UV ' + uv);
+      if(kt != null) parts.push(kt + ' kt wind');
+      if(sea != null) parts.push('Sea ' + sea + '°');
+      if(feels != null) parts.push('Feels ' + feels + '°');
+      el.textContent = parts.length ? parts.join(' · ') : '—';
+    }
+    setInterval(updateConditionsCard, 30000);
+
     // ---------- Timeline tab ----------
     // Builds today's schedule from settings alone (wake, hourly water/
     // bathroom slots between wake and sleep, eating window open/close,
@@ -5299,6 +5325,7 @@
       updateGreeting();
       updateStatusPill();
       updateFastingRing();
+      updateConditionsCard();
       refreshTodayTotals();
       // Resume reminder scheduling across a page reload if still awake
       if(S.awake) startReminders();
@@ -5324,7 +5351,7 @@
       startReminders: startReminders, stopReminders: stopReminders,
       buildTodaySchedule: buildTodaySchedule, renderTimeline: renderTimeline,
       renderStats: renderStats, bucketedEvents: bucketedEvents, computeStreak: computeStreak,
-      logMood: logMood
+      logMood: logMood, updateConditionsCard: updateConditionsCard
     };
   })();
 </script>
