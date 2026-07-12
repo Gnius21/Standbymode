@@ -2168,6 +2168,18 @@
     text-overflow: ellipsis;
   }
   .f-life #lf-card-bath .lf-tap-hint { color: var(--lf-warm); }
+  .f-life .lf-cond-best {
+    margin-top: clamp(2px, 0.6cqh, 5px);
+    font-size: clamp(8px, 2cqh, 16px);
+    font-weight: 700;
+    color: var(--lf-teal);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .f-life .lf-cond-best .lf-cond-verdict-ico { font-size: 1.15em; }
+  .f-life .lf-cond-best b { color: var(--lf-ink); }
+  .f-life .lf-cond-best .lf-cond-sep { color: var(--lf-muted); font-weight: 600; }
 
   /* ---------- Timeline tab ---------- */
   .f-life .lf-tl-list {
@@ -2352,6 +2364,39 @@
     border-color: rgba(94,230,200,0.45);
     color: var(--lf-ink);
   }
+  /* ntfy push section in Settings */
+  .f-life .lf-set-section {
+    margin-top: clamp(6px, 1.4cqh, 12px);
+    font-size: clamp(8px, 1.9cqh, 15px);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--lf-teal);
+  }
+  .f-life .lf-ntfy-topic {
+    width: clamp(120px, 34cqw, 300px);
+    text-align: left;
+    color: var(--lf-ink);
+    font-weight: 700;
+  }
+  .f-life .lf-ntfy-help {
+    font-size: clamp(7px, 1.7cqh, 14px);
+    color: var(--lf-muted);
+    line-height: 1.35;
+    padding: 0 clamp(4px, 1cqw, 8px);
+  }
+  .f-life .lf-ntfy-help b { color: var(--lf-ink); }
+  .f-life .lf-ntfy-btns { display: flex; gap: clamp(6px, 1.4cqw, 12px); }
+  .f-life .lf-ntfy-btn { flex: 1 1 0; text-align: center; }
+  .f-life .lf-ntfy-status {
+    font-size: clamp(7px, 1.7cqh, 14px);
+    font-weight: 700;
+    color: var(--lf-muted);
+    min-height: 1em;
+    text-align: center;
+  }
+  .f-life .lf-ntfy-status.ok { color: var(--lf-teal); }
+  .f-life .lf-ntfy-status.err { color: var(--lf-red); }
 
   /* Mood tracker */
   .f-life .lf-mood-row {
@@ -3093,8 +3138,13 @@
                 </div>
               </div>
               <div class="lf-card wide" id="lf-card-conditions">
-                <div class="lf-card-hd">&#x1F30A; Conditions (Bonaire)</div>
+                <div class="lf-card-hd">&#x1F30A; Bonaire &middot; outdoors &amp; swim</div>
                 <div class="lf-card-val" id="lf-cond-val" style="font-size:clamp(11px,3cqh,22px)">&mdash;</div>
+                <div class="lf-cond-best">
+                  <span class="lf-cond-verdict-ico" id="lf-cond-verdict-ico">&#x1F3D6;&#xFE0F;</span>
+                  <span id="lf-cond-verdict">&mdash;</span>
+                  <span class="lf-cond-sep" id="lf-cond-bestwrap"> &middot; best <b id="lf-cond-besttime">&mdash;</b></span>
+                </div>
               </div>
             </div>
           </div>
@@ -3171,6 +3221,23 @@
                 <div class="lf-themebtn" data-theme="auto">Auto</div>
               </div>
             </div>
+            <div class="lf-set-section">Push reminders (ntfy.sh)</div>
+            <div class="lf-set-row">
+              <span class="lf-set-lbl">Push via ntfy</span>
+              <div class="lf-notif-toggle" id="lf-set-ntfyEnabled"><span class="lf-notif-knob"></span></div>
+            </div>
+            <div class="lf-set-row lf-ntfy-topicrow">
+              <span class="lf-set-lbl">Your topic</span>
+              <input type="text" id="lf-set-ntfyTopic" class="lf-set-input lf-ntfy-topic" spellcheck="false" autocapitalize="off" autocomplete="off">
+            </div>
+            <div class="lf-ntfy-help">
+              Install the free <b>ntfy</b> app, then subscribe to the topic above (or tap Subscribe). Reminders are pushed to your phone even when StandBy is closed.
+            </div>
+            <div class="lf-ntfy-btns">
+              <div class="lf-themebtn lf-ntfy-btn" id="lf-ntfy-subscribe">Subscribe</div>
+              <div class="lf-themebtn lf-ntfy-btn" id="lf-ntfy-test">Send test</div>
+            </div>
+            <div class="lf-ntfy-status" id="lf-ntfy-status"></div>
           </div>
         </div>
       </section>
@@ -4669,7 +4736,11 @@
       lastWakeTs: 0,
       lastSleepTs: 0,
       nextWaterDueTs: 0,
-      nextBathDueTs: 0
+      nextBathDueTs: 0,
+      ntfyEnabled: false,
+      ntfyTopic: '',            // auto-generated on first load if empty
+      ntfyServer: 'https://ntfy.sh',
+      ntfyScheduledDate: ''     // guards against re-scheduling the same day
     };
     function loadSettings(){
       try{
@@ -4682,6 +4753,12 @@
     }
     var S = loadSettings();
     function saveSettings(){ localStorage.setItem('lifeSettings', JSON.stringify(S)); }
+    // Give this install a private, hard-to-guess ntfy topic on first run so
+    // reminders published to it aren't visible to strangers guessing topics.
+    if(!S.ntfyTopic){
+      S.ntfyTopic = 'standby-' + Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 6);
+      saveSettings();
+    }
 
     // ---------- IndexedDB event log ----------
     // One generic store keyed by autoIncrement id, indexed by type+ts, so
@@ -4792,11 +4869,14 @@
       updateStatusPill();
       requestNotifyPermission();
       if(typeof startReminders === 'function') startReminders();
+      scheduleDayNtfy(); // queue today's push reminders via ntfy (if enabled)
     }
     function goSleep(){
       if(!S.awake) return;
       S.awake = false;
       S.lastSleepTs = Date.now();
+      // Allow ntfy to re-queue a fresh day on the next wake.
+      S.ntfyScheduledDate = '';
       saveSettings();
       logEvent('sleep');
       updateStatusPill();
@@ -4914,6 +4994,45 @@
       } else {
         try{ new Notification(title, opts); }catch(e){}
       }
+    }
+
+    // ---------- ntfy.sh push (real background notifications) ----------
+    // ntfy.sh is a free public pub/sub push service: publishing an HTTP POST
+    // to https://ntfy.sh/<topic> delivers a push to every device subscribed
+    // to that topic in the ntfy app — even when StandBy is fully closed, which
+    // a backend-free PWA otherwise can't do. Delayed delivery (the `Delay`
+    // header, up to 3 days) lets us queue the whole day's reminders up front
+    // while the app is open, so they still fire after it closes.
+    function ntfyPublish(message, title, delaySec, tags){
+      if(!S.ntfyEnabled || !S.ntfyTopic) return Promise.resolve(false);
+      var headers = { 'Title': title || 'StandBy' };
+      if(tags) headers['Tags'] = tags;
+      if(delaySec && delaySec > 5) headers['Delay'] = Math.round(delaySec) + 's';
+      return fetch((S.ntfyServer || 'https://ntfy.sh') + '/' + encodeURIComponent(S.ntfyTopic), {
+        method: 'POST', body: message, headers: headers
+      }).then(function(r){ return r.ok; }).catch(function(){ return false; });
+    }
+    // Queue every remaining water/bathroom reminder for today as delayed ntfy
+    // pushes, once per day. Because ntfy can't cancel a queued message, an
+    // early drink won't retract an already-scheduled push — reminders are
+    // approximate, which is fine for this use.
+    function scheduleDayNtfy(){
+      if(!S.ntfyEnabled || !S.ntfyTopic) return;
+      var todayKey = new Date().toDateString();
+      if(S.ntfyScheduledDate === todayKey) return;
+      var now = Date.now();
+      var sp = timeStrParts(S.sleepTime);
+      var sleepT = dateAt(new Date(), sp[0], sp[1]).getTime();
+      if(sleepT <= now) sleepT += 86400000;
+      var horizon = Math.min(sleepT, now + 3*86400000); // ntfy delay cap
+      for(var t = now + S.waterIntervalMin*60000; t < horizon; t += S.waterIntervalMin*60000){
+        ntfyPublish('Time to drink water', '💧 Water reminder', (t-now)/1000, 'droplet');
+      }
+      for(var b = now + S.bathIntervalMin*60000; b < horizon; b += S.bathIntervalMin*60000){
+        ntfyPublish('Bathroom break', '🚽 Bathroom reminder', (b-now)/1000, 'toilet');
+      }
+      S.ntfyScheduledDate = todayKey;
+      saveSettings();
     }
     function showReminder(type){
       var meta = REM_META[type];
@@ -5066,6 +5185,30 @@
       if(sea != null) parts.push('Sea ' + sea + '°');
       if(feels != null) parts.push('Feels ' + feels + '°');
       el.textContent = parts.length ? parts.join(' · ') : '—';
+
+      // Best time to go outside / swim — reuses the Marine face's outdoor
+      // verdict + best-window logic (bestOutsideWindow / outdoorVerdict /
+      // hourIndexNow are declared at script top level, so they're in scope
+      // here) rather than re-deriving any of it.
+      var verdictEl = document.getElementById('lf-cond-verdict');
+      var verdictIco = document.getElementById('lf-cond-verdict-ico');
+      var bestEl = document.getElementById('lf-cond-besttime');
+      var bestWrap = document.getElementById('lf-cond-bestwrap');
+      var rainProb = c.precipitation_probability != null ? c.precipitation_probability : null;
+      if(typeof outdoorVerdict === 'function'){
+        var v = outdoorVerdict(uv, kt, feels, rainProb);
+        if(verdictEl) verdictEl.textContent = v.hd;
+        if(verdictIco) verdictIco.textContent = v.ico;
+      }
+      var hh = astroData.hourly;
+      if(hh && hh.time && typeof bestOutsideWindow === 'function'){
+        var i0 = hourIndexNow(hh.time);
+        var bw = bestOutsideWindow(hh, i0);
+        if(bw){
+          if(bestEl) bestEl.textContent = bw.isNow ? ('now (' + bw.time + ')') : bw.time;
+          if(bestWrap) bestWrap.style.display = '';
+        } else if(bestWrap){ bestWrap.style.display = 'none'; }
+      } else if(bestWrap){ bestWrap.style.display = 'none'; }
     }
     setInterval(updateConditionsCard, 30000);
 
@@ -5261,6 +5404,10 @@
       if(themeRow) themeRow.querySelectorAll('.lf-themebtn').forEach(function(b){
         b.classList.toggle('active', b.dataset.theme === S.theme);
       });
+      var ntfyToggle = document.getElementById('lf-set-ntfyEnabled');
+      if(ntfyToggle) ntfyToggle.classList.toggle('on', !!S.ntfyEnabled);
+      var ntfyTopicEl = document.getElementById('lf-set-ntfyTopic');
+      if(ntfyTopicEl && document.activeElement !== ntfyTopicEl) ntfyTopicEl.value = S.ntfyTopic || '';
     }
 
     // ---------- Mood tracker ----------
@@ -5364,6 +5511,45 @@
           saveSettings();
           populateSettingsUI();
           if(faceEl) faceEl.dataset.theme = S.theme;
+        });
+      });
+      // ntfy push controls
+      function setNtfyStatus(msg, cls){
+        var st = document.getElementById('lf-ntfy-status');
+        if(!st) return;
+        st.textContent = msg || '';
+        st.className = 'lf-ntfy-status' + (cls ? ' ' + cls : '');
+      }
+      var ntfyToggle = document.getElementById('lf-set-ntfyEnabled');
+      if(ntfyToggle) ntfyToggle.addEventListener('click', function(){
+        S.ntfyEnabled = !S.ntfyEnabled;
+        S.ntfyScheduledDate = ''; // let scheduling re-run under the new state
+        saveSettings();
+        populateSettingsUI();
+        if(S.ntfyEnabled && S.awake) scheduleDayNtfy();
+        setNtfyStatus(S.ntfyEnabled ? 'Push enabled' : 'Push off', S.ntfyEnabled ? 'ok' : '');
+      });
+      var ntfyTopicEl = document.getElementById('lf-set-ntfyTopic');
+      if(ntfyTopicEl) ntfyTopicEl.addEventListener('change', function(){
+        var v = (ntfyTopicEl.value || '').trim().replace(/[^a-zA-Z0-9_\-]/g, '');
+        if(v){ S.ntfyTopic = v; S.ntfyScheduledDate = ''; saveSettings(); populateSettingsUI(); }
+      });
+      var subBtn = document.getElementById('lf-ntfy-subscribe');
+      if(subBtn) subBtn.addEventListener('click', function(){
+        // Opens the topic in the ntfy app (it registers for ntfy.sh links) or
+        // the web subscription page as a fallback.
+        window.open((S.ntfyServer || 'https://ntfy.sh') + '/' + encodeURIComponent(S.ntfyTopic), '_blank');
+      });
+      var testBtn = document.getElementById('lf-ntfy-test');
+      if(testBtn) testBtn.addEventListener('click', function(){
+        if(!S.ntfyTopic){ setNtfyStatus('No topic set', 'err'); return; }
+        setNtfyStatus('Sending…');
+        // Temporarily allow the send even if the master toggle is off, so a
+        // test always works to verify the subscription.
+        var wasEnabled = S.ntfyEnabled; S.ntfyEnabled = true;
+        ntfyPublish('This is a StandBy test notification ✅', '🔔 StandBy test', 0, 'bell').then(function(ok){
+          S.ntfyEnabled = wasEnabled;
+          setNtfyStatus(ok ? 'Sent — check your ntfy app' : 'Failed to reach ntfy.sh', ok ? 'ok' : 'err');
         });
       });
     }
