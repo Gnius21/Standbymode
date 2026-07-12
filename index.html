@@ -2334,6 +2334,44 @@
     color: var(--lf-ink);
   }
 
+  /* Mood tracker */
+  .f-life .lf-mood-row {
+    display: flex;
+    justify-content: space-between;
+    gap: clamp(2px, 0.6cqw, 6px);
+    margin-top: 2px;
+  }
+  .f-life .lf-mood-emoji {
+    font-size: clamp(13px, 3.6cqh, 26px);
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.45;
+    filter: grayscale(0.6);
+    transition: opacity 0.25s ease, filter 0.25s ease, transform 0.15s ease;
+  }
+  .f-life .lf-mood-emoji:active { transform: scale(0.85); }
+  .f-life .lf-mood-emoji.selected {
+    opacity: 1;
+    filter: grayscale(0) drop-shadow(0 0 6px rgba(255,180,94,0.6));
+    transform: scale(1.15);
+  }
+
+  /* Mood day-strip on Stats */
+  .f-life .lf-mood-strip {
+    display: flex;
+    justify-content: space-between;
+    gap: clamp(2px, 0.6cqw, 6px);
+  }
+  .f-life .lf-mood-strip-day {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: clamp(13px, 3.2cqh, 24px);
+  }
+  .f-life .lf-mood-strip-lbl { font-size: clamp(6px, 1.4cqh, 11px); color: var(--lf-muted); text-transform: uppercase; }
+
   /* ---------- Dots indicator ---------- */
   .dots {
     position: absolute;
@@ -3025,8 +3063,13 @@
               </div>
               <div class="lf-card" id="lf-card-mood">
                 <div class="lf-card-hd">&#x1F642; Mood</div>
-                <div class="lf-card-val" id="lf-mood-val">&mdash;</div>
-                <div class="lf-card-sub">tap to log today</div>
+                <div class="lf-mood-row" id="lf-mood-row">
+                  <span class="lf-mood-emoji" data-mood="1">&#x1F61E;</span>
+                  <span class="lf-mood-emoji" data-mood="2">&#x1F641;</span>
+                  <span class="lf-mood-emoji" data-mood="3">&#x1F610;</span>
+                  <span class="lf-mood-emoji" data-mood="4">&#x1F642;</span>
+                  <span class="lf-mood-emoji" data-mood="5">&#x1F604;</span>
+                </div>
               </div>
               <div class="lf-card wide" id="lf-card-conditions">
                 <div class="lf-card-hd">&#x1F30A; Conditions (Bonaire)</div>
@@ -3047,6 +3090,7 @@
             <div class="lf-stat-chip"><div class="lf-card-hd">Fasted today</div><div class="lf-card-val teal" id="lf-st-fasted">0h</div></div>
             <div class="lf-stat-chip"><div class="lf-card-hd">Streak</div><div class="lf-card-val warm" id="lf-st-streak">0</div></div>
           </div>
+          <div class="lf-mood-strip" id="lf-mood-strip"></div>
           <div class="lf-stats-toggle">
             <div class="lf-rangetab active" data-lfrange="7">Week</div>
             <div class="lf-rangetab" data-lfrange="30">Month</div>
@@ -5085,6 +5129,7 @@
         renderDailyStats(all);
         renderCharts(all.slice(all.length - lfStatsRange));
         renderCalendar(all);
+        renderMoodStrip(all);
       });
     }
     function initStatsToggle(){
@@ -5137,6 +5182,68 @@
         b.classList.toggle('active', b.dataset.theme === S.theme);
       });
     }
+
+    // ---------- Mood tracker ----------
+    // One entry per day: retapping a mood emoji updates today's existing
+    // IndexedDB record instead of inserting a duplicate, found by scanning
+    // today's already-fetched mood events for an existing row.
+    function logMood(value){
+      return getEventsInRange(startOfToday(), Date.now() + 1).then(function(events){
+        var existing = events.filter(function(e){ return e.type === 'mood'; })[0];
+        return openDb().then(function(db){
+          return new Promise(function(resolve, reject){
+            var tx = db.transaction('events', 'readwrite');
+            var store = tx.objectStore('events');
+            if(existing){
+              existing.value = value;
+              existing.ts = Date.now();
+              store.put(existing);
+            } else {
+              store.add({ type: 'mood', ts: Date.now(), value: value });
+            }
+            tx.oncomplete = function(){ resolve(); };
+            tx.onerror = function(){ reject(tx.error); };
+          });
+        });
+      });
+    }
+    function updateMoodRowDisplay(value){
+      var row = document.getElementById('lf-mood-row');
+      if(!row) return;
+      row.querySelectorAll('.lf-mood-emoji').forEach(function(el){
+        el.classList.toggle('selected', parseInt(el.dataset.mood, 10) === value);
+      });
+    }
+    function initMoodButtons(){
+      var row = document.getElementById('lf-mood-row');
+      if(!row) return;
+      row.querySelectorAll('.lf-mood-emoji').forEach(function(el){
+        el.addEventListener('click', function(){
+          var v = parseInt(el.dataset.mood, 10);
+          logMood(v).then(function(){ updateMoodRowDisplay(v); });
+        });
+      });
+      // Reflect today's mood (if already logged, e.g. after a reload) on load
+      getEventsInRange(startOfToday(), Date.now() + 1).then(function(events){
+        var existing = events.filter(function(e){ return e.type === 'mood'; })[0];
+        if(existing) updateMoodRowDisplay(existing.value);
+      });
+    }
+    var MOOD_EMOJI = { 1:'\u{1F61E}', 2:'\u{1F641}', 3:'\u{1F610}', 4:'\u{1F642}', 5:'\u{1F604}' };
+    function renderMoodStrip(buckets){
+      var strip = document.getElementById('lf-mood-strip');
+      if(!strip) return;
+      var last7 = buckets.slice(-7);
+      var html = last7.map(function(b){
+        var moodEvents = b.events.filter(function(e){ return e.type === 'mood'; });
+        var v = moodEvents.length ? moodEvents[moodEvents.length-1].value : null;
+        var d = new Date(b.start);
+        var lbl = d.toLocaleDateString([], {weekday:'narrow'});
+        return '<div class="lf-mood-strip-day"><span>' + (v ? MOOD_EMOJI[v] : '—') + '</span><span class="lf-mood-strip-lbl">' + lbl + '</span></div>';
+      }).join('');
+      strip.innerHTML = html;
+    }
+
     function initSettingsUI(){
       populateSettingsUI();
       ['wakeTime','sleepTime','eatStart','eatEnd'].forEach(function(key){
@@ -5188,6 +5295,7 @@
       initReminderButtons();
       initStatsToggle();
       initSettingsUI();
+      initMoodButtons();
       updateGreeting();
       updateStatusPill();
       updateFastingRing();
@@ -5215,7 +5323,8 @@
       checkReminders: checkReminders, refreshTodayTotals: refreshTodayTotals,
       startReminders: startReminders, stopReminders: stopReminders,
       buildTodaySchedule: buildTodaySchedule, renderTimeline: renderTimeline,
-      renderStats: renderStats, bucketedEvents: bucketedEvents, computeStreak: computeStreak
+      renderStats: renderStats, bucketedEvents: bucketedEvents, computeStreak: computeStreak,
+      logMood: logMood
     };
   })();
 </script>
